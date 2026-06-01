@@ -15,25 +15,35 @@ Full original brief: [`read/CLAUDE-CODE-PROMPT.md`](read/CLAUDE-CODE-PROMPT.md).
 
 | Layer | Choice |
 |---|---|
-| Frontend | React + TypeScript + Vite |
+| Framework | **Next.js (App Router) + React + TypeScript** — one app for UI **and** API |
 | Styling | Tailwind CSS (RTL via logical properties) |
-| State | Zustand (cart, language, UI) |
-| Routing | React Router v6+ |
-| i18n | react-i18next (he + en, RTL/LTR auto-switch) |
-| Backend | Node.js + Express + TypeScript |
+| State | Zustand (cart, language, UI) — in client components |
+| Routing | Next.js App Router (file-based; `[lang]` locale segment for he/en) |
+| i18n | next-intl (he + en, RTL/LTR auto-switch, SSR-friendly) |
+| Backend | Next.js **Route Handlers** (`src/app/api/**`) + TypeScript |
 | Database | PostgreSQL (**Supabase**) + Prisma ORM |
 | Admin auth | JWT |
 | Payments | Stubbed `PaymentProvider` interface (Meshulam/Tranzila/PayPlus later) |
 | File storage | Local uploads now, Cloudinary-ready (abstracted) |
-| Deploy | Docker + docker-compose (dev); **Vercel** (production) |
+| Deploy | Docker + docker-compose (dev); **Vercel** (production, Next-native) |
 
-## Workspace map
+> **Stack note:** chosen over a Vite SPA + separate Express API specifically for e-commerce —
+> server-rendered product/catalog pages for SEO, Vercel-native deploy, `next/image`, and
+> built-in i18n routing. The backend lives in Route Handlers, not a standalone server. It's a
+> **single Next.js app at the repo root** — no monorepo/workspaces (it's always one website).
+
+## Project structure (single root Next.js app)
 
 ```
-client/    React frontend (components, pages, layouts, features, hooks, stores, i18n, lib, types, styles)
-server/    Express backend (routes, controllers, services, middleware, prisma, types)
-shared/    Code shared by client & server — pricing engine + Zod schemas + constants + types
+src/
+  app/        routes — storefront + admin pages (under [lang]/) AND api/ route handlers (the backend)
+  components/ features/ hooks/ stores/ i18n/ lib/ styles/ types/   client/UI code
+  server/     backend internals: prisma client, services, providers, auth, http helpers (server-only)
+  shared/     FRAMEWORK-FREE, imported by UI AND API — pricing engine + Zod schemas + constants + types
+prisma/       schema.prisma, migrations, seed.ts
 ```
+
+One `package.json`; the `@/*` alias maps to `src/*` (so `@/shared/pricing`, `@/server/...`).
 
 See [`.claude/docs/01-architecture.md`](.claude/docs/01-architecture.md).
 
@@ -41,11 +51,11 @@ See [`.claude/docs/01-architecture.md`](.claude/docs/01-architecture.md).
 
 1. **Bilingual everywhere.** All content models have `_he` and `_en` fields. No user-facing
    string is ever hardcoded — it comes from a translation file. See `06-i18n-rtl.md`.
-2. **Pricing logic lives once.** Pure calculation functions in `shared/pricing.ts`, imported
-   by both the client (live preview) and the server (validation). Never duplicate. See
-   `03-pricing-engine.md`.
-3. **Validation lives once.** Zod schemas in `shared/`, used by client forms and server
-   middleware. See `04-api-contract.md`.
+2. **Pricing logic lives once.** Pure calculation functions in `src/shared/pricing.ts`, imported
+   by both client components (live preview) and API route handlers (validation). Never
+   duplicate. See `03-pricing-engine.md`.
+3. **Validation lives once.** Zod schemas in `src/shared/schemas/`, used by client forms and
+   validated again inside route handlers. See `04-api-contract.md`.
 4. **RTL-safe CSS.** Use logical properties (`ps-4`, `me-2`, `text-start`) — never `pl-`,
    `mr-`, `text-left`. See `06-i18n-rtl.md` + `07-design-system.md`.
 5. **Theme via CSS variables.** All colors/fonts are CSS custom properties so they're
@@ -61,7 +71,7 @@ See [`.claude/docs/01-architecture.md`](.claude/docs/01-architecture.md).
 ```bash
 # install (root, workspaces)
 npm install
-# dev (client + server)
+# dev (Next.js — UI + /api on one port)
 npm run dev
 # database
 npm run db:migrate      # prisma migrate dev
@@ -101,7 +111,7 @@ entry whenever meaningful work lands; check the matching roadmap boxes).
 ## Custom commands & agents
 
 - `/scaffold` — stand up the monorepo from the docs.
-- `/new-endpoint <name>` — route + controller + service + Zod + shared types.
-- `/new-feature <name>` — full vertical slice (model → API → store → page → i18n keys).
+- `/new-endpoint <name>` — route handler (`app/api/**`) + service + Zod + shared types.
+- `/new-feature <name>` — full vertical slice (model → route handler → store → page → i18n keys).
 - `/check` — typecheck + lint + test across workspaces.
 - Subagents: `backend-builder`, `frontend-builder`, `i18n-auditor`.

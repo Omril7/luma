@@ -4,12 +4,12 @@ This is the most important domain logic in the app. Read it fully before touchin
 
 ## Where it lives
 
-- **Pure logic:** `shared/pricing.ts` — framework-free, no I/O, fully unit-tested.
-- **Server use:** `server/src/services/pricingService.ts` loads product + variants + rule from
-  the DB, then calls the shared functions to **validate** any client-submitted price before an
-  order is saved.
-- **Client use:** the product-detail store calls the same shared functions to show a **live
-  price preview** as the user types dimensions.
+- **Pure logic:** `src/shared/pricing.ts` — framework-free, no I/O, fully unit-tested.
+- **Server use:** `src/server/services/pricingService.ts` loads product + variants + rule
+  from the DB, then calls the shared functions (from inside route handlers / server components)
+  to **validate** any client-submitted price before an order is saved.
+- **Client use:** the product-detail client component calls the same shared functions to show a
+  **live price preview** as the user types dimensions.
 
 > If the client and server ever compute different prices, the customer sees one number and is
 > charged another. The shared module exists to make that impossible. Never duplicate this math.
@@ -17,7 +17,7 @@ This is the most important domain logic in the app. Read it fully before touchin
 ## Inputs
 
 ```ts
-// shared/pricing.ts (shape — refine during implementation)
+// src/shared/pricing.ts (shape — refine during implementation)
 interface VariantTier {
   id: string;
   width?: number; height?: number; depth?: number; diameter?: number; // cm
@@ -88,16 +88,16 @@ calculatePrice(product, variants, rule, options):
 
 ## Server validation contract
 
-When `POST /api/products/:id/calculate-price` or `POST /api/orders` runs:
+When the `POST /api/products/[id]/calculate-price` or `POST /api/orders` route handler runs:
 1. Load product, its variants, and its pricing rule from the DB (never trust client copies).
-2. Recompute each line with `shared/pricing.ts`.
+2. Recompute each line with `src/shared/pricing.ts`.
 3. For order creation, the server-computed `unitPrice`/`totalPrice` are authoritative and are
    what gets persisted on `OrderItem`. If the client-sent total disagrees beyond a 0-agorot
    tolerance, reject with `422`.
 
 ## Testing (mandatory — see `11-testing-quality.md`)
 
-Unit tests in `shared/` covering: exact variant match; custom within one tier; custom between
+Unit tests in `src/shared/` covering: exact variant match; custom within one tier; custom between
 tiers (base selection); custom below smallest tier; out-of-range constraint errors; missing
 per-cm rate; multi-axis surcharge; rounding; quantity multiplication. The pricing engine must
 have the highest test coverage in the codebase.

@@ -1,6 +1,6 @@
 # 02 — Data Models (Prisma Schema)
 
-Authoritative DB design. Lives in `server/src/prisma/schema.prisma`. All phase-2 models
+Authoritative DB design. Lives in `prisma/schema.prisma`. All phase-2 models
 (`Bundle`, `Review`) are created **now** even though their UIs come later.
 
 ## Key decisions
@@ -15,7 +15,7 @@ Authoritative DB design. Lives in `server/src/prisma/schema.prisma`. All phase-2
 - **Dimensions:** centimeters, nullable `Decimal` (`width`, `height`, `depth`, `diameter`).
   Not every product uses every dimension (e.g. a round table uses `diameter`).
 - **Address:** stored as structured JSON on `Order.shippingAddress` for flexibility; validate
-  shape with Zod (`shared/schemas`).
+  shape with Zod (`src/shared/schemas`).
 - **Slugs:** `Product.slug` unique, URL-safe, generated from `name_en` (fallback `name_he`
   transliteration), stable once created.
 - **Order numbers:** human-readable `orderNumber` (e.g. `ED-2026-00042`) generated on create,

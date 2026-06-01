@@ -6,7 +6,7 @@ call sites.
 
 ## The interface (stub now)
 
-`server/src/services/payment/PaymentProvider.ts`:
+`src/server/providers/payment/PaymentProvider.ts`:
 
 ```ts
 export interface PaymentProvider {

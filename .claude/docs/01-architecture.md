@@ -1,85 +1,108 @@
 # 01 — Architecture
 
-## Monorepo layout
+## Project layout
 
-A single repository with three workspaces managed by npm/pnpm workspaces.
+**One Next.js app at the repository root** — no monorepo, no workspaces. The App Router serves
+both the UI and the API; framework-free shared logic (pricing, validation, types) lives in a
+plain `src/shared/` folder that any part of the app can import.
 
 ```
 /
-├── client/                    # React frontend (Vite)
-│   └── src/
-│       ├── components/        # Reusable, presentational UI components
-│       ├── pages/             # Page-level components (route targets)
-│       ├── layouts/           # StorefrontLayout, AdminLayout
-│       ├── features/          # Feature modules: cart/, products/, checkout/, admin/
-│       ├── hooks/             # Custom React hooks
-│       ├── stores/            # Zustand stores (cart, language, ui)
-│       ├── i18n/              # he.json, en.json, i18n config
-│       ├── lib/               # API client, utils, helpers
-│       ├── types/             # Frontend-only types
-│       └── styles/            # Global CSS, Tailwind layer, theme variables
-├── server/                    # Express backend
-│   └── src/
-│       ├── routes/            # Route definitions (thin)
-│       ├── controllers/       # Request/response handling
-│       ├── services/          # Business logic (pricingService, paymentService, emailService)
-│       ├── middleware/        # auth, validation, errorHandler, rateLimit
-│       ├── prisma/            # schema.prisma, migrations, seed.ts
-│       └── types/             # Server-only types
-├── shared/                    # Imported by BOTH client and server
-│   ├── pricing.ts             # Pure pricing functions (the single source of truth)
-│   ├── schemas/               # Zod schemas (orders, products, contact, etc.)
-│   ├── constants.ts           # Enums, categories, shipping methods
-│   └── types.ts               # Shared DTO/types
+├── src/
+│   ├── app/                      # App Router
+│   │   ├── layout.tsx            # root layout
+│   │   ├── [lang]/               # he|en locale segment — sets <html lang dir>; all UI pages live here
+│   │   │   ├── (storefront)/     # home, shop, product/[slug], cart, checkout, about, gallery, …
+│   │   │   └── admin/            # admin pages (own layout + auth guard)
+│   │   └── api/                  # Route Handlers = the backend (products, orders, admin, …)
+│   ├── components/               # Reusable, presentational UI components
+│   ├── features/                 # Feature modules: cart/, products/, checkout/, admin/
+│   ├── hooks/                    # Custom React hooks (client)
+│   ├── stores/                   # Zustand stores (cart, language, ui) — client components
+│   ├── i18n/                     # next-intl config + he.json, en.json
+│   ├── lib/                      # API client (for client components), utils, helpers
+│   ├── server/                   # SERVER-ONLY backend internals (never imported by client code):
+│   │   ├── prisma.ts             #   shared Prisma client (singleton)
+│   │   ├── services/             #   business logic (pricingService, orderService, …)
+│   │   ├── providers/            #   PaymentProvider, StorageProvider, EmailProvider (swappable)
+│   │   ├── auth/                 #   JWT issue/verify, admin guard helpers
+│   │   └── http/                 #   error envelope, Zod validation helpers for route handlers
+│   ├── shared/                   # FRAMEWORK-FREE, imported by UI AND API (the "lives once" code):
+│   │   ├── pricing.ts            #   pure pricing functions (single source of truth) + pricing.test.ts
+│   │   ├── schemas/              #   Zod schemas (orders, products, contact, etc.)
+│   │   ├── constants.ts          #   enums, categories, shipping methods
+│   │   └── types.ts              #   shared DTO/types
+│   ├── styles/                   # globals.css, Tailwind layer, theme variables
+│   └── types/                    # Frontend-only types
+├── prisma/                       # schema.prisma, migrations, seed.ts
+├── public/
+├── next.config.ts
+├── tsconfig.json
+├── package.json                  # ONE package.json
 ├── docker-compose.yml
 ├── .env.example
 └── README.md
 ```
 
+The `@/*` import alias maps to `src/*`, so shared code is imported as `@/shared/pricing`,
+server code as `@/server/services/...`, etc.
+
 ## Layering & dependency direction
 
 ```
-client  ─┐
-         ├─►  shared   (pure, framework-free TS — no React, no Express, no Prisma client)
-server  ─┘
+UI (server + client components)  ─┐
+API (app/api route handlers)      ├─►  src/shared/   (pure, framework-free TS)
+src/server (services)            ─┘
 ```
 
-- `shared/` must stay **framework-free and side-effect-free**. No imports from React, Express,
-  Prisma client, or Node-only APIs. This lets the same code run in the browser and in Node.
-- `client/` and `server/` both depend on `shared/`. They never depend on each other.
-- Within the server: `routes → controllers → services → prisma`. Routes stay thin; business
-  logic belongs in services. Prisma is only touched in services (and seed).
-- Within the client: `pages → features/components → stores/hooks → lib (api client) → shared`.
+- `src/shared/` must stay **framework-free and side-effect-free**. No imports from React, Next,
+  Prisma client, or Node-only APIs — it's plain TypeScript that runs in the browser, in server
+  components, and in route handlers alike. (It's a folder, not a package: one app means no need
+  for a separate workspace to share it.)
+- **One app, two faces.** The app renders the UI (React Server + Client Components) and hosts
+  the API (`app/api/**` Route Handlers). There is no separate backend server.
+- **Server-only code is isolated** under `src/server/` (Prisma, services, providers, auth).
+  Client components must never import it — route handlers, server components, and server actions
+  do. Keep the boundary clean so secrets/DB access never ship to the browser.
+- Within the API: `route handler → service → prisma`. Handlers stay thin (parse + validate +
+  delegate + shape the response); business logic and all Prisma access live in services.
+- Within the UI: `page (server comp) → features/components → stores/hooks (client) → lib (api client) → src/shared`.
 
-## Why a shared package
+## Why a shared folder
 
-Two pieces of logic MUST agree between client and server:
+Two pieces of logic MUST agree between the browser and the API:
 
-1. **Pricing** — the client shows a live price preview; the server recomputes it to validate
-   the order total before saving. If they diverge, customers see one price and get charged
-   another. Solved by `shared/pricing.ts`.
-2. **Validation** — forms validate on the client for UX and on the server for safety. Same
-   Zod schema both places. Solved by `shared/schemas/`.
+1. **Pricing** — a client component shows a live price preview; the route handler recomputes it
+   to validate the order total before saving. If they diverge, customers see one price and get
+   charged another. Solved by `src/shared/pricing.ts`.
+2. **Validation** — forms validate in the browser for UX and inside route handlers for safety.
+   Same Zod schema both places. Solved by `src/shared/schemas/`.
 
-## Runtime topology (dev)
+Keeping these in one place (and free of React/Next/Prisma) is what guarantees parity — the same
+function literally runs on both sides.
+
+## Runtime topology
 
 ```
-┌────────────┐      HTTP /api      ┌─────────────┐     Prisma     ┌────────────┐
-│  client    │ ──────────────────► │  server     │ ─────────────► │ PostgreSQL │
-│ Vite :5173 │                     │ Express:3000│                │  :5432     │
-└────────────┘                     └─────────────┘                └────────────┘
-       ▲                                  │
-       └──── static uploads served from  /uploads (local storage abstraction)
+┌──────────────────────────────────────────────┐     Prisma     ┌────────────┐
+│  Next.js app                  :3000            │ ─────────────► │ PostgreSQL │
+│  ┌──────────────┐   same-origin   ┌─────────┐  │                │  (Supabase │
+│  │ UI (RSC + CC)│ ───────────────►│ /api/** │  │                │   :5432)   │
+│  └──────────────┘   fetch /api    └─────────┘  │                └────────────┘
+└──────────────────────────────────────────────┘
+        static uploads served from /uploads (local StorageProvider in dev; Cloudinary in prod)
 ```
 
-In dev, Vite proxies `/api` to the Express server. See `10-devops.md` for docker-compose.
+UI and API share one origin and one port — no dev proxy, no CORS between them. See
+`10-devops.md` for docker-compose and the Vercel deployment.
 
 ## Extensibility principles
 
 - **Interface-first for swappable concerns:** payments (`PaymentProvider`), image storage
-  (`StorageProvider`), email (`EmailProvider`). Stub local/no-op implementations now; swap
-  later without touching call sites. See `09-payments.md` and `10-devops.md`.
-- **Feature modules** on the client group everything for a domain (components, hooks, store
-  slice) under `features/<name>/` so features can grow independently.
+  (`StorageProvider`), email (`EmailProvider`), living in `src/server/providers/`. Stub
+  local/no-op implementations now; swap later without touching call sites. See `09-payments.md`
+  and `10-devops.md`.
+- **Feature modules** group everything for a domain (components, hooks, store slice) under
+  `src/features/<name>/` so features can grow independently.
 - **Config over hardcoding:** theme tokens, shipping costs, business info, phone numbers all
   come from CSS variables / settings / env — never literals in components.

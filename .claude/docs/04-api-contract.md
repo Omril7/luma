@@ -1,7 +1,7 @@
 # 04 — API Contract (REST)
 
 Base path: `/api`. JSON in/out. All request bodies validated with Zod schemas from
-`shared/schemas/` (same schemas the client uses). Admin routes require a JWT.
+`src/shared/schemas/` (same schemas the client uses). Admin routes require a JWT.
 
 ## Conventions
 
@@ -62,13 +62,22 @@ when the order is actually created/paid (not on preview).
 > "Full CRUD" = `GET /` (list), `GET /:id`, `POST /`, `PATCH/PUT /:id`, `DELETE /:id`
 > (delete = deactivate where soft-delete applies — see `02-data-models.md`).
 
-## Middleware order (server)
+## Route Handler pipeline
+
+There is no Express middleware chain — the API is **Next.js Route Handlers** under
+`src/app/api/**/route.ts`. Cross-cutting concerns are applied via small composable helpers
+in `src/server/http/` rather than global middleware. Each handler follows this order:
 
 ```
-cors → json body parser → request logger → rate limiter (public writes)
-     → [route] → zod validation → auth (admin) → controller → service
-     → error handler (last)
+rate limit (public writes) → parse body → zod validate (shared schema)
+     → verify JWT (admin routes) → call service → shape success response
+     → catch → error envelope
 ```
 
-The global error handler maps thrown `AppError`/`ZodError` to the error envelope above; it is
-registered last. See `05-frontend.md` for how the client surfaces these as toasts.
+- Wrap handlers with a helper (e.g. `withApi(handler)` / `withAdmin(handler)`) that runs the
+  rate-limit + auth checks and maps any thrown `AppError`/`ZodError`/`PricingError` to the error
+  envelope above. This keeps individual handlers thin.
+- `helmet`-style hardening (security headers), HSTS, etc. are configured in `next.config.ts`
+  headers + the handler helpers, not a server middleware stack. Same-origin UI ⇒ no CORS needed
+  for first-party calls; lock down any cross-origin use explicitly.
+- See `05-frontend.md` for how the client surfaces these envelopes as toasts.

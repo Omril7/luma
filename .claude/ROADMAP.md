@@ -16,29 +16,29 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 
 ## Phase 0 — Foundations
 
-### M0.1 Monorepo scaffold
-- [ ] Init repo + npm/pnpm workspaces (`client`, `server`, `shared`)
+### M0.1 App scaffold (single root Next.js)
+- [ ] Create the Next.js app (App Router, TS, `src/`, `@/*` → `src/*`) at the repo root
 - [ ] Root `package.json` scripts (see `docs/10-devops.md`)
-- [ ] `tsconfig.base.json` (strict) + per-workspace configs
-- [ ] ESLint + Prettier + lint-staged + pre-commit hook
+- [ ] `tsconfig.json` (strict) — single, project-wide
+- [ ] ESLint + Prettier + lint-staged + husky pre-commit hook
 - [ ] `.env.example` with all vars; `.gitignore`; `README.md`
-- [ ] `docker-compose.yml` (db + server + client)
-- **Acceptance:** `npm install` works; `npm run dev` starts empty client+server; `docker compose up` boots Postgres.
+- [ ] `docker-compose.yml` (db + app)
+- **Acceptance:** `npm install` works; `npm run dev` starts the app (UI + `GET /api/health`); `next build` passes.
 
-### M0.2 Shared package
-- [ ] `shared/constants.ts` (Category, ShippingMethod, statuses, etc.)
-- [ ] `shared/types.ts` (DTOs shared by FE/BE)
-- [ ] `shared/pricing.ts` (engine per `docs/03-pricing-engine.md`)
-- [ ] `shared/schemas/` (Zod: order, contact, newsletter, price-request, admin login)
-- [ ] `shared/pricing.test.ts` (full coverage — see `docs/11-testing-quality.md`)
-- **Acceptance:** pricing unit tests pass; `shared` builds and imports cleanly from both sides.
+### M0.2 Shared logic (`src/shared/`)
+- [ ] `src/shared/constants.ts` (Category, ShippingMethod, statuses, etc.)
+- [ ] `src/shared/types.ts` (DTOs shared by UI/API)
+- [ ] `src/shared/pricing.ts` (engine per `docs/03-pricing-engine.md`)
+- [ ] `src/shared/schemas/` (Zod: order, contact, newsletter, price-request, admin login)
+- [ ] `src/shared/pricing.test.ts` (full coverage — see `docs/11-testing-quality.md`)
+- **Acceptance:** pricing unit tests pass; `src/shared/` stays framework-free and imports cleanly from UI and route handlers.
 
 ---
 
 ## Phase 1 — Backend core
 
 ### M1.1 Database schema
-- [ ] `server/src/prisma/schema.prisma` with **all** models (incl. Bundle, Review) per `docs/02-data-models.md`
+- [ ] `prisma/schema.prisma` with **all** models (incl. Bundle, Review) per `docs/02-data-models.md`
 - [ ] First migration; Postgres running via docker
 - [ ] Prisma client generated
 - **Acceptance:** `npm run db:migrate` succeeds; `db:studio` shows all tables.
@@ -48,15 +48,14 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - [ ] A couple of coupons; a few newsletter subscribers; seeded admin user
 - **Acceptance:** `npm run db:seed` populates a browsable catalog in he + en.
 
-### M1.3 Express skeleton
-- [ ] App bootstrap; `helmet`, CORS (`CORS_ORIGIN`), JSON parser, request logger
-- [ ] Global error handler → error envelope (`docs/04-api-contract.md`)
-- [ ] Zod validation middleware; rate limiter for public writes
-- [ ] Static `/uploads` serving
-- **Acceptance:** server boots; a health route returns 200; bad input returns the error envelope.
+### M1.3 API foundation (Route Handlers)
+- [ ] `src/server/http/` helpers: `withApi`/`withAdmin` wrappers, error-envelope mapping (`docs/04-api-contract.md`)
+- [ ] Zod validation helper; rate limiter for public writes; security headers in `next.config.ts`
+- [ ] Prisma client singleton (`src/server/prisma.ts`); `/uploads` serving
+- **Acceptance:** `GET /api/health` returns 200; bad input returns the error envelope.
 
 ### M1.4 Pricing service
-- [ ] `services/pricingService.ts` loads product+variants+rule, calls `shared/pricing.ts`
+- [ ] `services/pricingService.ts` loads product+variants+rule, calls `src/shared/pricing.ts`
 - **Acceptance:** server price matches client preview for the same inputs (parity test).
 
 ### M1.5 Public catalog endpoints
@@ -90,19 +89,19 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 ## Phase 1 — Frontend core
 
 ### M1.10 App setup
-- [ ] Vite + React + TS; Tailwind w/ logical properties + token mapping
-- [ ] `styles/theme.css` CSS variables (`docs/07-design-system.md`); fonts (Heebo/Rubik + Latin)
+- [ ] Next.js App Router + TS (scaffolded); add Tailwind w/ logical properties + token mapping
+- [ ] `styles/globals.css` + theme CSS variables (`docs/07-design-system.md`); fonts (Heebo/Rubik + Latin) via `next/font`
 - **Acceptance:** themed blank app renders; changing a CSS var re-skins it.
 
 ### M1.11 i18n + RTL + layouts
-- [ ] react-i18next; `he.json`/`en.json`; default he/RTL
-- [ ] `languageStore` flips `lang`/`dir` + i18next
-- [ ] `StorefrontLayout` + `AdminLayout`; React Router routes (lazy)
-- **Acceptance:** language switch flips direction and all UI strings; no hardcoded text.
+- [ ] next-intl; `[lang]` locale segment; `he.json`/`en.json`; default he/RTL
+- [ ] `[lang]/layout.tsx` sets `<html lang dir>`; `languageStore` mirrors locale for client widgets
+- [ ] `StorefrontLayout` + `AdminLayout` via App Router `layout.tsx`
+- **Acceptance:** switching locale flips direction and all UI strings; no hardcoded text.
 
 ### M1.12 API client + stores
 - [ ] `lib/api.ts` (typed, error-envelope aware, attaches admin JWT)
-- [ ] `cartStore` (persisted, uses `shared/pricing.ts`), `uiStore` (toasts, a11y prefs)
+- [ ] `cartStore` (persisted, uses `src/shared/pricing.ts`), `uiStore` (toasts, a11y prefs)
 - **Acceptance:** cart math correct and persists across reload.
 
 ### M1.13 Storefront shell
@@ -123,7 +122,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - [ ] Image gallery (swipeable mobile)
 - [ ] Variant selector (S/M/L with dims)
 - [ ] Custom-dimensions toggle + width/height/depth inputs with min/max constraints
-- [ ] **Live price** via `shared/pricing.ts` (optional debounced server confirm)
+- [ ] **Live price** via `src/shared/pricing.ts` (optional debounced server confirm)
 - [ ] Color/finish swatches, quantity, Add to Cart, related products
 - **Acceptance:** typing custom dimensions updates the price instantly and matches the server; add-to-cart carries the correct snapshot. *(Depends on M0.2, M1.5.)*
 
@@ -148,8 +147,8 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - **Acceptance:** all render bilingually; contact + newsletter submit successfully.
 
 ### M1.21 SEO + performance
-- [ ] react-helmet-async per-page meta (bilingual, correct lang/dir); product-specific meta
-- [ ] Route code-splitting; image lazy-loading; bundle check
+- [ ] Next Metadata API per-page meta (bilingual, correct lang); product-specific metadata
+- [ ] Server Components + automatic code-splitting; `next/image` lazy-loading; bundle check
 - **Acceptance:** Lighthouse pass on Home + Product (perf/a11y/SEO).
 
 ---
@@ -190,13 +189,12 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - **Acceptance:** all golden-rule gates in `docs/11-testing-quality.md` pass.
 
 ### M1.28 Tests
-- [ ] Pricing unit tests green; key server endpoint tests (Supertest)
+- [ ] Pricing unit tests green; key route-handler tests (Vitest, mocked requests)
 - [ ] Playwright smoke: browse → custom price → cart → checkout (stub) → confirmation
 - **Acceptance:** CI-style `typecheck + lint + test + build` all green.
 
 ### M1.29 Deploy to Vercel
-- [ ] Express app exportable (`app.ts` split from `listen()`); serverless `api/` entry
-- [ ] `vercel.json` rewrites (SPA for client; `/api/*` → function); project(s) wired for the monorepo
+- [ ] Import repo as a Next.js project (root = `web`); UI + `app/api` deploy together (no custom wrapper / `vercel.json` routing)
 - [ ] Supabase Postgres; pooled `DATABASE_URL` (`?pgbouncer=true`) + direct `DIRECT_URL`; single Prisma client reused
 - [ ] `STORAGE_DRIVER=cloudinary` in prod (serverless FS is ephemeral); all env vars set in Vercel
 - [ ] `prisma migrate deploy` as a release step

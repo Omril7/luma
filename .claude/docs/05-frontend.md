@@ -1,78 +1,102 @@
 # 05 — Frontend
 
-React + TypeScript + Vite. Mobile-first. Routing via React Router v6+. State via Zustand.
-Data fetching through a thin API client in `client/src/lib/api.ts`.
+Next.js **App Router** + React + TypeScript. Mobile-first. File-based routing under
+`src/app/`. Client-side state via **Zustand**. Server Components fetch data directly (call
+services / Prisma) where possible; Client Components use a thin API client for interactivity.
 
-## Routes & pages (storefront)
+## Server vs Client Components (default posture)
+
+- **Server Components by default.** Pages that just render catalog data (home, shop, product,
+  legal, about, gallery, FAQ) render on the server for SEO and fast first paint. They can read
+  data directly from `src/server/services/*` (no HTTP round-trip).
+- **Client Components (`'use client'`)** for anything interactive/stateful: the price
+  calculator, cart, variant/dimension inputs, language switcher, a11y widget, forms, toasts.
+- Keep `src/server/**` out of client bundles — only Server Components / route handlers /
+  server actions import it.
+
+## Routing & pages (storefront)
+
+All UI lives under the `[lang]` locale segment (`/he/...`, `/en/...`); the segment sets
+`<html lang dir>` and feeds next-intl. Paths below are relative to `/[lang]`.
 
 | Route | Page | Notes |
 |---|---|---|
 | `/` | Home | Hero + CTA, featured products grid, "Our Story" teaser, testimonials (placeholder), Instagram (placeholder). |
 | `/shop` | Catalog | Category filter, sort (price/newest/name), responsive product cards ("from ₪X"). |
-| `/product/:slug` | Product Detail | **Core page.** Gallery (swipeable mobile), variant selector w/ dims, custom-dimension toggle + inputs w/ min/max, **live price**, color swatches, qty, add-to-cart, related products. |
+| `/product/[slug]` | Product Detail | **Core page.** Gallery (swipeable mobile), variant selector w/ dims, custom-dimension toggle + inputs w/ min/max, **live price**, color swatches, qty, add-to-cart, related products. |
 | `/cart` | Cart | Items w/ thumbnails + variant/custom info, qty +/-, coupon input, subtotal/shipping/discount/total, checkout CTA. |
 | `/checkout` | Checkout | Customer info, shipping vs pickup, order summary sidebar, "Pay with Credit Card" (stub), installments, terms checkbox. |
-| `/order-confirmation/:id` | Confirmation | Thank-you, order number, summary, delivery timeframe. |
+| `/order-confirmation/[id]` | Confirmation | Thank-you, order number, summary, delivery timeframe. |
 | `/about` | About | Craftsman story, workshop photos, philosophy. |
 | `/gallery` | Gallery | Masonry/grid of past work, lightbox. |
 | `/contact` | Contact | Form, WhatsApp link, optional Maps embed, hours. |
 | `/faq` | FAQ | Accordion, bilingual. |
 | `/terms`, `/privacy`, `/returns` | Legal | Bilingual, placeholder content phase 1. |
-| `/admin/*` | Admin | Separate layout + auth. See `08-admin-panel.md`. |
+| `/admin/*` | Admin | Separate layout + auth guard. See `08-admin-panel.md`. |
 
-## Layouts
+## Layouts (App Router `layout.tsx`)
 
-- `StorefrontLayout` — header (logo, nav, language switcher, cart badge), footer, floating
-  WhatsApp button, accessibility widget. Sets page chrome for all public pages.
-- `AdminLayout` — sidebar nav + top bar, guards on auth.
+- **Root `app/layout.tsx`** — minimal shell.
+- **`app/[lang]/layout.tsx` (StorefrontLayout)** — sets `lang`/`dir`, next-intl provider, header
+  (logo, nav, language switcher, cart badge), footer, floating WhatsApp button, accessibility
+  widget. Wraps all public pages.
+- **`app/[lang]/admin/layout.tsx` (AdminLayout)** — sidebar nav + top bar; guards on auth.
 
 ## Component taxonomy
 
 - `components/` — generic, presentational, reusable (Button, Input, Modal, Accordion,
   ImageGallery, PriceTag, Toast, Spinner, LanguageSwitcher, WhatsAppButton, A11yWidget).
 - `features/<domain>/` — domain-grouped: `products/`, `cart/`, `checkout/`, `admin/`. Each
-  holds its components, hooks, and store slice usage.
-- `layouts/` — the two layouts above.
-- `pages/` — route targets; compose features + components; minimal logic.
+  holds its components, hooks, and store-slice usage.
+- Route segments (`app/[lang]/**`) are thin: compose features + components, do data loading in
+  the server component, keep logic minimal.
 
-## Zustand stores (`client/src/stores/`)
+## Zustand stores (`src/stores/`, client-only)
 
 - **cartStore** — `items[]` (productId, variantId|custom dims, colorId, qty, snapshot of
   computed unitPrice + display info), `addItem`, `updateQty`, `removeItem`, `clear`,
   derived `subtotal`. Persisted to `localStorage`. Coupon/discount state for the cart.
-- **languageStore** — current language (`he`/`en`), `setLanguage` (also flips `<html dir>` and
-  i18next). Default `he`. Persisted. See `06-i18n-rtl.md`.
+- **languageStore** — current language (`he`/`en`), `setLanguage`. Default `he`. The active
+  locale is primarily driven by the `[lang]` route segment + next-intl; this store mirrors it
+  for client widgets and persists the user's preference. See `06-i18n-rtl.md`.
 - **uiStore** — transient UI: modals, drawers, toasts, accessibility settings (font scale,
   high contrast). Accessibility prefs persisted.
 
-> Cart line prices are computed via `shared/pricing.ts` (live) and **re-validated server-side**
-> at checkout. Never trust the persisted client price as final — see `03-pricing-engine.md`.
+> Persisted client stores must be hydrated safely in Next (guard against SSR/CSR mismatch — e.g.
+> read `localStorage` only after mount). Cart line prices are computed via `src/shared/pricing.ts`
+> (live) and **re-validated server-side** at checkout. Never trust the persisted client price as
+> final — see `03-pricing-engine.md`.
 
-## API client (`client/src/lib/api.ts`)
+## API client (`src/lib/api.ts`)
 
-- Thin `fetch` wrapper: base URL from env, JSON, attaches admin JWT when present, parses the
-  error envelope from `04-api-contract.md` and throws typed errors.
-- Per-resource modules (`api.products`, `api.orders`, …). Consider React Query later; phase 1
-  can use store actions + the client directly.
+- Thin `fetch` wrapper used by **Client Components**: same-origin `/api`, JSON, attaches the
+  admin JWT when present, parses the error envelope from `04-api-contract.md` and throws typed
+  errors.
+- Per-resource modules (`api.products`, `api.orders`, …).
+- **Server Components** should prefer calling services in `src/server/services/*` directly
+  instead of fetching their own API over HTTP.
 
 ## Product Detail — the critical interaction
 
-1. Load product by slug (variants, colors, images, pricing rule).
-2. User toggles between **standard variant** (buttons showing dims) and **custom dimensions**
-   (width/height/depth inputs with min/max from the rule).
-3. On every change, recompute price locally via `shared/pricing.ts` and display instantly,
+1. Server Component loads the product by slug (variants, colors, images, pricing rule) and
+   renders the static shell + SEO meta.
+2. A Client Component handles interaction: toggle between **standard variant** (buttons showing
+   dims) and **custom dimensions** (width/height/depth inputs with min/max from the rule).
+3. On every change, recompute price locally via `src/shared/pricing.ts` and display instantly,
    optionally with a surcharge breakdown.
-4. (Optional safety) debounce a call to `POST /products/:id/calculate-price` to confirm.
+4. (Optional safety) debounce a call to `POST /api/products/:id/calculate-price` to confirm.
 5. Add to cart stores the selection + computed price snapshot.
 
 ## SEO, performance, accessibility
 
-- **SEO:** `react-helmet-async` for per-page title/description/OG tags, bilingual, with the
-  right `dir`/`lang`. Product pages get product-specific meta.
-- **Performance:** route-based code-splitting (`React.lazy`), lazy-load images, optimize
-  bundle, defer non-critical sections (testimonials/Instagram placeholders).
-- **Accessibility:** the legally-required widget (font size, contrast) lives in
-  `StorefrontLayout`; see `07-design-system.md`. Semantic HTML, focus management, alt text
-  from `ProductImage.altText_he/_en`.
-- **Errors/feedback:** toast notifications for API errors/success, mapped from the server
-  error envelope.
+- **SEO:** Next.js Metadata API (`export const metadata` / `generateMetadata`) for per-page
+  title/description/OG, bilingual, with the right `lang`. Product pages get product-specific
+  metadata; server rendering means crawlers see real content.
+- **Performance:** Server Components + automatic per-route code-splitting; `next/image` for
+  responsive, lazy-loaded, optimized images; defer non-critical sections
+  (testimonials/Instagram placeholders).
+- **Accessibility:** the legally-required widget (font size, contrast) lives in the storefront
+  layout; see `07-design-system.md`. Semantic HTML, focus management, alt text from
+  `ProductImage.altText_he/_en`.
+- **Errors/feedback:** toast notifications for API errors/success, mapped from the server error
+  envelope.

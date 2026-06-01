@@ -5,7 +5,7 @@ selling point — present them large and clean. Mobile-first.
 
 ## Theme via CSS custom properties
 
-All colors and fonts are CSS variables (defined once in `client/src/styles/theme.css`) so they
+All colors and fonts are CSS variables (defined once in `src/styles/theme.css`) so they
 can be re-skinned without touching components. Tailwind reads them via `theme.extend` mapping
 to `var(--…)`. **No hardcoded hex in components.**
 
