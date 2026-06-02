@@ -46,9 +46,25 @@ factory, so swapping is config-only.
 - Checkout page shows a **"Pay with Credit Card"** button and an **installments** selector
   (driven by `supportsInstallments()`).
 - On submit: create the order (`POST /api/orders`) → call `createPayment` →
-  redirect/tokenize as the provider requires. The stub skips external redirect.
+  if `redirectUrl` is returned, **redirect the browser to the external payment page**;
+  otherwise tokenize as the provider requires. The stub skips the external redirect.
+- The processor receives a `successUrl` and `cancelUrl` as part of the payment initiation:
+  - `successUrl` → `/[lang]/orders/[id]/confirmation?payment=success`
+  - `cancelUrl`  → `/[lang]/checkout?payment=cancelled`
+- On return to `successUrl`: the confirmation page calls `GET /api/orders/:id` to read the
+  latest `paymentStatus` (the processor may also confirm via webhook, see below).
 - `Order.paymentStatus` reflects the provider result (`PENDING/PAID/FAILED/REFUNDED`).
-- Order confirmation page reads the order by id and shows status + summary.
+- Order confirmation page (`/orders/:id/confirmation`) reads the order by id and shows
+  status + summary. A cancelled return shows a toast and keeps the cart intact.
+
+### Webhooks (phase 2)
+
+When a real processor is integrated, it POSTs payment events to
+`POST /api/webhooks/payment`. The handler:
+1. Verifies the request signature (provider-specific secret from env).
+2. Looks up the order by `paymentId`.
+3. Updates `paymentStatus` idempotently.
+4. Triggers post-payment side-effects (email notifications — see `EmailProvider`).
 
 ## Israeli processors (phase 2 notes)
 
@@ -58,6 +74,40 @@ factory, so swapping is config-only.
 - Real keys/secrets go in env (`.env.example` documents placeholders); never commit secrets.
 - Webhooks (when a processor is chosen) verify signatures and update `paymentStatus`
   idempotently.
+
+## Email notifications
+
+`src/server/providers/email/EmailProvider.ts` — same interface pattern as `PaymentProvider`:
+
+```ts
+export interface EmailProvider {
+  sendOrderConfirmation(input: {
+    to: string;                    // customer email
+    order: OrderEmailSnapshot;     // id, items, totals, shipping
+    language: 'he' | 'en';
+  }): Promise<void>;
+
+  sendNewOrderAlert(input: {
+    to: string;                    // admin email (from Settings)
+    order: OrderEmailSnapshot;
+  }): Promise<void>;
+}
+```
+
+### When emails are sent
+
+| Trigger | Recipient | Template |
+|---|---|---|
+| Payment confirmed (`PAID`) | Customer | Order confirmation (order number, items, total, estimated delivery) |
+| Payment confirmed (`PAID`) | Admin (from Settings) | New order alert (same info, plus customer contact) |
+
+- Emails are fired from the webhook handler (phase 2 real provider) or from the order-confirm
+  route handler (phase 1 stub: log to console / skip silently).
+- `OrderEmailSnapshot` is a plain serialisable object — no Prisma models leak into the email layer.
+- Select the provider via env (`EMAIL_PROVIDER=stub|sendgrid|mailchimp|ses`).
+- **Phase-1 stub:** `ConsoleEmailProvider` logs the payload — no real mail sent, no setup needed.
+- **Phase-2:** wire up SendGrid / AWS SES / Mailchimp Transactional behind the same interface.
+  Email templates are bilingual (he/en); the `language` field drives template selection.
 
 ## Security
 

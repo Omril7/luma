@@ -42,6 +42,7 @@ the middleware merely verify Supabase-issued tokens — gaining reset/2FA/SSO la
 | Newsletter | `/admin/newsletter` | 1 | View subscribers, export CSV. |
 | Settings | `/admin/settings` | 1 | Business info, shipping costs, general config, WhatsApp number. |
 | Gallery | `/admin/gallery` | 1 (basic) | Upload/reorder/delete portfolio images. |
+| Site Content | `/admin/site-content` | 1 | Edit all static/dynamic page content (Home, About, FAQ, Gallery intro). See below. |
 | Bundles | `/admin/bundles` | 2 (shell now) | Manage bundles + bundle pricing. |
 | Reviews | `/admin/reviews` | 2 (shell now) | Moderate (approve/reject) reviews. |
 
@@ -52,9 +53,12 @@ the middleware merely verify Supabase-issued tokens — gaining reset/2FA/SSO la
 ## CRUD UI pattern (reuse across resources)
 
 - **List view:** table with search/filter, status badges, row actions (edit/deactivate),
-  pagination, "New" button.
+  pagination with per-page selector (10 / 25 / 50 rows), "New" button.
 - **Edit view:** form driven by the same Zod schema as the API; inline validation; save →
   `POST`/`PATCH`; toast on success/error.
+- **Preview button:** every edit form has a "Preview on site" button that opens the relevant
+  storefront page in a new tab **before** saving — so admins can review the live look first.
+  The button is disabled (or opens a draft-preview URL) when there are unsaved changes.
 - **Bilingual inputs:** paired `_he`/`_en` fields side by side with an RTL/LTR hint.
 - **Product editor specifics:** manage variants (add/remove S/M/L with dims + price), the
   single pricing rule (per-cm rates + min/max), color-option links, and the image gallery
@@ -65,6 +69,39 @@ the middleware merely verify Supabase-issued tokens — gaining reset/2FA/SSO la
 Goes through `POST /api/admin/upload` → `StorageProvider` (local now, Cloudinary later — see
 `10-devops.md`). Returns a URL stored on `ProductImage.url` / gallery item. Validate type/size
 server-side.
+
+## Site Content page (`/admin/site-content`)
+
+Admin-controlled content for all storefront static/marketing pages. Stored in the DB as a
+`SiteContent` table (key → bilingual JSON blob), fetched by storefront pages at request time
+(no redeploy needed).
+
+Managed sections:
+
+| Section | Storefront page | Key fields |
+|---|---|---|
+| Hero | Home | Heading `_he`/`_en`, subheading, CTA label + link, background image |
+| Our Story teaser | Home | Short text `_he`/`_en`, image |
+| About | `/about` | Full body `_he`/`_en` (rich text / markdown), cover image |
+| FAQ | `/faq` | Ordered list of Q&A pairs `_he`/`_en` (add/remove/reorder) |
+| Gallery intro | `/gallery` | Heading + intro paragraph `_he`/`_en` |
+| Contact details | `/contact` | Address, hours, phone, email (bilingual) |
+
+Rules:
+- All text fields are bilingual (`_he` + `_en`), required for both locales.
+- Images go through the existing `StorageProvider` (`POST /api/admin/upload`).
+- Changes are live immediately (no publish/draft in phase 1).
+
+## Bulk order export
+
+Available from the Orders list page. Admin can filter orders (date range, status) then click
+**"Export CSV"** to download a spreadsheet-compatible file. Fields: order id, date, customer
+name/email/phone, items summary, totals, payment status, shipping method. Useful for accounting
+and fulfilment handoff.
+
+- Backend: `GET /api/admin/orders/export?from=&to=&status=` — streams a CSV response
+  (`Content-Disposition: attachment`).
+- No pagination limit applies to exports; use a DB cursor / streaming query for large sets.
 
 ## Dashboard metrics
 

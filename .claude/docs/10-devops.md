@@ -26,7 +26,7 @@ app     node (Next.js)     → :3000   (UI + /api on one port; depends_on db hea
 ```
 
 - A `postgres` volume persists data across restarts.
-- The `web` service waits for the DB healthcheck before starting.
+- The `app` service waits for the DB healthcheck before starting.
 
 ## Production deployment — Vercel
 
@@ -104,7 +104,7 @@ NEXT_PUBLIC_WHATSAPP_NUMBER=972500000000
 NEXT_PUBLIC_DEFAULT_LANGUAGE=he
 
 # --- email (phase 2) ---
-EMAIL_PROVIDER=none          # none | sendgrid | smtp
+EMAIL_PROVIDER=stub          # stub | sendgrid | ses | smtp
 EMAIL_FROM=
 ```
 

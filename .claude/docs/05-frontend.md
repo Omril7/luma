@@ -87,6 +87,31 @@ All UI lives under the `[lang]` locale segment (`/he/...`, `/en/...`); the segme
 4. (Optional safety) debounce a call to `POST /api/products/:id/calculate-price` to confirm.
 5. Add to cart stores the selection + computed price snapshot.
 
+## Wishlist
+
+- Persisted in `localStorage` (no login required); shareable via URL query param
+  (`?wishlist=<ids>`).
+- **wishlistStore** (Zustand, persisted): `items[]` (productId), `toggle`, `has`, `clear`.
+- Heart-icon toggle on product cards (Catalog page) and the Product Detail page.
+- Dedicated `/wishlist` page: list of saved products with add-to-cart per item.
+- SSR-safe hydration guard (same pattern as `cartStore`).
+
+## Product comparison
+
+- Select 2–3 products to compare side by side (dimensions, price, materials, colors).
+- **compareStore** (Zustand, session-only — not persisted): `items[]` (max 3), `toggle`, `clear`.
+- Floating "Compare (N)" bar appears at the bottom of screen when ≥1 product is selected.
+- `/compare` page: side-by-side table of selected products — image, name, price, dimensions per variant, materials, colors available.
+- Compare toggle button on product cards; deselect on the compare page or via the floating bar.
+
+## Product Detail — sticky add-to-cart bar (mobile)
+
+After the user scrolls past the buy box (the section with variant/price/qty/add-to-cart), a
+sticky bar slides in at the bottom on mobile (`md:hidden`):
+- Shows: product name (truncated), current computed price, **"Add to Cart"** button.
+- Uses the same cart logic as the main buy box — no duplicate state.
+- Hides again when the buy box scrolls back into view (IntersectionObserver).
+
 ## SEO, performance, accessibility
 
 - **SEO:** Next.js Metadata API (`export const metadata` / `generateMetadata`) for per-page

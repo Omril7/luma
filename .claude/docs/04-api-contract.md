@@ -58,6 +58,9 @@ when the order is actually created/paid (not on preview).
 | — | `/api/admin/faq` | Full CRUD. |
 | — | `/api/admin/newsletter` | List subscribers, export CSV. |
 | — | `/api/admin/settings` | Read/update business info, shipping costs, general config. |
+| GET | `/api/admin/orders/export` | Stream a CSV of orders. Query: `from`, `to` (ISO dates), `status`. No pagination limit. |
+| — | `/api/admin/site-content` | Read/update site page content blobs (home hero, about, faq, gallery intro, contact). |
+| POST | `/api/webhooks/payment` | Payment processor callback (phase 2). Verifies signature, updates `paymentStatus`, triggers emails. |
 
 > "Full CRUD" = `GET /` (list), `GET /:id`, `POST /`, `PATCH/PUT /:id`, `DELETE /:id`
 > (delete = deactivate where soft-delete applies — see `02-data-models.md`).

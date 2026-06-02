@@ -118,13 +118,27 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - [ ] Category filter, sort (price/newest/name), responsive cards ("from ₪X")
 - **Acceptance:** filtering/sorting hit the API and update the grid.
 
+### M1.15b Wishlist
+- [ ] `wishlistStore` (Zustand, persisted to `localStorage`); SSR-safe hydration
+- [ ] Heart-icon toggle on product cards + Product Detail page
+- [ ] `/wishlist` page: saved products list with per-item add-to-cart
+- [ ] Shareable via URL (`?wishlist=<ids>`)
+- **Acceptance:** wishlist survives page refresh; shared URL restores the list.
+
+### M1.15c Product comparison
+- [ ] `compareStore` (Zustand, session-only, max 3 items)
+- [ ] Compare toggle on product cards; floating "Compare (N)" bar when ≥1 selected
+- [ ] `/compare` page: side-by-side table (image, price, dims per variant, materials, colors)
+- **Acceptance:** comparing 3 products shows a correct side-by-side table; bar clears on reset.
+
 ### M1.16 ⭐ Product Detail (CORE)
 - [ ] Image gallery (swipeable mobile)
 - [ ] Variant selector (S/M/L with dims)
 - [ ] Custom-dimensions toggle + width/height/depth inputs with min/max constraints
 - [ ] **Live price** via `src/shared/pricing.ts` (optional debounced server confirm)
 - [ ] Color/finish swatches, quantity, Add to Cart, related products
-- **Acceptance:** typing custom dimensions updates the price instantly and matches the server; add-to-cart carries the correct snapshot. *(Depends on M0.2, M1.5.)*
+- [ ] **Sticky add-to-cart bar** (mobile only, `md:hidden`): slides in after buy box scrolls out of view (IntersectionObserver); shows name + price + button
+- **Acceptance:** typing custom dimensions updates the price instantly and matches the server; add-to-cart carries the correct snapshot; sticky bar appears on mobile scroll. *(Depends on M0.2, M1.5.)*
 
 ### M1.17 Cart
 - [ ] Items (thumbnails, variant/custom info), qty +/-, coupon input
@@ -134,8 +148,10 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 ### M1.18 Checkout
 - [ ] Customer info form, shipping-vs-pickup, order summary sidebar
 - [ ] "Pay with Credit Card" (stub), installments selector, terms checkbox
-- [ ] Create order → stub payment flow
-- **Acceptance:** completing checkout creates an order and routes to confirmation.
+- [ ] Create order → `createPayment` → redirect to external payment page (real) or skip (stub)
+- [ ] Pass `successUrl` (`/orders/:id/confirmation?payment=success`) and `cancelUrl` (`/checkout?payment=cancelled`) to provider
+- [ ] On cancel return: show toast, preserve cart
+- **Acceptance:** completing checkout creates an order and redirects to the payment provider (stub skips); returning from payment lands on confirmation.
 
 ### M1.19 Order confirmation
 - [ ] Thank-you, order number, summary, delivery timeframe (by `:id`)
@@ -162,11 +178,14 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 
 ### M1.23 Products CRUD UI
 - [ ] List + edit; manage variants, pricing rule, colors, image upload, active/featured/sort
-- **Acceptance:** can create a customizable product end-to-end and see it on the storefront.
+- [ ] "Preview on site" button on edit forms (opens storefront in new tab before saving)
+- [ ] All admin tables: pagination with per-page selector (10 / 25 / 50)
+- **Acceptance:** can create a customizable product end-to-end and see it on the storefront; preview link works; tables paginate correctly.
 
 ### M1.24 Orders management
 - [ ] List + filter by status; detail; update order/payment status
-- **Acceptance:** status changes persist and reflect on the order.
+- [ ] **Bulk export CSV** — filter by date range + status, download (`GET /api/admin/orders/export`); streamed, no row limit
+- **Acceptance:** status changes persist and reflect on the order; filtered export downloads correct data.
 
 ### M1.25 Coupons management
 - [ ] CRUD + activate/deactivate; limits/usage
@@ -175,7 +194,8 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 ### M1.26 Remaining admin
 - [ ] Newsletter list + CSV export; Settings (business info, shipping, WhatsApp); Gallery mgmt (basic)
 - [ ] Bundles + Reviews **page shells** (routes + placeholder)
-- **Acceptance:** nav complete; settings drive storefront (e.g. shipping cost, WhatsApp number).
+- [ ] **Site Content page** (`/admin/site-content`): edit Home hero, Our Story, About body, FAQ Q&As, Gallery intro, Contact details — all bilingual, stored in DB, live immediately (see `docs/08-admin-panel.md`)
+- **Acceptance:** nav complete; settings drive storefront (e.g. shipping cost, WhatsApp number); every storefront static section editable from admin.
 
 ---
 
@@ -194,7 +214,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - **Acceptance:** CI-style `typecheck + lint + test + build` all green.
 
 ### M1.29 Deploy to Vercel
-- [ ] Import repo as a Next.js project (root = `web`); UI + `app/api` deploy together (no custom wrapper / `vercel.json` routing)
+- [ ] Import repo as a Next.js project (root = repo root); UI + `app/api` deploy together (no custom wrapper / `vercel.json` routing)
 - [ ] Supabase Postgres; pooled `DATABASE_URL` (`?pgbouncer=true`) + direct `DIRECT_URL`; single Prisma client reused
 - [ ] `STORAGE_DRIVER=cloudinary` in prod (serverless FS is ephemeral); all env vars set in Vercel
 - [ ] `prisma migrate deploy` as a release step
@@ -211,7 +231,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - [ ] **Newsletter system** (Mailchimp/SendGrid) wired to subscribers
 - [ ] **Google Analytics** integration
 - [ ] **Gallery management** (full) in admin
-- [ ] **Order notification emails** (`EmailProvider`)
+- [ ] **Emails:** wire `EmailProvider` (SendGrid/SES/Mailchimp) — order confirmation to customer + new order alert to admin on payment success; bilingual templates (he/en). Phase-1 stub: `ConsoleEmailProvider` (see `docs/09-payments.md`)
 - [ ] **Advanced shipping** calculator by region
 - [ ] **Auth hardening** (`docs/08-admin-panel.md`): refresh tokens + rotation, httpOnly-cookie tokens, password reset, login lockout, optional 2FA/RBAC, or delegate to Supabase Auth
 - **Acceptance:** each ships behind its interface/flag without regressing phase-1 flows.
