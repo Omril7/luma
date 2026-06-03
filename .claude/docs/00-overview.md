@@ -47,7 +47,7 @@ calculator is the heart of the product — prioritize it.
 | SEO meta tags, responsive, seed data | ✅ | |
 | Payment processor integration | | ✅ |
 | Bundles (model now, UI later) | shell | ✅ |
-| Reviews + moderation (model now, UI later) | shell | ✅ |
+| Reviews + moderation (model now, UI later) — carousel via **embla-carousel** | shell | ✅ |
 | Instagram feed, newsletter system, GA | placeholder | ✅ |
 | Gallery management in admin | basic | ✅ |
 | Order notification emails | | ✅ |

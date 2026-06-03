@@ -76,6 +76,16 @@ package) or build a small custom one — but it must be real and functional, not
 General a11y baseline: semantic HTML, labelled controls, visible focus, sufficient contrast,
 alt text from `ProductImage.altText_he/_en`.
 
+> **Implementation note:** The widget must be **draggable** — use `motion/react` (`useMotionValue` + `useDragControls`) so users can reposition it anywhere on screen without it obscuring content.
+
+## Motion & animations
+
+Use `motion/react` (Framer Motion) for UI animations throughout the storefront. Keep animations subtle and purposeful:
+- Wrap interactive elements (`Button`, `Card`, product tiles, modals) with `motion.*` variants for hover/tap/enter transitions.
+- Prefer `layout` animations for list reorders (cart, gallery).
+- Respect `prefers-reduced-motion` — gate all animations behind the `reduce motion` a11y setting (stored in `uiStore`).
+- Shared layout transitions (e.g. cart drawer open/close, image zoom) use `<AnimatePresence>`.
+
 ## RTL
 
 All of the above must be direction-agnostic — see `06-i18n-rtl.md`. Use logical properties; do

@@ -51,6 +51,23 @@ All UI lives under the `[lang]` locale segment (`/he/...`, `/en/...`); the segme
 - Route segments (`app/[lang]/**`) are thin: compose features + components, do data loading in
   the server component, keep logic minimal.
 
+## Motion / animations
+
+Wrap UI elements with `motion/react` (Framer Motion) for small, tasteful animations:
+- Most interactive elements — buttons, cards, product tiles, drawers, modals — should use
+  `motion.*` with hover/tap/enter variants.
+- List reorders (cart items, gallery) use `layout` prop for smooth position transitions.
+- Entrance transitions use `<AnimatePresence>` (cart drawer open/close, image lightbox).
+- All motion must respect `prefers-reduced-motion` and the **reduce-motion** toggle in `uiStore`.
+
+## Reviews carousel
+
+The reviews section (phase 2 UI, model exists in phase 1) uses **embla-carousel**:
+- `features/reviews/ReviewsCarousel.tsx` — embla-carousel-react with prev/next buttons and
+  dot indicators.
+- RTL-aware: pass `{ direction: locale === 'he' ? 'rtl' : 'ltr' }` to `useEmblaCarousel`.
+- Autoplay optional; must pause on hover/focus.
+
 ## Zustand stores (`src/stores/`, client-only)
 
 - **cartStore** — `items[]` (productId, variantId|custom dims, colorId, qty, snapshot of
