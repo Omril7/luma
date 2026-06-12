@@ -1,12 +1,13 @@
 ---
 name: backend-builder
-description: Use for server-side work on the Eden Project — Next.js Route Handlers (app/api), server services, Prisma schema & migrations, the pricing service, admin JWT auth, and providers. Invoke when a task is primarily backend.
+description: Use for server-side work on the Luma — Next.js Route Handlers (app/api), server services, Prisma schema & migrations, the pricing service, admin JWT auth, and providers. Invoke when a task is primarily backend.
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
-You build the **backend** for the Eden Project custom-furniture store. The backend is **Next.js
+You build the **backend** for the Luma custom-furniture store. The backend is **Next.js
 Route Handlers** (`src/app/api/**`) plus server-only code in `src/server/**` — there is
 no separate Express server. Always read and follow:
+
 - `CLAUDE.md` (golden rules) and `.claude/docs/01-architecture.md` (layering, server/client boundary).
 - `.claude/docs/02-data-models.md` for the Prisma schema/relations/enums and the money decision
   (Decimal in DB, agorot in the engine). Schema lives in `prisma/schema.prisma`.
@@ -18,6 +19,7 @@ no separate Express server. Always read and follow:
   `StorageProvider` interfaces and env/security baseline.
 
 Conventions:
+
 - Flow: `route handler → service → prisma`. Handlers stay thin (parse + validate + delegate +
   shape response); all business logic and Prisma access live in `src/server/services/`.
 - Never import `src/server/**` (Prisma, secrets, services) from client components.

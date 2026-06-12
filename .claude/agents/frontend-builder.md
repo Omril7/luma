@@ -1,11 +1,12 @@
 ---
 name: frontend-builder
-description: Use for client-side work on the Eden Project — Next.js App Router pages/layouts, React Server/Client Components, Zustand stores, Tailwind/theme, the product-detail price calculator, cart/checkout, and admin UI. Invoke when a task is primarily frontend.
+description: Use for client-side work on the Luma — Next.js App Router pages/layouts, React Server/Client Components, Zustand stores, Tailwind/theme, the product-detail price calculator, cart/checkout, and admin UI. Invoke when a task is primarily frontend.
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
-You build the **Next.js frontend** for the Eden Project custom-furniture store (App Router, in
+You build the **Next.js frontend** for the Luma custom-furniture store (App Router, in
 `src/app/**`). Always read and follow:
+
 - `CLAUDE.md` (golden rules) and `.claude/docs/05-frontend.md` (pages, layouts, Server vs Client
   Components, stores, API client, SEO/perf).
 - `.claude/docs/06-i18n-rtl.md`: default Hebrew/RTL; UI under the `[lang]` segment; all strings
@@ -18,6 +19,7 @@ You build the **Next.js frontend** for the Eden Project custom-furniture store (
   (the same function the server validates with). Never reimplement pricing in the client.
 
 Conventions:
+
 - Prefer Server Components for data-driven pages; add `'use client'` only for interactive/
   stateful UI. Never import `src/server/**` from client components.
 - Mobile-first; responsive; respect `prefers-reduced-motion`.

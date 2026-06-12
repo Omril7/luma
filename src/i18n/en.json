@@ -1,0 +1,65 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "close": "Close",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "nav": {
+    "home": "Home",
+    "shop": "Shop",
+    "about": "About",
+    "gallery": "Gallery",
+    "contact": "Contact",
+    "cart": "Cart",
+    "admin": "Admin"
+  },
+  "product": {
+    "addToCart": "Add to Cart",
+    "customDimensions": "Custom Dimensions",
+    "selectVariant": "Select Size",
+    "quantity": "Quantity",
+    "price": "Price",
+    "from": "From ",
+    "width": "Width (cm)",
+    "height": "Height (cm)",
+    "depth": "Depth (cm)",
+    "diameter": "Diameter (cm)"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "discount": "Discount",
+    "total": "Total",
+    "checkout": "Checkout",
+    "couponPlaceholder": "Coupon code"
+  },
+  "checkout": {
+    "title": "Order Details",
+    "name": "Full Name",
+    "email": "Email",
+    "phone": "Phone",
+    "shipping": "Delivery Method",
+    "nationalShipping": "National Shipping",
+    "pickup": "Self Pickup",
+    "pay": "Pay",
+    "terms": "I agree to the Terms of Service"
+  },
+  "footer": {
+    "rights": "All rights reserved",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "returns": "Returns Policy"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "common": {
+    "loading": "טוען...",
+    "error": "שגיאה",
+    "back": "חזור",
+    "save": "שמור",
+    "cancel": "בטל",
+    "delete": "מחק",
+    "edit": "עריכה",
+    "add": "הוסף",
+    "search": "חיפוש",
+    "close": "סגור",
+    "confirm": "אישור",
+    "yes": "כן",
+    "no": "לא"
+  },
+  "nav": {
+    "home": "בית",
+    "shop": "חנות",
+    "about": "אודות",
+    "gallery": "גלריה",
+    "contact": "צור קשר",
+    "cart": "עגלה",
+    "admin": "ניהול"
+  },
+  "product": {
+    "addToCart": "הוסף לעגלה",
+    "customDimensions": "מידות מותאמות אישית",
+    "selectVariant": "בחר גודל",
+    "quantity": "כמות",
+    "price": "מחיר",
+    "from": "מ-",
+    "width": "רוחב (ס\"מ)",
+    "height": "גובה (ס\"מ)",
+    "depth": "עומק (ס\"מ)",
+    "diameter": "קוטר (ס\"מ)"
+  },
+  "cart": {
+    "title": "עגלת הקניות",
+    "empty": "העגלה ריקה",
+    "subtotal": "סכום ביניים",
+    "shipping": "משלוח",
+    "discount": "הנחה",
+    "total": "סה\"כ",
+    "checkout": "לתשלום",
+    "couponPlaceholder": "קוד קופון"
+  },
+  "checkout": {
+    "title": "פרטי הזמנה",
+    "name": "שם מלא",
+    "email": "דוא\"ל",
+    "phone": "טלפון",
+    "shipping": "אופן קבלה",
+    "nationalShipping": "משלוח לכל הארץ",
+    "pickup": "איסוף עצמי",
+    "pay": "לתשלום",
+    "terms": "אני מסכים לתנאי השימוש"
+  },
+  "footer": {
+    "rights": "כל הזכויות שמורות",
+    "terms": "תנאי שימוש",
+    "privacy": "פרטיות",
+    "returns": "מדיניות החזרות"
+  }
+}

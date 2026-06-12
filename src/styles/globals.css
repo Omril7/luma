@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Theme tokens ──────────────────────────────────────────────────────────── */
+:root {
+  /* color palette */
+  --color-primary: #8b6914;
+  --color-primary-600: #6f5410;
+  --color-secondary: #f5f0e8;
+  --color-accent: #c26b3d;
+  --color-text: #2e2a24;
+  --color-text-muted: #6b6358;
+  --color-bg: #fbf8f3;
+  --color-surface: #ffffff;
+  --color-border: #e7ded2;
+
+  /* typography */
+  --font-he: 'Heebo', 'Rubik', system-ui, sans-serif;
+  --font-en: 'Inter', 'Heebo', system-ui, sans-serif;
+  --font-base: var(--font-he);
+
+  /* shape & elevation */
+  --radius: 0.75rem;
+  --radius-lg: 1.25rem;
+  --shadow-soft: 0 4px 20px rgba(46, 42, 36, 0.08);
+
+  /* accessibility (overridable by the a11y widget) */
+  --font-scale: 1;
+}
+
+html[lang='en'] {
+  --font-base: var(--font-en);
+}
+html[lang='he'] {
+  --font-base: var(--font-he);
+}
+
+/* ── Base resets ────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: calc(16px * var(--font-scale));
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-base);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Focus ring ─────────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

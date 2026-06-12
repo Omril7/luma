@@ -1,4 +1,4 @@
-# CLAUDE.md — Eden Project (Custom Furniture E-Commerce)
+# CLAUDE.md — Luma (Custom Furniture E-Commerce)
 
 > Auto-loaded context for every Claude Code session. Keep this file short; deep detail lives in `.claude/docs/`.
 
@@ -18,21 +18,21 @@ Full brief (Next.js architecture): [`read/CLAUDE-CODE-PROMPT.md`](read/CLAUDE-CO
 
 ## Tech stack
 
-| Layer | Choice |
-|---|---|
-| Framework | **Next.js (App Router) + React + TypeScript** — one app for UI **and** API |
-| Styling | Tailwind CSS (RTL via logical properties) |
-| State | Zustand (cart, language, UI) — in client components |
-| Routing | Next.js App Router (file-based; `[lang]` locale segment for he/en) |
-| i18n | next-intl (he + en, RTL/LTR auto-switch, SSR-friendly) |
-| Backend | Next.js **Route Handlers** (`src/app/api/**`) + TypeScript |
-| Database | PostgreSQL (**Supabase**) + Prisma ORM |
-| Admin auth | JWT |
-| Payments | Stubbed `PaymentProvider` interface (Meshulam/Tranzila/PayPlus later) |
-| Animations | `motion/react` (Framer Motion v11+) — subtle UI animations throughout |
-| File storage | **Cloudinary** (primary); local disk fallback for offline dev |
-| Email | **Nodemailer** (SMTP) — `ConsoleEmailProvider` stub in dev |
-| Deploy | **Vercel** (production + staging, Next-native; no Docker needed) |
+| Layer        | Choice                                                                     |
+| ------------ | -------------------------------------------------------------------------- |
+| Framework    | **Next.js (App Router) + React + TypeScript** — one app for UI **and** API |
+| Styling      | Tailwind CSS (RTL via logical properties)                                  |
+| State        | Zustand (cart, language, UI) — in client components                        |
+| Routing      | Next.js App Router (file-based; `[lang]` locale segment for he/en)         |
+| i18n         | next-intl (he + en, RTL/LTR auto-switch, SSR-friendly)                     |
+| Backend      | Next.js **Route Handlers** (`src/app/api/**`) + TypeScript                 |
+| Database     | PostgreSQL (**Supabase**) + Prisma ORM                                     |
+| Admin auth   | JWT                                                                        |
+| Payments     | Stubbed `PaymentProvider` interface (Meshulam/Tranzila/PayPlus later)      |
+| Animations   | `motion/react` (Framer Motion v11+) — subtle UI animations throughout      |
+| File storage | **Cloudinary** (primary); local disk fallback for offline dev              |
+| Email        | **Nodemailer** (SMTP) — `ConsoleEmailProvider` stub in dev                 |
+| Deploy       | **Vercel** (production + staging, Next-native; no Docker needed)           |
 
 > **Stack note:** chosen over a Vite SPA + separate Express API specifically for e-commerce —
 > server-rendered product/catalog pages for SEO, Vercel-native deploy, `next/image`, and
@@ -64,7 +64,8 @@ prisma/        schema.prisma, migrations, seed.ts
 ```
 
 **Why `server/` and `shared/`?** See `.claude/docs/01-architecture.md` — the short version:
-- `shared/` exists because the pricing calculation must be the *exact same function* on client
+
+- `shared/` exists because the pricing calculation must be the _exact same function_ on client
   and server. Divergence means a customer sees one price and gets charged another.
 - `server/` exists to keep Prisma + secrets out of the browser bundle. Next.js can enforce this
   at build time with the `server-only` package.
@@ -110,20 +111,20 @@ npm run build           # next build
 
 ## Documentation index (`.claude/docs/`)
 
-| Doc | Topic |
-|---|---|
-| [00-overview](.claude/docs/00-overview.md) | Vision, scope, glossary, phase summary |
-| [01-architecture](.claude/docs/01-architecture.md) | Monorepo layout, layering, shared package |
-| [02-data-models](.claude/docs/02-data-models.md) | Prisma models, relations, enums, decisions |
-| [03-pricing-engine](.claude/docs/03-pricing-engine.md) | The custom-dimension pricing algorithm (core) |
-| [04-api-contract](.claude/docs/04-api-contract.md) | REST endpoints, request/response shapes, errors |
-| [05-frontend](.claude/docs/05-frontend.md) | Pages, components, routing, Zustand stores |
-| [06-i18n-rtl](.claude/docs/06-i18n-rtl.md) | Hebrew/English, RTL switching, translation rules |
-| [07-design-system](.claude/docs/07-design-system.md) | Theme tokens, typography, UI, accessibility widget |
-| [08-admin-panel](.claude/docs/08-admin-panel.md) | Admin pages, JWT auth, CRUD patterns |
-| [09-payments](.claude/docs/09-payments.md) | Stubbed payment interface, IL processors |
-| [10-devops](.claude/docs/10-devops.md) | Vercel deploy, env vars, scripts, storage, tooling |
-| [11-testing-quality](.claude/docs/11-testing-quality.md) | Tests, lint/format, CI, perf/a11y gates |
+| Doc                                                      | Topic                                              |
+| -------------------------------------------------------- | -------------------------------------------------- |
+| [00-overview](.claude/docs/00-overview.md)               | Vision, scope, glossary, phase summary             |
+| [01-architecture](.claude/docs/01-architecture.md)       | Monorepo layout, layering, shared package          |
+| [02-data-models](.claude/docs/02-data-models.md)         | Prisma models, relations, enums, decisions         |
+| [03-pricing-engine](.claude/docs/03-pricing-engine.md)   | The custom-dimension pricing algorithm (core)      |
+| [04-api-contract](.claude/docs/04-api-contract.md)       | REST endpoints, request/response shapes, errors    |
+| [05-frontend](.claude/docs/05-frontend.md)               | Pages, components, routing, Zustand stores         |
+| [06-i18n-rtl](.claude/docs/06-i18n-rtl.md)               | Hebrew/English, RTL switching, translation rules   |
+| [07-design-system](.claude/docs/07-design-system.md)     | Theme tokens, typography, UI, accessibility widget |
+| [08-admin-panel](.claude/docs/08-admin-panel.md)         | Admin pages, JWT auth, CRUD patterns               |
+| [09-payments](.claude/docs/09-payments.md)               | Stubbed payment interface, IL processors           |
+| [10-devops](.claude/docs/10-devops.md)                   | Vercel deploy, env vars, scripts, storage, tooling |
+| [11-testing-quality](.claude/docs/11-testing-quality.md) | Tests, lint/format, CI, perf/a11y gates            |
 
 **Build sequence:** [`.claude/ROADMAP.md`](.claude/ROADMAP.md) (planned work + checkboxes).
 **Progress log:** [`.claude/PROGRESS.md`](.claude/PROGRESS.md) (chronological journal — append an

@@ -2,7 +2,7 @@
 description: Stand up the single-root Next.js app skeleton (App Router, configs, src/shared pricing engine, Prisma-ready, Docker) per the docs.
 ---
 
-You are scaffolding the Eden Project — a **single Next.js app at the repo root** (no
+You are scaffolding the Luma — a **single Next.js app at the repo root** (no
 workspaces). Follow the docs as the source of truth: `.claude/docs/01-architecture.md` (layout),
 `.claude/docs/10-devops.md` (scripts, env, docker), `.claude/docs/02-data-models.md` (schema),
 `.claude/docs/03-pricing-engine.md` (shared engine).
@@ -11,6 +11,7 @@ Work through **Phase 0** of `.claude/ROADMAP.md` (M0.1, M0.2) and stop for revie
 Phase 1 unless told otherwise.
 
 Steps:
+
 1. Initialize a **Next.js app at the repo root** (App Router, TypeScript, `src/` dir, `@/*` →
    `src/*` import alias). One `package.json` — no workspaces.
 2. Create the exact folder structure from `01-architecture.md` (`src/app`, `src/app/api`,

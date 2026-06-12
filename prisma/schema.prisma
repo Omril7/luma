@@ -1,0 +1,275 @@
+// Prisma schema — luma
+// Shared with luma-manager (C:\Users\omril\Projects\luma-manager) via the same Supabase DB.
+// Keep Order/OrderItem/Product fully intact — luma-manager reads/updates order status.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ── Enums ─────────────────────────────────────────────────────────────────────
+
+enum Category {
+  TABLE
+  SHELF
+  CONSOLE
+  SHOE_RACK
+  NIGHTSTAND
+  ARMCHAIR
+  TV_STAND
+  BENCH
+  OTHER
+}
+
+enum ShippingMethod {
+  NATIONAL_SHIPPING
+  PICKUP
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum OrderStatus {
+  RECEIVED
+  IN_PRODUCTION
+  READY
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum Language {
+  he
+  en
+}
+
+// ── Models ────────────────────────────────────────────────────────────────────
+
+model Product {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name_he     String
+  name_en     String
+  description_he String
+  description_en String
+  category    Category
+  basePrice   Decimal  @db.Decimal(10, 2)
+  customizable Boolean @default(false)
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  images            ProductImage[]
+  variants          ProductVariant[]
+  customPricingRule CustomPricingRule?
+  colorOptions      ColorOption[]
+  reviews           Review[]
+  bundles           Bundle[]
+  orderItems        OrderItem[]
+}
+
+model ProductVariant {
+  id         String   @id @default(cuid())
+  productId  String
+  name_he    String
+  name_en    String
+  width      Decimal? @db.Decimal(8, 2)
+  height     Decimal? @db.Decimal(8, 2)
+  depth      Decimal? @db.Decimal(8, 2)
+  diameter   Decimal? @db.Decimal(8, 2)
+  price      Decimal  @db.Decimal(10, 2)
+  sku        String
+  isActive   Boolean  @default(true)
+
+  product    Product    @relation(fields: [productId], references: [id])
+  orderItems OrderItem[]
+}
+
+model CustomPricingRule {
+  id                String   @id @default(cuid())
+  productId         String   @unique
+  basedOnVariantId  String?
+  pricePerCmWidth   Decimal? @db.Decimal(10, 4)
+  pricePerCmHeight  Decimal? @db.Decimal(10, 4)
+  pricePerCmDepth   Decimal? @db.Decimal(10, 4)
+  pricePerCmDiameter Decimal? @db.Decimal(10, 4)
+  minWidth          Decimal? @db.Decimal(8, 2)
+  maxWidth          Decimal? @db.Decimal(8, 2)
+  minHeight         Decimal? @db.Decimal(8, 2)
+  maxHeight         Decimal? @db.Decimal(8, 2)
+  minDepth          Decimal? @db.Decimal(8, 2)
+  maxDepth          Decimal? @db.Decimal(8, 2)
+
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model ColorOption {
+  id        String   @id @default(cuid())
+  name_he   String
+  name_en   String
+  hexCode   String
+  imageUrl  String?
+  isActive  Boolean  @default(true)
+
+  products   Product[]
+  orderItems OrderItem[]
+}
+
+model ProductImage {
+  id          String   @id @default(cuid())
+  productId   String
+  url         String
+  altText_he  String
+  altText_en  String
+  sortOrder   Int      @default(0)
+  isPrimary   Boolean  @default(false)
+
+  product Product @relation(fields: [productId], references: [id])
+}
+
+// Order is created here; status is managed by luma-manager
+model Order {
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  shippingAddress Json
+  shippingMethod  ShippingMethod
+  subtotal        Decimal       @db.Decimal(10, 2)
+  shippingCost    Decimal       @db.Decimal(10, 2)
+  discount        Decimal       @db.Decimal(10, 2) @default(0)
+  total           Decimal       @db.Decimal(10, 2)
+  couponCode      String?
+  paymentStatus   PaymentStatus @default(PENDING)
+  orderStatus     OrderStatus   @default(RECEIVED)
+  installments    Int?
+  notes           String?
+  language        Language      @default(he)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  items OrderItem[]
+}
+
+model OrderItem {
+  id              String   @id @default(cuid())
+  orderId         String
+  productId       String
+  variantId       String?
+  isCustom        Boolean  @default(false)
+  customWidth     Decimal? @db.Decimal(8, 2)
+  customHeight    Decimal? @db.Decimal(8, 2)
+  customDepth     Decimal? @db.Decimal(8, 2)
+  customDiameter  Decimal? @db.Decimal(8, 2)
+  selectedColorId String?
+  quantity        Int
+  unitPrice       Decimal  @db.Decimal(10, 2)
+  totalPrice      Decimal  @db.Decimal(10, 2)
+
+  order         Order          @relation(fields: [orderId], references: [id])
+  product       Product        @relation(fields: [productId], references: [id])
+  variant       ProductVariant? @relation(fields: [variantId], references: [id])
+  selectedColor ColorOption?   @relation(fields: [selectedColorId], references: [id])
+}
+
+model Coupon {
+  id                  String       @id @default(cuid())
+  code                String       @unique
+  discountType        DiscountType
+  discountValue       Decimal      @db.Decimal(10, 2)
+  minOrderAmount      Decimal?     @db.Decimal(10, 2)
+  maxUses             Int?
+  usedCount           Int          @default(0)
+  validFrom           DateTime?
+  validUntil          DateTime?
+  isActive            Boolean      @default(true)
+  singleUsePerCustomer Boolean     @default(false)
+  firstOrderOnly      Boolean      @default(false)
+  autoApply           Boolean      @default(false)
+}
+
+// Phase-2 UI, model now
+model Bundle {
+  id            String   @id @default(cuid())
+  name_he       String
+  name_en       String
+  description_he String
+  description_en String
+  bundlePrice   Decimal  @db.Decimal(10, 2)
+  isActive      Boolean  @default(true)
+
+  products Product[]
+}
+
+model NewsletterSubscriber {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  language     Language @default(he)
+  subscribedAt DateTime @default(now())
+  isActive     Boolean  @default(true)
+}
+
+model NewsletterSend {
+  id             String    @id @default(cuid())
+  subject_he     String
+  subject_en     String
+  sentAt         DateTime  @default(now())
+  recipientCount Int
+  targetLanguage Language?
+}
+
+// Phase-2 UI, model now
+model Review {
+  id           String   @id @default(cuid())
+  productId    String
+  customerName String
+  rating       Int
+  comment_he   String?
+  comment_en   String?
+  isApproved   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model SiteContent {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model EmailSettings {
+  id           String   @id @default(cuid())
+  fromAddress  String
+  fromName_he  String
+  fromName_en  String
+  replyTo      String?
+  updatedAt    DateTime @updatedAt
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
