@@ -38,27 +38,31 @@ Base path: `/api`. JSON in/out. All request bodies validated with Zod schemas fr
 | GET | `/api/faq` | FAQ items (bilingual). |
 
 ### Coupon application rules
-Check `isActive`, `validFrom`/`validUntil` window, `minOrderAmount`, and
-`usedCount < maxUses`. Compute discount by `discountType`. Persist `usedCount` increment only
-when the order is actually created/paid (not on preview).
+Check `isActive`, `validFrom`/`validUntil` window, `minOrderAmount`, `usedCount < maxUses`,
+`singleUsePerCustomer` (per email), and `firstOrderOnly`. `autoApply` coupons are applied
+automatically — no code entry required. Persist `usedCount` increment only when the order is
+actually created (not on preview).
 
 ## Admin endpoints (JWT required)
+
+> **Scope:** Order management (listing/updating orders) is handled by the companion luma-manager
+> app, which connects to the same database directly. This API does not expose order management
+> endpoints; it only exposes what the Eden admin panel needs.
 
 | Method | Path | Purpose |
 |---|---|---|
 | POST | `/api/admin/auth/login` | Email+password → JWT. |
-| GET | `/api/admin/dashboard/stats` | Order count, revenue summary, recent orders. |
-| POST | `/api/admin/upload` | Image upload (multipart). Returns stored URL via `StorageProvider`. |
+| POST | `/api/admin/upload` | Image upload (multipart). Returns stored URL via `StorageProvider` (Cloudinary). |
 | — | `/api/admin/products` | Full CRUD (incl. variants, pricing rule, color links, images). |
-| — | `/api/admin/orders` | List/filter by status; get; update `orderStatus`/`paymentStatus`. |
-| — | `/api/admin/coupons` | Full CRUD + activate/deactivate. |
+| — | `/api/admin/coupons` | Full CRUD + activate/deactivate. All coupon type fields supported. |
 | — | `/api/admin/bundles` | Full CRUD *(phase 2 UI; endpoints can land early)*. |
 | — | `/api/admin/reviews` | List, approve/reject *(phase 2 UI)*. |
 | — | `/api/admin/gallery` | Upload/reorder/delete portfolio images. |
 | — | `/api/admin/faq` | Full CRUD. |
 | — | `/api/admin/newsletter` | List subscribers, export CSV. |
+| POST | `/api/admin/newsletter/send` | Send a newsletter. Body: `{ subject_he, subject_en, body_he, body_en, targetLanguage? }`. Dispatches via `EmailProvider`. |
+| — | `/api/admin/email-settings` | Read/update email sender config (from address, display name, templates). |
 | — | `/api/admin/settings` | Read/update business info, shipping costs, general config. |
-| GET | `/api/admin/orders/export` | Stream a CSV of orders. Query: `from`, `to` (ISO dates), `status`. No pagination limit. |
 | — | `/api/admin/site-content` | Read/update site page content blobs (home hero, about, faq, gallery intro, contact). |
 | POST | `/api/webhooks/payment` | Payment processor callback (phase 2). Verifies signature, updates `paymentStatus`, triggers emails. |
 
@@ -81,6 +85,5 @@ rate limit (public writes) → parse body → zod validate (shared schema)
   rate-limit + auth checks and maps any thrown `AppError`/`ZodError`/`PricingError` to the error
   envelope above. This keeps individual handlers thin.
 - `helmet`-style hardening (security headers), HSTS, etc. are configured in `next.config.ts`
-  headers + the handler helpers, not a server middleware stack. Same-origin UI ⇒ no CORS needed
-  for first-party calls; lock down any cross-origin use explicitly.
+  headers + the handler helpers, not a server middleware stack.
 - See `05-frontend.md` for how the client surfaces these envelopes as toasts.

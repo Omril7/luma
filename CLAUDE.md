@@ -9,7 +9,12 @@ standard variants (S/M/L) **and** a custom-dimensions option with auto-calculate
 Bilingual **Hebrew (RTL, default) + English (LTR)**, warm/natural aesthetic, full cart +
 credit-card checkout. Evolving project — everything must be **modular and extensible**.
 
-Full original brief: [`read/CLAUDE-CODE-PROMPT.md`](read/CLAUDE-CODE-PROMPT.md).
+**Admin scope:** this admin manages the e-commerce site (products, site content, coupons,
+newsletter sending, email services). Order fulfillment is handled by the companion
+**luma-manager** app (`C:\Users\omril\Projects\luma-manager`), which connects to the same
+Supabase database. Do not build order-management UI in this project.
+
+Full brief (Next.js architecture): [`read/CLAUDE-CODE-PROMPT.md`](read/CLAUDE-CODE-PROMPT.md).
 
 ## Tech stack
 
@@ -24,26 +29,47 @@ Full original brief: [`read/CLAUDE-CODE-PROMPT.md`](read/CLAUDE-CODE-PROMPT.md).
 | Database | PostgreSQL (**Supabase**) + Prisma ORM |
 | Admin auth | JWT |
 | Payments | Stubbed `PaymentProvider` interface (Meshulam/Tranzila/PayPlus later) |
-| File storage | Local uploads now, Cloudinary-ready (abstracted) |
-| Deploy | Docker + docker-compose (dev); **Vercel** (production, Next-native) |
+| Animations | `motion/react` (Framer Motion v11+) — subtle UI animations throughout |
+| File storage | **Cloudinary** (primary); local disk fallback for offline dev |
+| Email | **Nodemailer** (SMTP) — `ConsoleEmailProvider` stub in dev |
+| Deploy | **Vercel** (production + staging, Next-native; no Docker needed) |
 
 > **Stack note:** chosen over a Vite SPA + separate Express API specifically for e-commerce —
 > server-rendered product/catalog pages for SEO, Vercel-native deploy, `next/image`, and
 > built-in i18n routing. The backend lives in Route Handlers, not a standalone server. It's a
 > **single Next.js app at the repo root** — no monorepo/workspaces (it's always one website).
+> No Docker — local dev points at a Supabase dev project; production deploys to Vercel.
 
 ## Project structure (single root Next.js app)
 
 ```
 src/
-  app/        routes — storefront + admin pages (under [lang]/) AND api/ route handlers (the backend)
-  components/ features/ hooks/ stores/ i18n/ lib/ styles/ types/   client/UI code
-  server/     backend internals: prisma client, services, providers, auth, http helpers (server-only)
-  shared/     FRAMEWORK-FREE, imported by UI AND API — pricing engine + Zod schemas + constants + types
-prisma/       schema.prisma, migrations, seed.ts
+  app/         routes — storefront + admin pages (under [lang]/) AND api/ route handlers
+  components/  reusable UI components
+  features/    feature modules (cart/, products/, checkout/, admin/)
+  hooks/       React hooks — incl. useLanguageSwitch (locale navigation, one place)
+  stores/      Zustand stores (cart, language, ui) — client only
+  i18n/        next-intl config + he.json, en.json
+  lib/
+    api.ts     typed API client (client-side fetch wrapper)
+    utils.ts   shared utilities: formatCurrency, formatDate, cn(), slugify, …
+  styles/      globals.css, Tailwind layer, theme CSS variables
+  types/       frontend-only types (component props, store shapes)
+
+  server/      SERVER-ONLY — Prisma client, services, providers, auth, http helpers
+               (never imported by client code; can add `server-only` pkg for build-time guard)
+  shared/      FRAMEWORK-FREE — pricing engine, Zod schemas, constants, DTOs
+               (runs identically in browser AND server — no React/Next/Prisma imports)
+prisma/        schema.prisma, migrations, seed.ts
 ```
 
-One `package.json`; the `@/*` alias maps to `src/*` (so `@/shared/pricing`, `@/server/...`).
+**Why `server/` and `shared/`?** See `.claude/docs/01-architecture.md` — the short version:
+- `shared/` exists because the pricing calculation must be the *exact same function* on client
+  and server. Divergence means a customer sees one price and gets charged another.
+- `server/` exists to keep Prisma + secrets out of the browser bundle. Next.js can enforce this
+  at build time with the `server-only` package.
+
+One `package.json`; the `@/*` alias maps to `src/*` (so `@/shared/pricing`, `@/lib/utils`, `@/server/...`).
 
 See [`.claude/docs/01-architecture.md`](.claude/docs/01-architecture.md).
 
@@ -69,23 +95,18 @@ See [`.claude/docs/01-architecture.md`](.claude/docs/01-architecture.md).
 ## Common commands (once scaffolded)
 
 ```bash
-# install (root, workspaces)
 npm install
-# dev (Next.js — UI + /api on one port)
-npm run dev
-# database
-npm run db:migrate      # prisma migrate dev
-npm run db:seed         # seed sample data
+npm run dev             # Next.js dev server — UI + /api on :3000
+npm run typecheck       # tsc --noEmit
+npm run lint            # eslint
+npm run test            # vitest run (incl. pricing unit tests)
+npm run db:migrate      # prisma migrate dev (runs against Supabase dev project)
+npm run db:seed         # seed sample products, coupons, admin user
 npm run db:studio       # prisma studio
-# quality
-npm run typecheck
-npm run lint
-npm run test
-# docker
-docker compose up
+npm run build           # next build
 ```
 
-> These scripts are defined during `/scaffold`; see `10-devops.md` for the authoritative list.
+> See `10-devops.md` for the authoritative list and environment setup.
 
 ## Documentation index (`.claude/docs/`)
 
@@ -101,7 +122,7 @@ docker compose up
 | [07-design-system](.claude/docs/07-design-system.md) | Theme tokens, typography, UI, accessibility widget |
 | [08-admin-panel](.claude/docs/08-admin-panel.md) | Admin pages, JWT auth, CRUD patterns |
 | [09-payments](.claude/docs/09-payments.md) | Stubbed payment interface, IL processors |
-| [10-devops](.claude/docs/10-devops.md) | Docker, env vars, scripts, deployment |
+| [10-devops](.claude/docs/10-devops.md) | Vercel deploy, env vars, scripts, storage, tooling |
 | [11-testing-quality](.claude/docs/11-testing-quality.md) | Tests, lint/format, CI, perf/a11y gates |
 
 **Build sequence:** [`.claude/ROADMAP.md`](.claude/ROADMAP.md) (planned work + checkboxes).

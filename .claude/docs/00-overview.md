@@ -16,8 +16,8 @@ calculator is the heart of the product — prioritize it.
 - **Primary:** Israeli consumers browsing on phones, paying by credit card (often in
   installments), reading Hebrew.
 - **Secondary:** English-speaking customers.
-- **Admin:** the craftsman / shop operator managing products, orders, and coupons through a
-  simple but polished admin panel.
+- **Admin:** the craftsman / shop operator managing products, content, and coupons through a
+  simple but polished admin panel. Order fulfillment is handled separately by **luma-manager**.
 
 ## Glossary
 
@@ -29,28 +29,32 @@ calculator is the heart of the product — prioritize it.
 | **Per-cm rate** | How much each extra cm in a dimension adds, defined per product in `CustomPricingRule`. |
 | **Surcharge** | The amount added on top of the base tier price for custom dimensions (and, later, color). |
 | **Bilingual fields** | Every content field exists twice: `_he` and `_en`. |
+| **luma-manager** | Companion app (`C:\Users\omril\Projects\luma-manager`) that handles order fulfillment. Shares the same Supabase database — reads/updates order status. |
 
 ## Phase scope
 
 | Capability | Phase 1 (build now) | Phase 2 (post-launch) |
 |---|---|---|
 | Project setup + tooling | ✅ | |
-| DB schema (ALL models incl. phase-2) | ✅ | |
+| DB schema (ALL models incl. phase-2 + luma-manager tables) | ✅ | |
 | Catalog + variants + custom pricing engine | ✅ | |
 | Product page w/ live custom price calculator | ✅ | |
-| Cart with coupons | ✅ | |
+| Cart with coupons (all coupon types) | ✅ | |
 | Checkout (payment **stubbed**) | ✅ | |
 | i18n he/en + full RTL | ✅ | |
-| Admin: products, orders, coupons | ✅ | |
+| Admin: products, site content, coupons, newsletter (send), email services | ✅ | |
 | Contact + WhatsApp, FAQ, legal pages | ✅ | |
+| Wishlist + comparison pages | ✅ | |
 | Accessibility widget (legally required in IL) | ✅ | |
 | SEO meta tags, responsive, seed data | ✅ | |
+| Cloudinary image storage | ✅ | |
+| motion/react (Framer Motion) animations | ✅ | |
 | Payment processor integration | | ✅ |
 | Bundles (model now, UI later) | shell | ✅ |
 | Reviews + moderation (model now, UI later) — carousel via **embla-carousel** | shell | ✅ |
-| Instagram feed, newsletter system, GA | placeholder | ✅ |
+| Instagram feed, GA | placeholder | ✅ |
 | Gallery management in admin | basic | ✅ |
-| Order notification emails | | ✅ |
+| Order notification emails (wire to SendGrid/SES) | stub | ✅ |
 | Advanced regional shipping calculator | | ✅ |
 
 ## How to use these docs

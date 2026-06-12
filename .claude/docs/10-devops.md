@@ -1,84 +1,58 @@
-# 10 — DevOps, Config & Storage
+# 10 — DevOps, Config & Deployment
 
-## Environments (decided)
+## Environments
 
-- **Framework:** **Next.js (App Router)** as a **single app at the repo root** (UI + API in one
-  project). No workspaces/monorepo — framework-free code lives in `src/shared/`.
-- **Database:** **Supabase Postgres** in both environments — a separate **Supabase dev
-  project** for local development, and a Supabase prod project for production. (Local Docker
-  Postgres is kept only as an optional offline fallback.)
-- **File storage:** local-disk provider in dev; **Cloudinary** (`STORAGE_DRIVER=cloudinary`)
-  in production — chosen for on-the-fly responsive/optimized image delivery (the storefront is
-  image-led and mobile-first). Note Vercel's filesystem is **ephemeral**, so prod cannot use
-  local disk regardless.
-- **Deploy:** Vercel, natively as a Next.js project (see "Production deployment — Vercel").
+- **Framework:** Next.js (App Router) — single app at the repo root. UI + API in one project.
+- **Database:** **Supabase Postgres** — a Supabase dev project for development, a separate
+  Supabase prod project for production. No local Docker Postgres needed.
+- **File storage:** **Cloudinary** (primary). Local disk (`STORAGE_DRIVER=local`) is an
+  offline-only fallback. Cloudinary is used in both dev and production.
+- **Deploy:** **Vercel** — the production and staging platform. No Docker in the deploy pipeline.
 
-## Docker (dev)
+## Development setup
 
-> With dev pointing at a Supabase dev project, the compose **`db`** service below is an optional
-> offline fallback — day-to-day dev can run just the `app` against Supabase.
-
-`docker-compose.yml` brings up:
-
-```
-db      postgres:16        → :5432   (volume for persistence)
-app     node (Next.js)     → :3000   (UI + /api on one port; depends_on db healthy)
+```bash
+npm install
+cp .env.example .env.local   # fill in Supabase URL, Cloudinary URL, JWT secret
+npm run db:migrate            # run migrations against your Supabase dev project
+npm run db:seed               # seed sample products, coupons, admin user
+npm run dev                   # start Next.js on :3000
 ```
 
-- A `postgres` volume persists data across restarts.
-- The `app` service waits for the DB healthcheck before starting.
+No Docker required. Supabase gives you a managed Postgres instance — just point
+`DATABASE_URL`/`DIRECT_URL` at your dev project.
 
 ## Production deployment — Vercel
 
-Production runs on **Vercel**, which is Next.js's native platform — one project, no custom
-serverless wrapper.
+Production runs on **Vercel** — one project, no custom serverless wrapper.
 
-- **App:** import the repo (project root = repo root). Vercel detects Next.js
-  and builds it. App Router pages are statically rendered or server-rendered as appropriate;
-  Route Handlers (`app/api/**`) run as serverless/edge functions automatically. No `vercel.json`
-  rewrites are needed for routing — the App Router handles it.
-- **Same origin:** UI and API are served from the same deployment/domain, so there is no CORS or
-  API base-URL juggling between them.
-- **Database:** **Supabase** (managed Postgres). Use Supabase's connection **pooler** for the app
-  and the **direct** connection for migrations:
-  - `DATABASE_URL` → pooled (port `6543`, transaction mode) **with `?pgbouncer=true`** appended
-    so Prisma disables prepared statements (required for transaction-mode pooling on serverless).
+- **App:** import the repo (project root = repo root). Vercel detects Next.js automatically.
+  App Router pages render as RSC/SSR/SSG as appropriate; Route Handlers run as serverless
+  functions. No `vercel.json` rewrites needed.
+- **Same origin:** UI and API served from the same deployment/domain — no CORS needed.
+- **Database:** Supabase Postgres.
+  - `DATABASE_URL` → pooled connection (port `6543`, transaction mode) + `?pgbouncer=true`
+    so Prisma disables prepared statements (required for serverless).
   - `DIRECT_URL` → direct connection (port `5432`) for `prisma migrate` / introspection.
-  - In `schema.prisma`, set `datasource db { url = env("DATABASE_URL"); directUrl = env("DIRECT_URL") }`.
-  - **Reuse a single Prisma client across invocations** via a global singleton
-    (`src/server/prisma.ts`) — serverless cold starts otherwise open connection storms.
-    Consider Prisma Data Proxy / a pooled connection (PgBouncer) for serverless Postgres.
-  - We use Supabase **only as Postgres** — not Supabase Auth/RLS/auto-APIs. The app goes through
-    Prisma + our Route Handlers + JWT admin auth.
-- **Uploads / storage:** the serverless filesystem is **ephemeral** — `LocalStorageProvider`
-  will not persist in production. Production must use the **Cloudinary** `StorageProvider`
-  (`STORAGE_DRIVER=cloudinary`). Local dev can stay on `local`. (See "Storage abstraction".)
-  `next/image` handles responsive delivery on top.
+  - `schema.prisma`: `datasource db { url = env("DATABASE_URL"); directUrl = env("DIRECT_URL") }`
+  - Single Prisma client reused via global singleton (`src/server/prisma.ts`) to avoid
+    connection storms on cold starts.
+- **Uploads / storage:** Cloudinary (`STORAGE_DRIVER=cloudinary`, `CLOUDINARY_URL` set in
+  Vercel dashboard). Vercel's filesystem is ephemeral — local storage cannot persist in prod.
+- **Migrations:** `prisma migrate deploy` runs as a Vercel build command or CI step before
+  each production release.
 - **Env vars:** set every var from `.env.example` in the Vercel dashboard (Production +
-  Preview). Never commit secrets. `NEXT_PUBLIC_*` vars are inlined into the client bundle at
-  build time.
-- **Migrations:** run `prisma migrate deploy` against the production DB as a release/CI step
-  (e.g. Vercel build command or a CI job) — not at request time. Seed only intentionally.
-
-> Implication for phase 1: keep all DB access and secrets inside `src/server/**` (route
-> handlers + server components), keep storage behind `StorageProvider`, and keep the Prisma
-> client a singleton, so the Vercel switch is config-only.
+  Preview). `NEXT_PUBLIC_*` vars are inlined at build time.
 
 ## Environment variables
 
-Document **every** required var in `.env.example` (committed, with placeholders). Never commit
-real secrets.
-
 ```dotenv
 # --- database (Supabase) ---
-# App: pooled connection (port 6543, transaction mode) + ?pgbouncer=true for Prisma on serverless
+# Pooled (port 6543) for the app; direct (port 5432) for migrations
 DATABASE_URL=postgresql://postgres.<ref>:<password>@<region>.pooler.supabase.com:6543/postgres?pgbouncer=true
-# Migrations: direct connection (port 5432)
 DIRECT_URL=postgresql://postgres.<ref>:<password>@<region>.pooler.supabase.com:5432/postgres
-# (Local-only alternative for docker dev: postgresql://eden:eden@localhost:5432/eden?schema=public)
 
-# --- app (Next.js — serves UI + /api route handlers on one origin) ---
-PORT=3000
+# --- app ---
 NODE_ENV=development
 JWT_SECRET=change-me
 JWT_EXPIRES_IN=2h
@@ -89,28 +63,30 @@ RATE_LIMIT_MAX=100
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=change-me
 
-# --- payments (phase 2; stub now) ---
-PAYMENT_PROVIDER=stub        # stub | meshulam | tranzila | payplus
-PAYMENT_API_KEY=
-PAYMENT_API_SECRET=
+# --- payments (stub for now; provider TBD) ---
+PAYMENT_PROVIDER=stub
 
-# --- storage ---
-STORAGE_DRIVER=local         # local | cloudinary
-UPLOAD_DIR=./uploads
-CLOUDINARY_URL=
+# --- storage (Cloudinary primary; local = offline dev fallback) ---
+STORAGE_DRIVER=cloudinary
+CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>
+UPLOAD_DIR=./uploads         # used only when STORAGE_DRIVER=local
 
-# --- business / frontend (NEXT_PUBLIC_* are exposed to the browser at build time) ---
+# --- email (Nodemailer SMTP) ---
+EMAIL_PROVIDER=stub          # stub | nodemailer
+EMAIL_SMTP_HOST=
+EMAIL_SMTP_PORT=587
+EMAIL_SMTP_USER=
+EMAIL_SMTP_PASS=
+EMAIL_FROM=
+
+# --- business / frontend ---
 NEXT_PUBLIC_WHATSAPP_NUMBER=972500000000
 NEXT_PUBLIC_DEFAULT_LANGUAGE=he
-
-# --- email (phase 2) ---
-EMAIL_PROVIDER=stub          # stub | sendgrid | ses | smtp
-EMAIL_FROM=
 ```
 
 ## Storage abstraction
 
-`StorageProvider` interface (mirrors the payments approach), in `src/server/providers/`:
+`StorageProvider` interface in `src/server/providers/storage/`:
 
 ```ts
 interface StorageProvider {
@@ -119,25 +95,27 @@ interface StorageProvider {
 }
 ```
 
-- `LocalStorageProvider` writes to `UPLOAD_DIR` and serves from `/uploads` (a static route /
-  public dir in dev). Dev only — the serverless FS is ephemeral.
-- `CloudinaryStorageProvider` (phase 2) implements the same interface. Selected by
-  `STORAGE_DRIVER`. Call sites (`POST /api/admin/upload`) never change.
+- `CloudinaryStorageProvider` — primary. Uses `CLOUDINARY_URL`. Responsive/optimized delivery
+  built-in. Works in both dev and production.
+- `LocalStorageProvider` — offline fallback. Writes to `UPLOAD_DIR`, serves from `/uploads`.
+  Never use in production.
+
+Selected by `STORAGE_DRIVER`. Call sites (`POST /api/admin/upload`) never change.
 
 ## npm scripts (single root `package.json`)
 
 ```jsonc
 {
-  "dev":        "next dev",                 // Next.js dev server (UI + /api) on :3000
+  "dev":        "next dev",
   "build":      "next build",
   "start":      "next start",
   "typecheck":  "tsc --noEmit",
-  "lint":       "next lint",                // eslint-config-next (flat config also fine)
+  "lint":       "next lint",
   "format":     "prettier --write .",
-  "test":       "vitest run",               // includes src/shared/*.test.ts
-  "db:migrate": "prisma migrate dev",       // wired in M1.1
-  "db:seed":    "prisma db seed",            // wired in M1.2
-  "db:studio":  "prisma studio"              // wired in M1.1
+  "test":       "vitest run",
+  "db:migrate": "prisma migrate dev",
+  "db:seed":    "prisma db seed",
+  "db:studio":  "prisma studio"
 }
 ```
 
@@ -145,14 +123,15 @@ interface StorageProvider {
 
 - Sanitize/validate all inputs with Zod (shared schemas) inside route handlers.
 - Parameterized queries via Prisma (no raw string SQL).
-- Security headers via `next.config.ts` `headers()` (CSP, HSTS, X-Content-Type-Options, …).
-- Rate-limit public write endpoints (orders, contact, newsletter, apply-coupon,
-  calculate-price) in the route-handler helpers.
+- Security headers via `next.config.ts` `headers()` (CSP, HSTS, X-Content-Type-Options).
+- Rate-limit public write endpoints (orders, contact, newsletter, apply-coupon, calculate-price).
 - JWT secrets and all credentials from env only; never imported into client components.
 - File uploads: validate MIME/size; store via `StorageProvider` with safe names.
 
 ## Tooling
 
 - TypeScript strict mode across the app (single `tsconfig.json`).
-- ESLint (flat config) + Prettier; `lint-staged` + a husky pre-commit hook for format+lint.
+- ESLint (flat config) + Prettier; `lint-staged` + husky pre-commit hook for format+lint.
+- `motion` package (`motion/react`, Framer Motion v11+) — production dependency for animations.
+- `nodemailer` — production dependency for SMTP email sending.
 - See `11-testing-quality.md` for test runners and CI.

@@ -3,6 +3,12 @@
 Authoritative DB design. Lives in `prisma/schema.prisma`. All phase-2 models
 (`Bundle`, `Review`) are created **now** even though their UIs come later.
 
+> **Shared DB:** The `Order`, `OrderItem`, and `Product` tables are also accessed by the
+> companion **luma-manager** app (`C:\Users\omril\Projects\luma-manager`), which handles order
+> fulfillment management. This app is the source-of-truth creator for products and orders;
+> luma-manager reads/updates order status. Both apps connect to the same Supabase instance.
+> Keep `Order`/`OrderItem` models fully intact — do not remove them from the schema.
+
 ## Key decisions
 
 - **Money:** store as `Decimal @db.Decimal(10, 2)` (Prisma `Decimal`). Never `Float`. In the
@@ -61,7 +67,7 @@ Many-to-many with `Product`. (Color surcharge is a future hook — currently 0.)
 ### ProductImage
 `id`, `productId`, `url`, `altText_he`, `altText_en`, `sortOrder` (Int), `isPrimary` (Boolean).
 
-### Order
+### Order *(created here — managed via luma-manager)*
 `id`, `orderNumber` (unique, generated), `customerName`, `customerEmail`, `customerPhone`,
 `shippingAddress` (Json), `shippingMethod` (ShippingMethod),
 `subtotal`, `shippingCost`, `discount`, `total` (Decimal),
@@ -80,6 +86,19 @@ Snapshot prices at order time (don't recompute from live product later).
 `minOrderAmount?`, `maxUses? Int`, `usedCount Int @default(0)`,
 `validFrom?`, `validUntil?`, `isActive`.
 
+**Extended coupon fields** (enable all meaningful coupon shapes):
+- `singleUsePerCustomer Boolean @default(false)` — each customer email may use it once
+- `firstOrderOnly Boolean @default(false)` — only applies to a customer's first order
+- `autoApply Boolean @default(false)` — applied automatically without entering a code
+
+These compose freely:
+- **Permanent code:** `isActive`, no `validUntil`, no `maxUses`
+- **One-time global:** `maxUses = 1`
+- **Deadline code:** `validUntil` set
+- **Per-customer once:** `singleUsePerCustomer = true`
+- **First-order only:** `firstOrderOnly = true`
+- **Auto-apply discount:** `autoApply = true`
+
 ### Bundle  *(phase 2 UI, model now)*
 `id`, `name_he`, `name_en`, `description_he`, `description_en`,
 `products Product[]` (m-n), `bundlePrice` (Decimal), `isActive`.
@@ -87,9 +106,22 @@ Snapshot prices at order time (don't recompute from live product later).
 ### NewsletterSubscriber
 `id`, `email` (unique), `name?`, `language` (Language), `subscribedAt`, `isActive`.
 
+### NewsletterSend *(tracks sent campaigns)*
+`id`, `subject_he`, `subject_en`, `sentAt`, `recipientCount Int`,
+`targetLanguage Language?` (null = all). Append-only log.
+
 ### Review  *(phase 2 UI, model now)*
 `id`, `productId`, `customerName`, `rating Int` (1–5), `comment_he?`, `comment_en?`,
 `isApproved Boolean @default(false)`, `createdAt`.
+
+### SiteContent
+`id`, `key` (unique, e.g. `home.hero`), `value` (Json — bilingual blob), `updatedAt`.
+Fetched by storefront pages at request time; updated via admin Site Content page.
+
+### EmailSettings
+`id`, `fromAddress`, `fromName_he`, `fromName_en`, `replyTo?`, `updatedAt`.
+One row (upsert). Provider selection stays in env (`EMAIL_PROVIDER`); this table holds
+the address/display config that the provider uses.
 
 ## Relations summary
 
@@ -101,5 +133,9 @@ Snapshot prices at order time (don't recompute from live product later).
 ## Seed data (see `prisma/seed.ts`)
 
 3–4 sample products across categories (e.g. TABLE, SHELF, NIGHTSTAND, CONSOLE), each with
-S/M/L variants, a `CustomPricingRule`, 2–3 color options, and multiple images. Plus a couple
-of coupons and a few newsletter subscribers. This is essential for FE development.
+S/M/L variants, a `CustomPricingRule`, 2–3 color options, and multiple images. Plus:
+- Coupons of each type (permanent, deadline, one-time, first-order, auto-apply)
+- A few newsletter subscribers (he + en)
+- An admin user
+- Sample SiteContent blobs for home/about/faq
+This is essential for FE development.

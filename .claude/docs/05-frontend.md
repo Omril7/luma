@@ -26,7 +26,7 @@ All UI lives under the `[lang]` locale segment (`/he/...`, `/en/...`); the segme
 | `/product/[slug]` | Product Detail | **Core page.** Gallery (swipeable mobile), variant selector w/ dims, custom-dimension toggle + inputs w/ min/max, **live price**, color swatches, qty, add-to-cart, related products. |
 | `/cart` | Cart | Items w/ thumbnails + variant/custom info, qty +/-, coupon input, subtotal/shipping/discount/total, checkout CTA. |
 | `/checkout` | Checkout | Customer info, shipping vs pickup, order summary sidebar, "Pay with Credit Card" (stub), installments, terms checkbox. |
-| `/order-confirmation/[id]` | Confirmation | Thank-you, order number, summary, delivery timeframe. |
+| `/orders/[id]/confirmation` | Confirmation | Thank-you, order number, summary, delivery timeframe. `?payment=success` from provider redirect. |
 | `/about` | About | Craftsman story, workshop photos, philosophy. |
 | `/gallery` | Gallery | Masonry/grid of past work, lightbox. |
 | `/contact` | Contact | Form, WhatsApp link, optional Maps embed, hours. |
