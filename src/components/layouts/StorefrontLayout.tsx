@@ -5,8 +5,14 @@ import { WhatsAppButton } from '@/components/WhatsAppButton'
 import { A11yWidget } from '@/components/A11yWidget'
 import { ToastContainer } from '@/components/ToastContainer'
 
-export async function StorefrontLayout({ children }: { children: React.ReactNode }) {
-  const t = await getTranslations('header')
+export async function StorefrontLayout({
+  children,
+  locale,
+}: {
+  children: React.ReactNode
+  locale: string
+}) {
+  const t = await getTranslations({ locale, namespace: 'header' })
 
   return (
     <>
@@ -20,7 +26,7 @@ export async function StorefrontLayout({ children }: { children: React.ReactNode
       <main id="main-content" tabIndex={-1}>
         {children}
       </main>
-      <Footer />
+      <Footer locale={locale} />
       <WhatsAppButton />
       <A11yWidget />
       <ToastContainer />

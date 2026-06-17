@@ -1,9 +1,9 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 
-export async function Footer() {
-  const t = await getTranslations('footer')
-  const tNav = await getTranslations('nav')
+export async function Footer({ locale }: { locale: string }) {
+  const t = await getTranslations({ locale, namespace: 'footer' })
+  const tNav = await getTranslations({ locale, namespace: 'nav' })
 
   const year = new Date().getFullYear()
 

@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider } from 'next-intl'
-import { getMessages } from 'next-intl/server'
 import { routing } from '@/i18n/routing'
 import { LangUpdater } from './_components/LangUpdater'
 
@@ -23,11 +22,14 @@ export default async function LocaleLayout({
     notFound()
   }
 
-  const messages = await getMessages()
+  // Load messages directly from the URL segment — avoids middleware locale lag
+  const messages =
+    lang === 'en'
+      ? (await import('@/i18n/en.json')).default
+      : (await import('@/i18n/he.json')).default
 
   return (
-    <NextIntlClientProvider messages={messages}>
-      {/* Syncs <html lang dir> to the correct locale on the client */}
+    <NextIntlClientProvider locale={lang} messages={messages}>
       <LangUpdater lang={lang} />
       {children}
     </NextIntlClientProvider>
