@@ -143,7 +143,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 
 ### M1.16 Shop / catalog
 
-- [ ] Category filter, sort (price/newest/name), responsive cards ("from ₪X")
+- [x] Category filter, sort (price/newest/name), responsive cards ("from ₪X")
 - **Acceptance:** filtering/sorting hit the API and update the grid.
 
 ### M1.16b Wishlist

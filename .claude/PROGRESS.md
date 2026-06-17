@@ -19,6 +19,27 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-06-17 — M1.16: Shop / Catalog page
+
+- **Done:** Full shop/catalog page with URL-driven filters, sort, pagination, and empty state.
+  - Added `shop` namespace to `he.json` and `en.json` (title, categories, sort keys, results count, empty state, pagination labels).
+  - `src/app/[lang]/(storefront)/shop/page.tsx` — Server Component; reads `searchParams` (category, sort, page), validates against allow-lists, calls `getProducts` directly, renders `ShopClient`.
+  - `src/features/shop/ShopClient.tsx` — Client Component with:
+    - `setParam` helper that writes URL params via `window.location.search` (no `useSearchParams` hook → no Suspense boundary required), then calls `router.push`.
+    - Desktop sidebar: vertical category pill list + sort `<select>` with label.
+    - Mobile filters: horizontally-scrollable pill row + compact sort `<select>` (flex-shrink-0).
+    - Product grid: `motion.div layout` + `AnimatePresence mode="popLayout"` with stagger; all motion gated behind `shouldAnimate = !a11y.reduceMotion`.
+    - Empty state: SVG furniture outline, heading, body text, CTA button — all from i18n.
+    - Pagination: prev/next buttons with `disabled` + reduced-opacity, RTL-aware chevron rotation (`rotate-90 rtl:-rotate-90`), "Page X of Y" counter from i18n.
+    - All touch targets ≥ 44px. All strings via `useTranslations('shop')`. Zero hardcoded hex or `pl-`/`mr-` properties.
+  - `generateMetadata` on the page for bilingual `<title>`.
+- **Roadmap:** M1.16 ✅
+- **Decisions:**
+  - Used `window.location.search` in click handlers (not `useSearchParams` hook) to avoid the Next.js requirement to wrap in `<Suspense>` — the client component is interactive only and never reads params during SSR.
+  - Pagination chevrons use Tailwind `rtl:` variant (`rotate-90 rtl:-rotate-90`) rather than locale-conditional class to stay CSS-only.
+  - `CategoryPill` and `SortSelect` are inner functions inside `ShopClient` (not separate files) — they're tightly coupled to `setParam` and `currentCategory`/`currentSort` from the parent scope, and too small to warrant separate modules.
+- **Notes:** `npm run typecheck` and `npm run lint` both pass clean.
+
 ## 2026-06-17 — M1.15: Home page
 
 - **Done:** Full home page with 5 sections + shared ProductCard + wishlistStore.

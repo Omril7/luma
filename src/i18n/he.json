@@ -85,6 +85,38 @@
     "shopLinks": "קישורי חנות",
     "infoLinks": "מידע"
   },
+  "shop": {
+    "title": "החנות",
+    "allCategories": "הכל",
+    "sortLabel": "מיון",
+    "sort": {
+      "newest": "חדש ביותר",
+      "price_asc": "מחיר: נמוך לגבוה",
+      "price_desc": "מחיר: גבוה לנמוך",
+      "name_he": "שם"
+    },
+    "categories": {
+      "TABLE": "שולחנות",
+      "SHELF": "מדפים",
+      "CONSOLE": "קונסולות",
+      "SHOE_RACK": "מתלי נעלים",
+      "NIGHTSTAND": "שידות לילה",
+      "ARMCHAIR": "כורסאות",
+      "TV_STAND": "מזנונים לטלוויזיה",
+      "BENCH": "ספסלים",
+      "OTHER": "אחר"
+    },
+    "results": "{count} מוצרים",
+    "empty": {
+      "heading": "לא נמצאו מוצרים",
+      "body": "נסו לשנות את הסינון או לחפש בקטגוריה אחרת.",
+      "cta": "לכל המוצרים"
+    },
+    "loadMore": "טען עוד",
+    "page": "עמוד {page} מתוך {total}",
+    "prevPage": "עמוד קודם",
+    "nextPage": "עמוד הבא"
+  },
   "home": {
     "hero": {
       "heading": "ריהוט בהזמנה אישית",
