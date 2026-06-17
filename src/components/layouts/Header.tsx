@@ -9,6 +9,41 @@ import { useLanguageSwitch } from '@/hooks/useLanguageSwitch'
 import { useCartStore } from '@/stores/cartStore'
 import { useUiStore } from '@/stores/uiStore'
 
+function IsraelFlag({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 900 600"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect width="900" height="600" fill="#fff" />
+      <rect y="80" width="900" height="80" fill="#0038b8" />
+      <rect y="440" width="900" height="80" fill="#0038b8" />
+      <polygon points="450,200 363,350 537,350" fill="none" stroke="#0038b8" strokeWidth="30" />
+      <polygon points="450,400 363,250 537,250" fill="none" stroke="#0038b8" strokeWidth="30" />
+    </svg>
+  )
+}
+
+function USAFlag({ className }: { className?: string }) {
+  const sh = 600 / 13
+  return (
+    <svg
+      viewBox="0 0 900 600"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect width="900" height="600" fill="#B22234" />
+      {[1, 3, 5, 7, 9, 11].map((i) => (
+        <rect key={i} y={i * sh} width="900" height={sh} fill="#fff" />
+      ))}
+      <rect width="360" height={7 * sh} fill="#3C3B6E" />
+    </svg>
+  )
+}
+
 const navLinks = [
   { href: '/' as const, key: 'home' },
   { href: '/shop' as const, key: 'shop' },
@@ -83,14 +118,50 @@ export function Header() {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          {/* Language switcher */}
-          <button
-            onClick={() => switchTo(isHebrew ? 'en' : 'he')}
-            className="min-h-[44px] min-w-[44px] rounded-full border border-border px-3 py-1 text-sm font-medium text-text-main transition-colors hover:bg-secondary hover:text-primary focus-visible:outline-2"
-            aria-label={isHebrew ? 'Switch to English' : 'עבור לעברית'}
+          {/* Language switcher — flag group button */}
+          <div
+            dir="ltr"
+            role="group"
+            aria-label="Language / שפה"
+            className="relative flex items-center rounded-full border border-border bg-secondary/50 p-0.5"
           >
-            {isHebrew ? 'EN' : 'עב'}
-          </button>
+            <span
+              aria-hidden="true"
+              className={[
+                'pointer-events-none absolute inset-y-0.5 w-[calc(50%-2px)] rounded-full bg-surface shadow-sm',
+                'transition-[left] duration-200 ease-out',
+                isHebrew ? 'left-0.5' : 'left-1/2',
+              ].join(' ')}
+            />
+            <button
+              onClick={() => switchTo('he')}
+              className={[
+                'relative z-10 flex h-8 w-9 items-center justify-center rounded-full',
+                'transition-opacity duration-200 focus-visible:outline-2',
+                isHebrew
+                  ? 'opacity-100'
+                  : 'opacity-30 grayscale hover:opacity-60 hover:grayscale-0',
+              ].join(' ')}
+              aria-pressed={isHebrew}
+              aria-label="עברית"
+            >
+              <IsraelFlag className="h-[13px] w-[20px] rounded-[2px] shadow-[0_0_0_0.5px_rgba(0,0,0,0.12)]" />
+            </button>
+            <button
+              onClick={() => switchTo('en')}
+              className={[
+                'relative z-10 flex h-8 w-9 items-center justify-center rounded-full',
+                'transition-opacity duration-200 focus-visible:outline-2',
+                !isHebrew
+                  ? 'opacity-100'
+                  : 'opacity-30 grayscale hover:opacity-60 hover:grayscale-0',
+              ].join(' ')}
+              aria-pressed={!isHebrew}
+              aria-label="English"
+            >
+              <USAFlag className="h-[13px] w-[20px] rounded-[2px] shadow-[0_0_0_0.5px_rgba(0,0,0,0.12)]" />
+            </button>
+          </div>
 
           {/* Cart */}
           <Link
