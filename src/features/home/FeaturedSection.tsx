@@ -15,7 +15,7 @@ interface FeaturedSectionProps {
 export function FeaturedSection({ products, locale }: FeaturedSectionProps) {
   const t = useTranslations('home.featured')
   const { a11y } = useUiStore()
-  const shouldAnimate = !a11y.reduceMotion
+  const shouldAnimate = !a11y.noMotion
 
   return (
     <section className="py-16 md:py-24 bg-bg">

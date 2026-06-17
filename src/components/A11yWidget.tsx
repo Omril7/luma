@@ -1,185 +1,330 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion, useDragControls, useMotionValue, AnimatePresence } from 'motion/react'
-import { useTranslations } from 'next-intl'
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
+import { useTranslations, useLocale } from 'next-intl'
+import {
+  Accessibility,
+  Moon,
+  Sun,
+  Palette,
+  Leaf,
+  Pause,
+  Link,
+  Underline,
+  BookOpen,
+  AlignJustify,
+  Type,
+  Bold,
+  Crosshair,
+  MousePointer2,
+  ImageOff,
+  PauseCircle,
+  AlignLeft,
+  RotateCcw,
+  X,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useUiStore } from '@/stores/uiStore'
+import type { A11yPrefs } from '@/stores/uiStore'
 
-function AccessibilityIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className="h-6 w-6"
-      aria-hidden="true"
-    >
-      <path d="M12 2a2 2 0 110 4 2 2 0 010-4zm0 6c1.1 0 2 .9 2 2v5l2.5 4.5-1.8 1L12 16l-2.7 4.5-1.8-1L10 15v-5c0-1.1.9-2 2-2z" />
-    </svg>
-  )
+type BoolKey = {
+  [K in keyof A11yPrefs]: A11yPrefs[K] extends boolean ? K : never
+}[keyof A11yPrefs]
+
+interface Option {
+  key: BoolKey
+  Icon: LucideIcon
 }
 
-function GripIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className="h-4 w-4 text-text-muted"
-      aria-hidden="true"
-    >
-      <path d="M8 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm8-12a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" />
-    </svg>
-  )
-}
+const OPTIONS: Option[] = [
+  { key: 'dark', Icon: Moon },
+  { key: 'contrast', Icon: Sun },
+  { key: 'grayscale', Icon: Palette },
+  { key: 'sepia', Icon: Leaf },
+  { key: 'noMotion', Icon: Pause },
+  { key: 'links', Icon: Link },
+  { key: 'underlineHeadings', Icon: Underline },
+  { key: 'readable', Icon: BookOpen },
+  { key: 'lineSpacing', Icon: AlignJustify },
+  { key: 'letterSpacing', Icon: Type },
+  { key: 'bold', Icon: Bold },
+  { key: 'focus', Icon: Crosshair },
+  { key: 'cursor', Icon: MousePointer2 },
+  { key: 'hideImages', Icon: ImageOff },
+  { key: 'pauseMedia', Icon: PauseCircle },
+  { key: 'readingGuide', Icon: AlignLeft },
+]
 
-interface ToggleProps {
-  label: string
-  checked: boolean
-  onChange: (value: boolean) => void
-}
+const FONT_STEP_LABELS = ['100%', '115%', '130%', '150%']
+const FONT_SCALES = [1, 1.15, 1.3, 1.5]
 
-function Toggle({ label, checked, onChange }: ToggleProps) {
-  return (
-    <label className="mb-2 flex cursor-pointer items-center justify-between gap-2">
-      <span className="text-sm text-text-main">{label}</span>
-      <button
-        role="switch"
-        aria-checked={checked}
-        onClick={() => onChange(!checked)}
-        className={[
-          'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-2',
-          checked ? 'bg-primary' : 'bg-border',
-        ].join(' ')}
-      >
-        <span
-          className={[
-            'pointer-events-none inline-block h-5 w-5 rounded-full bg-surface shadow transition-transform duration-200',
-            checked ? 'translate-x-5' : 'translate-x-0',
-          ].join(' ')}
-        />
-      </button>
-    </label>
-  )
+const DEFAULT_PREFS: A11yPrefs = {
+  fontStep: 0,
+  contrast: false,
+  dark: false,
+  grayscale: false,
+  sepia: false,
+  links: false,
+  readable: false,
+  cursor: false,
+  noMotion: false,
+  lineSpacing: false,
+  letterSpacing: false,
+  hideImages: false,
+  underlineHeadings: false,
+  pauseMedia: false,
+  bold: false,
+  focus: false,
+  readingGuide: false,
 }
 
 export function A11yWidget() {
   const t = useTranslations('a11y')
+  const locale = useLocale()
   const { a11y, setA11y } = useUiStore()
   const [open, setOpen] = useState(false)
-  const dragControls = useDragControls()
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
+  const closeRef = useRef<HTMLButtonElement>(null)
+  const guideRef = useRef<HTMLDivElement>(null)
 
-  const shouldAnimate = !a11y.reduceMotion
+  const isRTL = locale === 'he'
+  const slideOut = isRTL ? '100%' : '-100%'
+  const shouldAnimate = !a11y.noMotion
 
-  // Sync a11y preferences to <html>
+  // Sync all prefs to <html> data attributes
   useEffect(() => {
     const html = document.documentElement
-    html.style.setProperty('--font-scale', String(a11y.fontScale))
-    html.setAttribute('data-contrast', a11y.highContrast ? 'high' : '')
-    html.setAttribute('data-reduce-motion', a11y.reduceMotion ? 'true' : 'false')
-    html.setAttribute('data-underline-links', a11y.underlineLinks ? 'true' : 'false')
+    html.style.setProperty('--font-scale', String(FONT_SCALES[a11y.fontStep] ?? 1))
+    html.setAttribute('data-contrast', a11y.contrast ? 'true' : '')
+    html.setAttribute('data-reduce-motion', a11y.noMotion ? 'true' : '')
+    html.setAttribute('data-underline-links', a11y.links ? 'true' : '')
+    html.setAttribute('data-dark', a11y.dark ? 'true' : '')
+    html.setAttribute('data-grayscale', a11y.grayscale ? 'true' : '')
+    html.setAttribute('data-sepia', a11y.sepia ? 'true' : '')
+    html.setAttribute('data-readable', a11y.readable ? 'true' : '')
+    html.setAttribute('data-line-spacing', a11y.lineSpacing ? 'true' : '')
+    html.setAttribute('data-letter-spacing', a11y.letterSpacing ? 'true' : '')
+    html.setAttribute('data-hide-images', a11y.hideImages ? 'true' : '')
+    html.setAttribute('data-underline-headings', a11y.underlineHeadings ? 'true' : '')
+    html.setAttribute('data-bold', a11y.bold ? 'true' : '')
+    html.setAttribute('data-focus', a11y.focus ? 'true' : '')
+    html.setAttribute('data-cursor', a11y.cursor ? 'true' : '')
   }, [a11y])
 
-  const fontScaleDisplay = Math.round(a11y.fontScale * 100)
+  // Pause all media when enabled
+  useEffect(() => {
+    if (!a11y.pauseMedia) return
+    document.querySelectorAll<HTMLMediaElement>('video, audio').forEach((el) => el.pause())
+  }, [a11y.pauseMedia])
+
+  // Reading guide — ref-based to avoid React re-renders on every mousemove
+  useEffect(() => {
+    if (!a11y.readingGuide) return
+    const move = (e: MouseEvent) => {
+      if (guideRef.current) guideRef.current.style.top = `${e.clientY}px`
+    }
+    window.addEventListener('mousemove', move, { passive: true })
+    return () => window.removeEventListener('mousemove', move)
+  }, [a11y.readingGuide])
+
+  // Escape to close
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open])
+
+  // Move focus into drawer when opened
+  useEffect(() => {
+    if (open) {
+      const id = setTimeout(() => closeRef.current?.focus(), 60)
+      return () => clearTimeout(id)
+    }
+  }, [open])
+
+  const hasActive = a11y.fontStep > 0 || OPTIONS.some(({ key }) => a11y[key])
+
+  const resetAll = () => setA11y(DEFAULT_PREFS)
+
+  // dark / contrast / grayscale / sepia are mutually exclusive visual modes
+  const VISUAL_MODES: BoolKey[] = ['dark', 'contrast', 'grayscale', 'sepia']
+
+  const toggle = (key: BoolKey) => {
+    if (VISUAL_MODES.includes(key)) {
+      const willEnable = !a11y[key]
+      setA11y(
+        Object.fromEntries(
+          VISUAL_MODES.map((k) => [k, willEnable && k === key])
+        ) as Partial<A11yPrefs>
+      )
+    } else {
+      setA11y({ [key]: !a11y[key] } as Partial<A11yPrefs>)
+    }
+  }
 
   return (
-    <div className="fixed bottom-6 end-6 z-50">
-      {/* Toggle button */}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        aria-label={open ? t('close') : t('open')}
-        aria-expanded={open}
-        className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-surface shadow-soft transition-colors hover:bg-primary-600 focus-visible:outline-2"
-      >
-        <AccessibilityIcon />
-      </button>
+    <>
+      {/* Reading guide line — follows mouse Y via ref (no React re-renders) */}
+      {a11y.readingGuide && (
+        <div
+          ref={guideRef}
+          style={{ top: '50vh', boxShadow: '0 0 10px 4px rgba(139,105,20,0.35)' }}
+          className="pointer-events-none fixed inset-x-0 z-[200] h-[2px] bg-primary"
+          aria-hidden="true"
+        />
+      )}
 
-      {/* Draggable panel */}
+      {/* Floating trigger */}
+      <AnimatePresence>
+        {!open && (
+          <motion.button
+            key="a11y-trigger"
+            initial={shouldAnimate ? { opacity: 0, scale: 0.8 } : false}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={
+              shouldAnimate
+                ? { opacity: 0, scale: 0.8, transition: { duration: 0.1 } }
+                : { opacity: 0 }
+            }
+            transition={shouldAnimate ? { duration: 0.15 } : { duration: 0 }}
+            onClick={() => setOpen(true)}
+            aria-label={t('open')}
+            className="fixed bottom-6 start-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-surface shadow-soft transition-colors hover:bg-primary-600 focus-visible:outline-2"
+          >
+            {hasActive && (
+              <span
+                className="absolute -end-1 -top-1 h-3.5 w-3.5 rounded-full border-2 border-surface bg-accent"
+                aria-hidden="true"
+              />
+            )}
+            <Accessibility className="h-5 w-5" aria-hidden="true" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Backdrop */}
       <AnimatePresence>
         {open && (
           <motion.div
-            key="a11y-panel"
-            drag
-            dragControls={dragControls}
-            dragMomentum={false}
-            style={{ x, y }}
-            initial={
-              shouldAnimate ? { opacity: 0, scale: 0.9, y: 10 } : { opacity: 1, scale: 1, y: 0 }
-            }
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={shouldAnimate ? { opacity: 0, scale: 0.9 } : { opacity: 0 }}
-            transition={shouldAnimate ? { duration: 0.15, ease: 'easeOut' } : { duration: 0 }}
-            className="absolute bottom-14 end-0 w-64 rounded-lg border border-border bg-surface p-4 shadow-soft"
-          >
-            {/* Drag handle */}
-            <div
-              onPointerDown={(e) => dragControls.start(e)}
-              className="mb-3 flex cursor-grab items-center justify-between active:cursor-grabbing"
-            >
-              <span className="text-sm font-semibold text-text-main">{t('widget')}</span>
-              <GripIcon />
-            </div>
+            key="a11y-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={shouldAnimate ? { duration: 0.2 } : { duration: 0 }}
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 z-[59] bg-black/50 backdrop-blur-sm"
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
 
-            {/* Font scale */}
-            <div className="mb-3">
-              <span className="mb-1 block text-xs text-text-muted">
-                {t('fontSize')} ({fontScaleDisplay}%)
-              </span>
-              <div className="flex gap-2">
+      {/* Drawer */}
+      <AnimatePresence>
+        {open && (
+          <motion.aside
+            key="a11y-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('widget')}
+            initial={{ x: slideOut }}
+            animate={{ x: 0 }}
+            exit={{ x: slideOut }}
+            transition={
+              shouldAnimate ? { type: 'tween', duration: 0.25, ease: 'easeOut' } : { duration: 0 }
+            }
+            className="fixed inset-y-0 start-0 z-[60] flex w-80 flex-col border-e border-border bg-surface shadow-2xl"
+          >
+            {/* Header */}
+            <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-surface">
+                  <Accessibility className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <span className="font-semibold text-text-main">{t('widget')}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                {hasActive && (
+                  <button
+                    onClick={resetAll}
+                    aria-label={t('resetAll')}
+                    title={t('resetAll')}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-secondary hover:text-primary focus-visible:outline-2"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                  </button>
+                )}
                 <button
-                  onClick={() =>
-                    setA11y({
-                      fontScale: Math.max(0.8, Math.round((a11y.fontScale - 0.1) * 10) / 10),
-                    })
-                  }
-                  aria-label={t('decrease')}
-                  className="flex min-h-[36px] flex-1 items-center justify-center rounded border border-border text-sm font-medium text-text-main transition-colors hover:bg-secondary hover:text-primary focus-visible:outline-2"
+                  ref={closeRef}
+                  onClick={() => setOpen(false)}
+                  aria-label={t('close')}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-secondary hover:text-primary focus-visible:outline-2"
                 >
-                  A-
-                </button>
-                <button
-                  onClick={() => setA11y({ fontScale: 1 })}
-                  aria-label={t('reset')}
-                  className="flex min-h-[36px] flex-1 items-center justify-center rounded border border-border text-sm font-medium text-text-main transition-colors hover:bg-secondary hover:text-primary focus-visible:outline-2"
-                >
-                  {t('reset')}
-                </button>
-                <button
-                  onClick={() =>
-                    setA11y({
-                      fontScale: Math.min(1.5, Math.round((a11y.fontScale + 0.1) * 10) / 10),
-                    })
-                  }
-                  aria-label={t('increase')}
-                  className="flex min-h-[36px] flex-1 items-center justify-center rounded border border-border text-sm font-medium text-text-main transition-colors hover:bg-secondary hover:text-primary focus-visible:outline-2"
-                >
-                  A+
+                  <X className="h-4 w-4" />
                 </button>
               </div>
             </div>
 
-            <div className="space-y-1">
-              <Toggle
-                label={t('highContrast')}
-                checked={a11y.highContrast}
-                onChange={(v) => setA11y({ highContrast: v })}
-              />
-              <Toggle
-                label={t('reduceMotion')}
-                checked={a11y.reduceMotion}
-                onChange={(v) => setA11y({ reduceMotion: v })}
-              />
-              <Toggle
-                label={t('underlineLinks')}
-                checked={a11y.underlineLinks}
-                onChange={(v) => setA11y({ underlineLinks: v })}
-              />
+            {/* Scrollable body */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {/* Font size stepper */}
+              <div className="mb-5">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
+                  {t('fontSize')}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setA11y({ fontStep: Math.max(0, a11y.fontStep - 1) })}
+                    disabled={a11y.fontStep === 0}
+                    aria-label={t('decrease')}
+                    className="flex h-10 flex-1 items-center justify-center rounded-lg border border-border text-sm font-semibold text-text-main transition-colors hover:bg-secondary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2"
+                  >
+                    A-
+                  </button>
+                  <span className="min-w-[52px] text-center text-sm font-medium tabular-nums text-text-main">
+                    {FONT_STEP_LABELS[a11y.fontStep]}
+                  </span>
+                  <button
+                    onClick={() => setA11y({ fontStep: Math.min(3, a11y.fontStep + 1) })}
+                    disabled={a11y.fontStep === 3}
+                    aria-label={t('increase')}
+                    className="flex h-10 flex-1 items-center justify-center rounded-lg border border-border text-sm font-semibold text-text-main transition-colors hover:bg-secondary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2"
+                  >
+                    A+
+                  </button>
+                </div>
+              </div>
+
+              {/* Options grid */}
+              <div className="grid grid-cols-2 gap-2.5">
+                {OPTIONS.map(({ key, Icon }) => {
+                  const active = a11y[key]
+                  return (
+                    <button
+                      key={key}
+                      role="switch"
+                      aria-checked={active}
+                      onClick={() => toggle(key)}
+                      className={[
+                        'flex min-h-[80px] flex-col items-center justify-center gap-2 rounded-xl border-2 px-2 py-3 text-center transition-all duration-200',
+                        'focus-visible:outline-2 focus-visible:outline-offset-2',
+                        active
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border bg-surface text-text-main hover:border-primary/40 hover:bg-secondary',
+                      ].join(' ')}
+                    >
+                      <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                      <span className="text-xs font-medium leading-tight">{t(key)}</span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-          </motion.div>
+          </motion.aside>
         )}
       </AnimatePresence>
-    </div>
+    </>
   )
 }

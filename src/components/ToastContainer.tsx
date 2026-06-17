@@ -12,7 +12,7 @@ const borderColorMap = {
 
 export function ToastContainer() {
   const { toasts, removeToast, a11y } = useUiStore()
-  const shouldAnimate = !a11y.reduceMotion
+  const shouldAnimate = !a11y.noMotion
 
   if (toasts.length === 0) return null
 

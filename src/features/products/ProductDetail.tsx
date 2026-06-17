@@ -32,7 +32,7 @@ export function ProductDetail({ product, relatedProducts, locale }: ProductDetai
   const { addItem } = useCartStore()
   const { toggle, has } = useWishlistStore()
   const { a11y, addToast } = useUiStore()
-  const shouldAnimate = !a11y.reduceMotion
+  const shouldAnimate = !a11y.noMotion
 
   // ── State ─────────────────────────────────────────────────────────────────────
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(

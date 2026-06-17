@@ -55,7 +55,7 @@ interface TestimonialsSectionProps {
 export function TestimonialsSection({ locale }: TestimonialsSectionProps) {
   const t = useTranslations('home.testimonials')
   const { a11y } = useUiStore()
-  const shouldAnimate = !a11y.reduceMotion
+  const shouldAnimate = !a11y.noMotion
 
   const items = locale === 'he' ? TESTIMONIALS_HE : TESTIMONIALS_EN
 

@@ -33,7 +33,7 @@ export function ProductCard({ product, locale }: ProductCardProps) {
   const t = useTranslations()
   const { toggle, has } = useWishlistStore()
   const { a11y } = useUiStore()
-  const shouldAnimate = !a11y.reduceMotion
+  const shouldAnimate = !a11y.noMotion
 
   const isWishlisted = has(product.id)
   const productName = locale === 'he' ? product.name_he : product.name_en

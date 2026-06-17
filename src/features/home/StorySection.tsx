@@ -12,7 +12,7 @@ interface StorySectionProps {
 export function StorySection({ locale: _locale }: StorySectionProps) {
   const t = useTranslations('home.story')
   const { a11y } = useUiStore()
-  const shouldAnimate = !a11y.reduceMotion
+  const shouldAnimate = !a11y.noMotion
 
   return (
     <section className="py-16 md:py-24 bg-secondary">

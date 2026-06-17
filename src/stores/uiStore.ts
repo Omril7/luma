@@ -9,11 +9,24 @@ interface Toast {
   message: string
 }
 
-interface A11yPrefs {
-  fontScale: number
-  highContrast: boolean
-  reduceMotion: boolean
-  underlineLinks: boolean
+export interface A11yPrefs {
+  fontStep: number // 0=100% 1=115% 2=130% 3=150%
+  contrast: boolean
+  dark: boolean
+  grayscale: boolean
+  sepia: boolean
+  links: boolean
+  readable: boolean
+  cursor: boolean
+  noMotion: boolean
+  lineSpacing: boolean
+  letterSpacing: boolean
+  hideImages: boolean
+  underlineHeadings: boolean
+  pauseMedia: boolean
+  bold: boolean
+  focus: boolean
+  readingGuide: boolean
 }
 
 interface UiState {
@@ -29,10 +42,23 @@ export const useUiStore = create<UiState>()(
     (set) => ({
       toasts: [],
       a11y: {
-        fontScale: 1,
-        highContrast: false,
-        reduceMotion: false,
-        underlineLinks: false,
+        fontStep: 0,
+        contrast: false,
+        dark: false,
+        grayscale: false,
+        sepia: false,
+        links: false,
+        readable: false,
+        cursor: false,
+        noMotion: false,
+        lineSpacing: false,
+        letterSpacing: false,
+        hideImages: false,
+        underlineHeadings: false,
+        pauseMedia: false,
+        bold: false,
+        focus: false,
+        readingGuide: false,
       },
 
       addToast: (toast) => {

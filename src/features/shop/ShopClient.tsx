@@ -35,7 +35,7 @@ export function ShopClient({
   const router = useRouter()
   const pathname = usePathname()
   const { a11y } = useUiStore()
-  const shouldAnimate = !a11y.reduceMotion
+  const shouldAnimate = !a11y.noMotion
 
   const products = initialProducts
 

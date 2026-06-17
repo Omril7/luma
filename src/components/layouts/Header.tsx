@@ -28,7 +28,7 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const shouldAnimate = !a11y.reduceMotion
+  const shouldAnimate = !a11y.noMotion
 
   const itemCount = cartItems.reduce((sum, i) => sum + i.quantity, 0)
 

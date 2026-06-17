@@ -12,7 +12,7 @@ interface HeroSectionProps {
 export function HeroSection({ locale: _locale }: HeroSectionProps) {
   const t = useTranslations('home.hero')
   const { a11y } = useUiStore()
-  const shouldAnimate = !a11y.reduceMotion
+  const shouldAnimate = !a11y.noMotion
 
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '972500000000'
   const whatsappUrl = `https://wa.me/${whatsappNumber}`

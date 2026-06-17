@@ -57,6 +57,26 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── Scrollbar ──────────────────────────────────────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 9999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-text-muted);
+}
+
 /* ── Focus ring ─────────────────────────────────────────────────────────────── */
 :focus-visible {
   outline: 2px solid var(--color-primary);
@@ -75,18 +95,101 @@ body {
   }
 }
 
-/* ── High contrast override ─────────────────────────────────────────────────── */
-[data-contrast='high'] {
-  --color-text: #1a1208;
-  --color-text-muted: #3d3520;
-  --color-bg: #fffef9;
-  --color-surface: #ffffff;
-  --color-border: #5a4300;
-  --color-primary: #5a4300;
-  --color-primary-600: #3d2e00;
-  --color-accent: #8b3000;
+/* ── High contrast override (black + yellow) ────────────────────────────────── */
+[data-contrast='true'] {
+  --color-bg: #000000;
+  --color-surface: #111111;
+  --color-secondary: #1a1a00;
+  --color-text: #ffffff;
+  --color-text-muted: #dddddd;
+  --color-border: #ffff00;
+  --color-primary: #ffff00;
+  --color-primary-600: #cccc00;
+  --color-accent: #ffff00;
 }
 
 [data-underline-links='true'] a {
-  text-decoration: underline;
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px !important;
+}
+
+/* ── Dark mode ──────────────────────────────────────────────────────────────── */
+[data-dark='true'] {
+  --color-primary: #c9a94a;
+  --color-primary-600: #a88a35;
+  --color-secondary: #2a2620;
+  --color-accent: #e07a45;
+  --color-text: #f0ece4;
+  --color-text-muted: #a09880;
+  --color-bg: #1a1710;
+  --color-surface: #252118;
+  --color-border: #3a3428;
+}
+
+/* ── Visual filters ─────────────────────────────────────────────────────────── */
+[data-grayscale='true'] {
+  filter: grayscale(100%);
+}
+[data-sepia='true'] {
+  filter: sepia(80%);
+}
+
+/* ── Readable font ──────────────────────────────────────────────────────────── */
+[data-readable='true'] body,
+[data-readable='true'] * {
+  font-family: Arial, Helvetica, sans-serif !important;
+  word-spacing: 0.1em;
+}
+
+/* ── Spacing ────────────────────────────────────────────────────────────────── */
+[data-line-spacing='true'] body {
+  line-height: 2 !important;
+}
+[data-letter-spacing='true'] body {
+  letter-spacing: 0.1em !important;
+}
+
+/* ── Bold text ──────────────────────────────────────────────────────────────── */
+[data-bold='true'] body,
+[data-bold='true'] p,
+[data-bold='true'] li,
+[data-bold='true'] span {
+  font-weight: 700 !important;
+}
+
+/* ── Underline headings ─────────────────────────────────────────────────────── */
+[data-underline-headings='true'] h1,
+[data-underline-headings='true'] h2,
+[data-underline-headings='true'] h3,
+[data-underline-headings='true'] h4,
+[data-underline-headings='true'] h5,
+[data-underline-headings='true'] h6 {
+  text-decoration: underline !important;
+  text-decoration-thickness: 3px !important;
+  text-underline-offset: 5px !important;
+}
+
+/* ── Large cursor ───────────────────────────────────────────────────────────── */
+[data-cursor='true'],
+[data-cursor='true'] * {
+  cursor:
+    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='40'><path d='M5,3L5,29L11,23L17,34L21,32L15,21L23,21Z' fill='black' stroke='white' stroke-width='1.5' stroke-linejoin='round'/></svg>")
+      5 3,
+    auto !important;
+}
+
+/* ── Hide images ────────────────────────────────────────────────────────────── */
+[data-hide-images='true'] img,
+[data-hide-images='true'] picture,
+[data-hide-images='true'] video,
+[data-hide-images='true'] [role='img'] {
+  visibility: hidden !important;
+}
+
+/* ── Focus highlight ────────────────────────────────────────────────────────── */
+[data-focus='true'] *:focus-visible {
+  outline: 4px solid var(--color-primary) !important;
+  outline-offset: 4px !important;
+  box-shadow: 0 0 0 6px rgba(139, 105, 20, 0.2) !important;
 }

@@ -36,7 +36,7 @@ function FurniturePlaceholder() {
 export function ImageGallery({ images, productName, locale }: ImageGalleryProps) {
   const t = useTranslations('product')
   const { a11y } = useUiStore()
-  const shouldAnimate = !a11y.reduceMotion
+  const shouldAnimate = !a11y.noMotion
   const [selectedIndex, setSelectedIndex] = useState(0)
 
   const currentImage = images[selectedIndex]
