@@ -84,5 +84,35 @@
     "tagline": "Custom furniture, handmade to order",
     "shopLinks": "Shop",
     "infoLinks": "Info"
+  },
+  "home": {
+    "hero": {
+      "heading": "Custom Furniture, Handmade",
+      "subheading": "Every piece crafted by hand, perfectly tailored for your home",
+      "shopCta": "Shop Now",
+      "whatsappCta": "Chat with Us"
+    },
+    "featured": {
+      "heading": "Featured Products",
+      "viewAll": "View All",
+      "from": "From ",
+      "wishlistAdd": "Add to wishlist",
+      "wishlistRemove": "Remove from wishlist",
+      "empty": "No featured products yet"
+    },
+    "story": {
+      "heading": "Our Story",
+      "body1": "Luma was born from a love of wood and craftsmanship. Every piece we create goes through a careful design and production process, using carefully selected natural materials.",
+      "body2": "We believe your home deserves furniture that tells a story — unique, durable, and beautiful.",
+      "cta": "Meet Us"
+    },
+    "testimonials": {
+      "heading": "Happy Customers"
+    },
+    "instagram": {
+      "heading": "Follow Us",
+      "handle": "@luma.furniture",
+      "coming": "Coming Soon"
+    }
   }
 }

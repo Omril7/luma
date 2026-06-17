@@ -19,6 +19,21 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-06-17 — M1.15: Home page
+
+- **Done:** Full home page with 5 sections + shared ProductCard + wishlistStore.
+  - `wishlistStore` (Zustand persist, `luma-wishlist` localStorage key, `ids`/`toggle`/`has`/`clear`)
+  - `ProductCard` (client, motion hover/tap, next/image fill+sizes, Intl.NumberFormat price, wishlist heart toggle with logical `end-2` positioning)
+  - `HeroSection` (min-h-dvh gradient, 2-col desktop, fade+slide entrance, scroll indicator)
+  - `FeaturedSection` (2-col mobile / 3-col desktop grid, stagger animations, empty state)
+  - `StorySection` (bg-secondary, slide-in from sides, placeholder image + text + CTA)
+  - `TestimonialsSection` (3 static placeholder cards, `<blockquote>`, 5-star sr-only)
+  - `InstagramSection` (6-tile placeholder grid with camera SVG)
+  - Added `home` namespace to he.json and en.json
+  - Home page.tsx is Server Component with `generateMetadata` + direct `getProducts` call (no HTTP)
+- **Roadmap:** M1.15 ✅
+- **Decisions:** Static testimonial data co-located in component (avoids next-intl array complexity). Server Component calls `productService.getProducts` directly (per architecture: SC → service, no HTTP round-trip).
+
 ## 2026-06-17 — M1.11–M1.14: Fonts + route groups + storefront shell
 
 - **Done:**

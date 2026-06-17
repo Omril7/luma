@@ -136,9 +136,9 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - [x] Accessibility widget (font scale, contrast, draggable via `motion/react`)
 - **Acceptance:** shell responsive + RTL-correct; a11y widget is draggable and changes the page.
 
-### M1.15 Home page
+### M1.15 Home page ✅
 
-- [ ] Hero + CTA, featured products grid, Our Story teaser, testimonials + Instagram placeholders
+- [x] Hero + CTA, featured products grid, Our Story teaser, testimonials + Instagram placeholders
 - **Acceptance:** featured products load from API; mobile-first layout.
 
 ### M1.16 Shop / catalog
