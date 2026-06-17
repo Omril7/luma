@@ -41,35 +41,35 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 
 ## Phase 1 — Backend core
 
-### M1.1 Database schema
+### M1.1 Database schema ✅
 
-- [ ] `prisma/schema.prisma` with **all** models (incl. Bundle, Review, SiteContent, EmailSettings, NewsletterSend) per `docs/02-data-models.md`
-- [ ] First migration; Postgres running via docker or Supabase
-- [ ] Prisma client generated
+- [x] `prisma/schema.prisma` with **all** models (incl. Bundle, Review, SiteContent, EmailSettings, NewsletterSend) per `docs/02-data-models.md`
+- [x] First migration; Postgres running via docker or Supabase
+- [x] Prisma client generated
 - **Acceptance:** `npm run db:migrate` succeeds; `db:studio` shows all tables.
 
-### M1.2 Seed data
+### M1.2 Seed data ✅
 
-- [ ] `prisma/seed.ts`: 3–4 products across categories, each w/ S/M/L variants, a pricing rule, 2–3 colors, multiple images (bilingual)
-- [ ] Coupons of each type (permanent, deadline, one-time, per-customer, first-order, auto-apply); newsletter subscribers; admin user; sample SiteContent blobs
+- [x] `prisma/seed.ts`: 3–4 products across categories, each w/ S/M/L variants, a pricing rule, 2–3 colors, multiple images (bilingual)
+- [x] Coupons of each type (permanent, deadline, one-time, per-customer, first-order, auto-apply); newsletter subscribers; admin user; sample SiteContent blobs
 - **Acceptance:** `npm run db:seed` populates a browsable catalog in he + en.
 
-### M1.3 API foundation (Route Handlers)
+### M1.3 API foundation (Route Handlers) ✅
 
-- [ ] `src/server/http/` helpers: `withApi`/`withAdmin` wrappers, error-envelope mapping (`docs/04-api-contract.md`)
-- [ ] Zod validation helper; rate limiter for public writes; security headers in `next.config.ts`
-- [ ] Prisma client singleton (`src/server/prisma.ts`); `/uploads` serving (local fallback)
+- [x] `src/server/http/` helpers: `withApi`/`withAdmin` wrappers, error-envelope mapping (`docs/04-api-contract.md`)
+- [x] Zod validation helper; rate limiter for public writes; security headers in `next.config.ts`
+- [x] Prisma client singleton (`src/server/prisma.ts`); `/uploads` serving (local fallback)
 - **Acceptance:** `GET /api/health` returns 200; bad input returns the error envelope.
 
-### M1.4 Pricing service
+### M1.4 Pricing service ✅
 
-- [ ] `services/pricingService.ts` loads product+variants+rule, calls `src/shared/pricing.ts`
+- [x] `services/pricingService.ts` loads product+variants+rule, calls `src/shared/pricing.ts`
 - **Acceptance:** server price matches client preview for the same inputs (parity test).
 
-### M1.5 Public catalog endpoints
+### M1.5 Public catalog endpoints ✅
 
-- [ ] `GET /products` (filters/sort/paginate), `GET /products/:slug`, `GET /categories`
-- [ ] `POST /products/:id/calculate-price`
+- [x] `GET /products` (filters/sort/paginate), `GET /products/:slug`, `GET /categories`
+- [x] `POST /products/:id/calculate-price`
 - **Acceptance:** endpoints return seeded data; calculate-price validates + computes correctly.
 
 ### M1.6 Orders & coupons

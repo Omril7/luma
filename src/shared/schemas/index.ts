@@ -22,8 +22,8 @@ export type AdminLoginInput = z.infer<typeof adminLoginSchema>
 // ── Price request ─────────────────────────────────────────────────────────────
 
 export const priceRequestSchema = z.object({
-  productId: z.string().cuid(),
-  variantId: z.string().cuid().optional(),
+  productId: z.string().min(1),
+  variantId: z.string().min(1).optional(),
   custom: z
     .object({
       width: positiveDimension.optional(),

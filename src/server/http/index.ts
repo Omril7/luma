@@ -21,6 +21,19 @@ export function zodErrorResponse(err: ZodError): NextResponse {
   return errorResponse('Validation failed', 422, err.flatten().fieldErrors)
 }
 
+// ── Generic route wrapper ─────────────────────────────────────────────────────
+
+export function withApi(handler: (req: NextRequest) => Promise<NextResponse>) {
+  return async (req: NextRequest) => {
+    try {
+      return await handler(req)
+    } catch (err) {
+      console.error('[API error]', err)
+      return errorResponse('Internal server error', 500)
+    }
+  }
+}
+
 // ── Zod validation helper ─────────────────────────────────────────────────────
 
 export async function parseBody<T>(
@@ -35,6 +48,36 @@ export async function parseBody<T>(
   } catch {
     return errorResponse('Invalid JSON body', 400)
   }
+}
+
+// ── In-memory rate limiter (public write endpoints) ───────────────────────────
+// Keyed by IP. Resets per Next.js worker restart (good enough for dev + Vercel).
+
+const rateLimitStore = new Map<string, { count: number; resetAt: number }>()
+
+export function checkRateLimit(
+  req: NextRequest,
+  opts: { limit: number; windowMs: number }
+): NextResponse | null {
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    req.headers.get('x-real-ip') ??
+    'unknown'
+
+  const now = Date.now()
+  const entry = rateLimitStore.get(ip)
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitStore.set(ip, { count: 1, resetAt: now + opts.windowMs })
+    return null
+  }
+
+  if (entry.count >= opts.limit) {
+    return errorResponse('Too many requests', 429)
+  }
+
+  entry.count++
+  return null
 }
 
 // ── JWT admin guard ───────────────────────────────────────────────────────────

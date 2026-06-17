@@ -9,28 +9,30 @@ Check items off as you complete them and I'll update future plans accordingly.
 
 ### Supabase (database)
 
-- [ ] Create a Supabase project at https://supabase.com → New Project
-- [ ] Go to **Project Settings → Database** and copy:
+- [x] Create a Supabase project at https://supabase.com → New Project (Luma studio organization)
+- [x] Go to **Project Settings → Database** and copy:
   - **Connection string (Transaction mode, port 6543)** → `DATABASE_URL` (add `?pgbouncer=true` at the end)
   - **Connection string (Session mode, port 5432)** → `DIRECT_URL`
-- [ ] Copy `.env.example` → `.env.local` and fill in `DATABASE_URL` and `DIRECT_URL`
+- [x] Copy `.env.example` → `.env.local` and fill in `DATABASE_URL` and `DIRECT_URL`
 - [ ] Run `npm run db:migrate` to apply the schema to your Supabase dev project
 - [ ] Run `npm run db:seed` to seed sample products (after M1.2 seed is implemented)
 
 ### Cloudinary (image storage)
 
-- [ ] Create a Cloudinary account at https://cloudinary.com (free tier is fine for dev)
+- [ ] Create a Cloudinary account at https://cloudinary.com (Luma studio organization)
 - [ ] Go to **Dashboard → API Keys** and copy the **API URL** (format: `cloudinary://<api_key>:<api_secret>@<cloud_name>`)
 - [ ] Add to `.env.local`: `CLOUDINARY_URL=cloudinary://...` and `STORAGE_DRIVER=cloudinary`
 
 ### JWT secret
 
-- [ ] Generate a strong random secret (e.g. `openssl rand -base64 32` in terminal or https://generate-secret.vercel.app/32)
-- [ ] Add to `.env.local`: `JWT_SECRET=<your-secret>`
+- [x] Generate a strong random secret: https://generate-secret.vercel.app/32
+- [x] Add to `.env.local`: `JWT_SECRET=<your-secret>`
+- [ ] Add to `.env.local`: `JWT_SECRET=<eden-secret>` (from https://generate-secret.vercel.app/32)
 
 ### Admin user
 
-- [ ] Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env.local` (used by the seed script)
+- [x] Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env.local` (used by the seed script)
+- [ ] Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env.local` (change for Eden's data)
 
 ---
 
@@ -38,7 +40,7 @@ Check items off as you complete them and I'll update future plans accordingly.
 
 ### Vercel
 
-- [ ] Import the repo at https://vercel.com/new
+- [ ] Import the repo at https://vercel.com/new (Luma studio organization)
 - [ ] Set all env vars from `.env.example` in the Vercel dashboard (Production + Preview)
   - `DATABASE_URL` — pooled connection (port 6543, `?pgbouncer=true`)
   - `DIRECT_URL` — direct connection (port 5432, for migrations)
@@ -87,13 +89,13 @@ Check items off as you complete them and I'll update future plans accordingly.
 
 ## 📦 GitHub Repository
 
-- [ ] Create a new GitHub repo named **luma** (github.com/your-username/luma)
-- [ ] Add the remote and push:
+- [x] Create a new GitHub repo named **luma** (github.com/Omril7/luma)
+- [x] Add the remote and push:
   ```bash
-  git remote add origin https://github.com/your-username/luma.git
+  git remote add origin https://github.com/Omril7/luma.git
   git push -u origin main
   ```
-- [ ] (Optional) Rename the local project folder from `eden-project` to `luma`:
+- [x] Rename the local project folder from `eden-project` to `luma`:
   - Close VS Code / Claude Code first
   - Rename `C:\Users\omril\Projects\eden-project` → `C:\Users\omril\Projects\luma`
   - Reopen in VS Code from the new path

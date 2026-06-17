@@ -19,6 +19,28 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-06-17 — Backend core: M1.1 → M1.5 complete
+
+- **Done:** Full backend core up through the public catalog API.
+  - M1.1: First Prisma migration (`init`) applied against Supabase; all tables created; Prisma Client generated. Fixed `db:migrate` script — Prisma 6 reads `.env`, not `.env.local`.
+  - M1.2: Full seed in `prisma/seed.ts` — 4 products (TABLE/SHELF/NIGHTSTAND/TV_STAND) each with S/M/L variants + CustomPricingRule + color options + images; 6 coupons covering every type (permanent, first-order, deadline, one-time, per-customer, auto-apply); 5 newsletter subscribers; admin user (`admin@luma.co.il / LumaAdmin2026!`); email settings; 6 SiteContent blobs (home hero, story, about, contact, FAQ, gallery intro).
+  - M1.3: `src/server/http/index.ts` extended with `withApi` (generic error-catching wrapper) and `checkRateLimit` (in-memory, IP-keyed, per-window). Security headers already in `next.config.ts`. `placehold.co` added to image remote patterns for dev placeholder images.
+  - M1.4: `src/server/services/pricingService.ts` — loads product+variants+rule via `productService`, converts DB Decimal ₪ → agorot for the engine, calls `src/shared/pricing.ts`, returns `PriceResponseDTO` with both agorot and display ₪ values. PricingError surfaces as 422 with structured details.
+  - M1.5: Public catalog endpoints live:
+    - `GET /api/products` — filters (category, featured), sort (5 keys), pagination (page/limit)
+    - `GET /api/products/:slug` — full ProductDTO by slug
+    - `GET /api/categories` — active categories with product counts
+    - `POST /api/products/:slug/calculate-price` — validates + computes price; rate-limited 60 req/min
+  - All endpoints smoke-tested against live Supabase data.
+- **Roadmap:** M1.1 ✅ M1.2 ✅ M1.3 ✅ M1.4 ✅ M1.5 ✅
+- **Decisions:**
+  - Rate field `pricePerCm*` stored in DB as ₪/cm (consistent with all other money fields); pricingService multiplies by 100 to get agorot/cm for the engine.
+  - Dynamic-param route handlers (`[slug]`) use inline try/catch instead of `withApi` wrapper (Next.js App Router passes a context arg `withApi` doesn't accept).
+  - Relaxed `variantId` schema from `.cuid()` to `.min(1)` — seed uses readable IDs; actual variant-existence check happens inside the pricing engine.
+- **Notes:** `GET /api/products?category=TABLE&sort=price_asc&page=1&limit=12` and all variant patterns confirmed working.
+
+---
+
 ## 2026-06-12 — Phase 0 scaffold: M0.1 + M0.2 complete
 
 - **Done:** Full Phase 0 scaffold shipped.

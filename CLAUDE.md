@@ -130,10 +130,18 @@ npm run build           # next build
 **Progress log:** [`.claude/PROGRESS.md`](.claude/PROGRESS.md) (chronological journal — append an
 entry whenever meaningful work lands; check the matching roadmap boxes).
 
+## UI/UX rule (mandatory)
+
+**Before building any UI component or page, invoke the `ui-ux-pro-max` skill.**
+This applies to all storefront pages, admin pages, and reusable components.
+The skill provides design intelligence (color palettes, typography, layout, accessibility,
+animation, responsive patterns) aligned with the warm/natural aesthetic of this project.
+
 ## Custom commands & agents
 
 - `/scaffold` — stand up the monorepo from the docs.
 - `/new-endpoint <name>` — route handler (`app/api/**`) + service + Zod + shared types.
 - `/new-feature <name>` — full vertical slice (model → route handler → store → page → i18n keys).
 - `/check` — typecheck + lint + test across workspaces.
+- `/ui-ux-pro-max` — **invoke before any UI work** (components, pages, layouts).
 - Subagents: `backend-builder`, `frontend-builder`, `i18n-auditor`.
