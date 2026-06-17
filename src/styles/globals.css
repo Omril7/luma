@@ -16,8 +16,8 @@
   --color-border: #e7ded2;
 
   /* typography */
-  --font-he: 'Heebo', 'Rubik', system-ui, sans-serif;
-  --font-en: 'Inter', 'Heebo', system-ui, sans-serif;
+  --font-he: var(--font-heebo, 'Heebo'), 'Rubik', system-ui, sans-serif;
+  --font-en: var(--font-inter, 'Inter'), var(--font-heebo, 'Heebo'), system-ui, sans-serif;
   --font-base: var(--font-he);
 
   /* shape & elevation */
@@ -73,4 +73,20 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ── High contrast override ─────────────────────────────────────────────────── */
+[data-contrast='high'] {
+  --color-text: #1a1208;
+  --color-text-muted: #3d3520;
+  --color-bg: #fffef9;
+  --color-surface: #ffffff;
+  --color-border: #5a4300;
+  --color-primary: #5a4300;
+  --color-primary-600: #3d2e00;
+  --color-accent: #8b3000;
+}
+
+[data-underline-links='true'] a {
+  text-decoration: underline;
 }

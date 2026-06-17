@@ -23,6 +23,26 @@
     "cart": "עגלה",
     "admin": "ניהול"
   },
+  "header": {
+    "openMenu": "פתח תפריט",
+    "closeMenu": "סגור תפריט",
+    "skipToMain": "דלג לתוכן הראשי"
+  },
+  "a11y": {
+    "widget": "נגישות",
+    "fontSize": "גודל טקסט",
+    "increase": "הגדל",
+    "decrease": "הקטן",
+    "reset": "איפוס",
+    "highContrast": "ניגודיות גבוהה",
+    "reduceMotion": "הפחת תנועה",
+    "underlineLinks": "קו תחתון לקישורים",
+    "open": "פתח תפריט נגישות",
+    "close": "סגור תפריט נגישות"
+  },
+  "whatsapp": {
+    "label": "צור קשר בוואטסאפ"
+  },
   "product": {
     "addToCart": "הוסף לעגלה",
     "customDimensions": "מידות מותאמות אישית",
@@ -60,6 +80,9 @@
     "rights": "כל הזכויות שמורות",
     "terms": "תנאי שימוש",
     "privacy": "פרטיות",
-    "returns": "מדיניות החזרות"
+    "returns": "מדיניות החזרות",
+    "tagline": "ריהוט בהזמנה אישית, עשוי ביד",
+    "shopLinks": "קישורי חנות",
+    "infoLinks": "מידע"
   }
 }

@@ -23,6 +23,26 @@
     "cart": "Cart",
     "admin": "Admin"
   },
+  "header": {
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "skipToMain": "Skip to main content"
+  },
+  "a11y": {
+    "widget": "Accessibility",
+    "fontSize": "Font Size",
+    "increase": "Increase",
+    "decrease": "Decrease",
+    "reset": "Reset",
+    "highContrast": "High Contrast",
+    "reduceMotion": "Reduce Motion",
+    "underlineLinks": "Underline Links",
+    "open": "Open accessibility menu",
+    "close": "Close accessibility menu"
+  },
+  "whatsapp": {
+    "label": "Contact via WhatsApp"
+  },
   "product": {
     "addToCart": "Add to Cart",
     "customDimensions": "Custom Dimensions",
@@ -60,6 +80,9 @@
     "rights": "All rights reserved",
     "terms": "Terms of Service",
     "privacy": "Privacy Policy",
-    "returns": "Returns Policy"
+    "returns": "Returns Policy",
+    "tagline": "Custom furniture, handmade to order",
+    "shopLinks": "Shop",
+    "infoLinks": "Info"
   }
 }

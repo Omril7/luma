@@ -19,6 +19,21 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-06-17 — M1.11–M1.14: Fonts + route groups + storefront shell
+
+- **Done:**
+  - M1.11: Added Heebo/Rubik/Inter via `next/font/google`; CSS vars updated to reference injected vars with fallbacks; high-contrast token override block + underline-links rule added to globals.css.
+  - M1.12: Created `(storefront)` and `(admin)` route groups under `[lang]/`; deleted conflicting `[lang]/page.tsx`; added i18n keys (header, a11y, whatsapp, footer.tagline/shopLinks/infoLinks) to both he.json and en.json.
+  - M1.13: Already complete from scaffold; confirmed `api.ts`, `cartStore`, `uiStore`, `languageStore` all present.
+  - M1.14: Built `StorefrontLayout` (server async, skip link + main wrapper), `Header` (client, sticky glassmorphism, scroll shadow, desktop nav, mobile slide-down menu, language switcher pill, cart badge), `Footer` (server, 3-col responsive grid), `WhatsAppButton` (spring-animated, logical start-bottom positioning), `A11yWidget` (draggable via `useDragControls`, font-scale ±0.1 with reset, high-contrast/reduce-motion/underline-links toggles, syncs to HTML data attrs + CSS var), `ToastContainer` (AnimatePresence, type-colour coded).
+- **Roadmap:** M1.11 ✅ M1.12 ✅ M1.13 ✅ M1.14 ✅
+- **Decisions:**
+  - All motion gated behind `a11y.reduceMotion` check (`shouldAnimate` flag).
+  - Logical CSS throughout (`start-*`, `end-*`, `ps-*`, `pe-*`, `text-start/end`).
+  - `(admin)/layout.tsx` is a passthrough shell — full AdminLayout deferred to M1.23.
+  - `lucide-react` installed for SVG icons (ShoppingBag, Menu, X).
+- **Notes:** typecheck + lint clean on completion.
+
 ## 2026-06-17 — Backend core: M1.1 → M1.5 complete
 
 - **Done:** Full backend core up through the public catalog API.

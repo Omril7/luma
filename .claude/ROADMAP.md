@@ -110,30 +110,30 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 
 ## Phase 1 — Frontend core
 
-### M1.11 App setup
+### M1.11 App setup ✅
 
-- [ ] Tailwind w/ logical properties + token mapping; `motion` (`motion/react`) dependency added
-- [ ] `styles/globals.css` + theme CSS variables (`docs/07-design-system.md`); fonts (Heebo/Rubik + Inter) via `next/font`
+- [x] Tailwind w/ logical properties + token mapping; `motion` (`motion/react`) dependency added
+- [x] `styles/globals.css` + theme CSS variables (`docs/07-design-system.md`); fonts (Heebo/Rubik + Inter) via `next/font`
 - **Acceptance:** themed blank app renders; changing a CSS var re-skins it.
 
-### M1.12 i18n + RTL + layouts
+### M1.12 i18n + RTL + layouts ✅
 
-- [ ] next-intl; `[lang]` locale segment; `he.json`/`en.json`; default he/RTL
-- [ ] `[lang]/layout.tsx` sets `<html lang dir>`; `languageStore` mirrors locale
-- [ ] `StorefrontLayout` + `AdminLayout` via App Router `layout.tsx`
+- [x] next-intl; `[lang]` locale segment; `he.json`/`en.json`; default he/RTL
+- [x] `[lang]/layout.tsx` sets `<html lang dir>`; `languageStore` mirrors locale
+- [x] `StorefrontLayout` + `AdminLayout` via App Router `layout.tsx`
 - **Acceptance:** switching locale flips direction and all UI strings; no hardcoded text.
 
-### M1.13 API client + stores
+### M1.13 API client + stores ✅
 
-- [ ] `lib/api.ts` (typed, error-envelope aware, attaches admin JWT)
-- [ ] `cartStore` (persisted, uses `src/shared/pricing.ts`), `uiStore` (toasts, a11y prefs)
+- [x] `lib/api.ts` (typed, error-envelope aware, attaches admin JWT)
+- [x] `cartStore` (persisted, uses `src/shared/pricing.ts`), `uiStore` (toasts, a11y prefs)
 - **Acceptance:** cart math correct and persists across reload.
 
-### M1.14 Storefront shell
+### M1.14 Storefront shell ✅
 
-- [ ] Header (logo, nav, language switcher, cart badge), footer
-- [ ] Floating WhatsApp button (logical positioning, env number)
-- [ ] Accessibility widget (font scale, contrast, draggable via `motion/react`)
+- [x] Header (logo, nav, language switcher, cart badge), footer
+- [x] Floating WhatsApp button (logical positioning, env number)
+- [x] Accessibility widget (font scale, contrast, draggable via `motion/react`)
 - **Acceptance:** shell responsive + RTL-correct; a11y widget is draggable and changes the page.
 
 ### M1.15 Home page
