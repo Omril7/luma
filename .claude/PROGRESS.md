@@ -19,6 +19,31 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-06-17 — M1.17: Product Detail page (core experience)
+
+- **Done:** Full Product Detail page with live custom-price calculator.
+  - Added new keys to `product` namespace in `he.json` / `en.json`: `category.*`, `fromPrice`, `estimatedPrice`, `standardSizes`, `customDimensionsToggle`, `customDimensionsLabel`, `cm`, `minHint`, `maxHint`, `colorLabel`, `addedToCart`, `relatedProducts`, `prevImage`, `nextImage`, `imageN`, `enterDimensions`, `priceErrorMin/Max/General`, `dimensionWidth/Height/Depth`, `wishlistAdd/Remove`, `decreaseQuantity`, `increaseQuantity`.
+  - `src/app/[lang]/(storefront)/product/[slug]/page.tsx` — Server Component; calls `getProductBySlug` + `getProducts` (same-category related, exclude self); `generateMetadata` with bilingual title/desc/OG image.
+  - `src/features/products/ImageGallery.tsx` — Client Component: `AnimatePresence` fade on image change gated on `shouldAnimate`; thumbnail strip (desktop, `md:grid`); dot indicators (mobile, `md:hidden`); prev/next arrow buttons at `start-2`/`end-2` with ≥44px touch targets; furniture SVG placeholder when no images; all i18n labels.
+  - `src/features/products/ProductDetail.tsx` — Client Component:
+    - `useMemo` price computation using `calculatePrice` from `@/shared/pricing` with proper ₪→agorot conversion; catches `PricingError` for per-dimension bound messages; basePrice fallback for variant-less products.
+    - `IntersectionObserver` on the main CTA button drives the sticky mobile bar visibility.
+    - Variant pills with `aria-pressed`, custom toggle (`role="switch"` + `aria-checked`), animated dimension inputs (`AnimatePresence` height reveal).
+    - Color swatches use `style={{ backgroundColor }}` (only acceptable inline hex — dynamic data).
+    - Quantity stepper with `aria-live` on count display.
+    - `addedFeedback` state drives green check state on the CTA for 2 s.
+    - Wishlist button uses `useWishlistStore`.
+    - Toast uses `addToast({ type: 'success', message })` — locale-selected string.
+    - Sticky mobile bar: `fixed bottom-0 start-0 end-0 md:hidden` with `pb-[env(safe-area-inset-bottom,12px)]`.
+    - Related products grid (2-col mobile / 4-col desktop) via `ProductCard`.
+- **Roadmap:** M1.17 ✅
+- **Decisions:**
+  - `uiStore` toast accepts `{ type, message: string }` — used locale to build the message string at call site.
+  - When custom mode is on and no dimensions entered, show `enterDimensions` hint in the price box (not an error `role="alert"`) — this avoids noise on first toggle.
+  - `translate-x-5` on toggle thumb kept as physical transform — standard across locales for this small UI element; RTL container positioning makes the overall toggle read correctly.
+  - `useCallback` on `handleAddToCart` to avoid unnecessary re-renders when sticky bar mounts.
+- **Notes:** `npm run typecheck` and `npm run lint` both pass clean. Zero physical CSS properties.
+
 ## 2026-06-17 — M1.16: Shop / Catalog page
 
 - **Done:** Full shop/catalog page with URL-driven filters, sort, pagination, and empty state.

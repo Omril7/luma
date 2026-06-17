@@ -14,8 +14,8 @@ Check items off as you complete them and I'll update future plans accordingly.
   - **Connection string (Transaction mode, port 6543)** → `DATABASE_URL` (add `?pgbouncer=true` at the end)
   - **Connection string (Session mode, port 5432)** → `DIRECT_URL`
 - [x] Copy `.env.example` → `.env.local` and fill in `DATABASE_URL` and `DIRECT_URL`
-- [ ] Run `npm run db:migrate` to apply the schema to your Supabase dev project
-- [ ] Run `npm run db:seed` to seed sample products (after M1.2 seed is implemented)
+- [x] Run `npm run db:migrate` to apply the schema to your Supabase dev project
+- [x] Run `npm run db:seed` to seed sample products (after M1.2 seed is implemented)
 
 ### Cloudinary (image storage)
 

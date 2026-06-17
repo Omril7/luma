@@ -163,12 +163,12 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 
 ### M1.17 ⭐ Product Detail (CORE)
 
-- [ ] Image gallery (swipeable mobile)
-- [ ] Variant selector (S/M/L with dims)
-- [ ] Custom-dimensions toggle + width/height/depth inputs with min/max constraints
-- [ ] **Live price** via `src/shared/pricing.ts` (optional debounced server confirm)
-- [ ] Color/finish swatches, quantity, Add to Cart, related products
-- [ ] **Sticky add-to-cart bar** (mobile only, `md:hidden`)
+- [x] Image gallery (swipeable mobile)
+- [x] Variant selector (S/M/L with dims)
+- [x] Custom-dimensions toggle + width/height/depth inputs with min/max constraints
+- [x] **Live price** via `src/shared/pricing.ts` (optional debounced server confirm)
+- [x] Color/finish swatches, quantity, Add to Cart, related products
+- [x] **Sticky add-to-cart bar** (mobile only, `md:hidden`)
 - **Acceptance:** typing custom dimensions updates the price instantly and matches the server. _(Depends on M0.2, M1.5.)_
 
 ### M1.18 Cart
