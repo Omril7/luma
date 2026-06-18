@@ -19,6 +19,7 @@ import {
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import type { ProductDTO, ColorOptionDTO } from '@/shared/types'
+import { Select } from '@/components/ui/Select'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -609,8 +610,8 @@ export function ProductFormPage({ mode, productId }: Props) {
             <textarea
               value={form.description_he}
               onChange={(e) => set('description_he', e.target.value)}
-              rows={4}
-              className={inputCls(!!errors.description_he) + ' resize-y'}
+              rows={3}
+              className={inputCls(!!errors.description_he, true) + ' resize-y'}
             />
           </FieldRow>
 
@@ -619,24 +620,19 @@ export function ProductFormPage({ mode, productId }: Props) {
               value={form.description_en}
               onChange={(e) => set('description_en', e.target.value)}
               dir="ltr"
-              rows={4}
-              className={inputCls(!!errors.description_en) + ' resize-y'}
+              rows={3}
+              className={inputCls(!!errors.description_en, true) + ' resize-y'}
             />
           </FieldRow>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <FieldRow label="קטגוריה" required>
-              <select
+              <Select
                 value={form.category}
-                onChange={(e) => set('category', e.target.value)}
-                className={inputCls(false)}
-              >
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {CATEGORY_LABELS[c]}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => set('category', v)}
+                className="w-full"
+                options={CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] }))}
+              />
             </FieldRow>
             <FieldRow label="מחיר בסיס (₪)" error={errors.basePrice} required>
               <input
@@ -1131,9 +1127,10 @@ export function ProductFormPage({ mode, productId }: Props) {
 
 // ── Small helpers ──────────────────────────────────────────────────────────────
 
-function inputCls(hasError: boolean) {
+function inputCls(hasError: boolean, textarea = false) {
   return [
-    'w-full h-10 px-3 text-sm bg-bg border rounded-lg text-text-main',
+    'w-full px-3 text-sm bg-bg border rounded-lg text-text-main',
+    textarea ? 'py-2' : 'h-10',
     'placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary',
     hasError ? 'border-red-400 focus:ring-red-400' : 'border-border focus:border-primary',
   ].join(' ')

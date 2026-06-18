@@ -21,8 +21,8 @@
   --font-base: var(--font-he);
 
   /* shape & elevation */
-  --radius: 0.75rem;
-  --radius-lg: 1.25rem;
+  --radius: 0.375rem;
+  --radius-lg: 0.625rem;
   --shadow-soft: 0 4px 20px rgba(46, 42, 36, 0.08);
 
   /* accessibility (overridable by the a11y widget) */

@@ -8,6 +8,7 @@ import { Plus, Search, Pencil, Trash2, Eye, ChevronRight, ChevronLeft } from 'lu
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import type { ProductDTO } from '@/shared/types'
+import { Select } from '@/components/ui/Select'
 
 const CATEGORY_LABELS: Record<string, string> = {
   TABLE: 'שולחן',
@@ -142,43 +143,33 @@ export function ProductsListPage() {
           />
         </div>
 
-        <select
+        <Select
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={setCategory}
           aria-label="סינון לפי קטגוריה"
-          className="h-10 px-3 text-sm bg-bg border border-border rounded-lg text-text-main focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
-        >
-          <option value="">כל הקטגוריות</option>
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {CATEGORY_LABELS[c]}
-            </option>
-          ))}
-        </select>
+          options={[
+            { value: '', label: 'כל הקטגוריות' },
+            ...CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] })),
+          ]}
+        />
 
-        <select
+        <Select
           value={isActive}
-          onChange={(e) => setIsActive(e.target.value as 'all' | 'true' | 'false')}
+          onChange={(v) => setIsActive(v as 'all' | 'true' | 'false')}
           aria-label="סינון לפי סטטוס"
-          className="h-10 px-3 text-sm bg-bg border border-border rounded-lg text-text-main focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
-        >
-          <option value="all">כל הסטטוסים</option>
-          <option value="true">פעיל</option>
-          <option value="false">לא פעיל</option>
-        </select>
+          options={[
+            { value: 'all', label: 'כל הסטטוסים' },
+            { value: 'true', label: 'פעיל' },
+            { value: 'false', label: 'לא פעיל' },
+          ]}
+        />
 
-        <select
-          value={limit}
-          onChange={(e) => setLimit(Number(e.target.value))}
+        <Select
+          value={String(limit)}
+          onChange={(v) => setLimit(Number(v))}
           aria-label="מספר שורות בעמוד"
-          className="h-10 px-3 text-sm bg-bg border border-border rounded-lg text-text-main focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
-        >
-          {[10, 25, 50].map((n) => (
-            <option key={n} value={n}>
-              {n} בעמוד
-            </option>
-          ))}
-        </select>
+          options={[10, 25, 50].map((n) => ({ value: String(n), label: `${n} בעמוד` }))}
+        />
       </div>
 
       {/* Table */}
