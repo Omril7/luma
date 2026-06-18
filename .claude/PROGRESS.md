@@ -19,6 +19,20 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-06-18 — M1.7, M1.8, M1.10: Misc public endpoints + admin product CRUD + storage
+
+- **Done:**
+  - M1.7 public endpoints: `POST /api/contact`, `POST /api/newsletter/subscribe`, `GET /api/gallery`, `GET /api/reviews/[productId]`, `GET /api/faq`
+  - M1.8 admin product CRUD API: `GET/POST /api/admin/products`, `GET/PUT/DELETE /api/admin/products/[id]`, `POST /api/admin/upload`
+  - M1.8 admin service: `src/server/services/adminProductService.ts` (list, get, create, update, soft-delete — all in Prisma transactions)
+  - M1.10 storage abstraction: already existed — `src/server/providers/storage/` (`StorageProvider` interface + `CloudinaryStorageProvider` + `LocalStorageProvider` + factory `getStorageProvider`)
+  - Updated `withApi` and `withAdmin` to pass through the Next.js route context (needed for dynamic `[id]` params)
+- **Roadmap:** M1.7 ✅ / M1.8 ✅ / M1.10 ✅
+- **Decisions:** gallery + FAQ served from `SiteContent` JSON blobs (no dedicated model). Contact form logs to console only (no DB model). Category enum cast at service boundary since Zod schemas use `string` for enum values.
+- **Notes:** M1.24 (Products CRUD UI) is next — backend is ready.
+
+---
+
 ## 2026-06-18 — M1.23: Admin auth + shell
 
 - **Done:** Full admin panel shell, login page, and route guard.

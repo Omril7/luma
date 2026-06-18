@@ -78,16 +78,16 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - [x] `GET /orders/:id`; `POST /api/coupons/validate` (validity window, maxUses, minOrderAmount; per-customer/first-order checks deferred to createOrder)
 - **Acceptance:** an order created from a custom-dimension cart stores correct authoritative totals; all coupon types apply correctly.
 
-### M1.7 Misc public endpoints
+### M1.7 Misc public endpoints ✅
 
-- [ ] `POST /contact`, `POST /newsletter/subscribe`, `GET /gallery`, `GET /reviews/:productId`, `GET /faq`
+- [x] `POST /contact`, `POST /newsletter/subscribe`, `GET /gallery`, `GET /reviews/:productId`, `GET /faq`
 - **Acceptance:** each validates input and persists/returns as specified.
 
-### M1.8 Admin auth + product CRUD
+### M1.8 Admin auth + product CRUD ✅
 
-- [ ] `POST /admin/auth/login` (JWT, hashed password), `auth` middleware on `/admin/*`
-- [ ] CRUD: products (+variants, pricing rule, colors, images via Cloudinary)
-- [ ] `POST /api/admin/upload` → CloudinaryStorageProvider
+- [x] `POST /admin/auth/login` (JWT, hashed password), `auth` middleware on `/admin/*`
+- [x] CRUD: products (+variants, pricing rule, colors, images via Cloudinary)
+- [x] `POST /api/admin/upload` → CloudinaryStorageProvider
 - **Acceptance:** admin token required; full product lifecycle manageable via API; images upload to Cloudinary.
 
 ### M1.9 Admin: coupons, site content, email, newsletter
@@ -101,9 +101,9 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - [ ] Stubs/shells: `/admin/bundles`, `/admin/reviews`
 - **Acceptance:** all endpoints operational; newsletter send dispatches via ConsoleEmailProvider in dev.
 
-### M1.10 Storage abstraction
+### M1.10 Storage abstraction ✅
 
-- [ ] `StorageProvider` interface + `CloudinaryStorageProvider` (primary) + `LocalStorageProvider` (fallback)
+- [x] `StorageProvider` interface + `CloudinaryStorageProvider` (primary) + `LocalStorageProvider` (fallback)
 - **Acceptance:** uploaded image returns a served URL; switching `STORAGE_DRIVER` changes provider.
 
 ---

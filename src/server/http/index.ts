@@ -23,10 +23,12 @@ export function zodErrorResponse(err: ZodError): NextResponse {
 
 // ── Generic route wrapper ─────────────────────────────────────────────────────
 
-export function withApi(handler: (req: NextRequest) => Promise<NextResponse>) {
-  return async (req: NextRequest) => {
+export function withApi<Ctx = unknown>(
+  handler: (req: NextRequest, ctx: Ctx) => Promise<NextResponse>
+) {
+  return async (req: NextRequest, ctx: Ctx) => {
     try {
-      return await handler(req)
+      return await handler(req, ctx)
     } catch (err) {
       console.error('[API error]', err)
       return errorResponse('Internal server error', 500)
@@ -101,12 +103,12 @@ export function verifyAdminToken(req: NextRequest): AdminPayload | null {
   }
 }
 
-export function withAdmin(
-  handler: (req: NextRequest, admin: AdminPayload) => Promise<NextResponse>
+export function withAdmin<Ctx = unknown>(
+  handler: (req: NextRequest, admin: AdminPayload, ctx: Ctx) => Promise<NextResponse>
 ) {
-  return async (req: NextRequest) => {
+  return async (req: NextRequest, ctx: Ctx) => {
     const admin = verifyAdminToken(req)
     if (!admin) return errorResponse('Unauthorized', 401)
-    return handler(req, admin)
+    return handler(req, admin, ctx)
   }
 }
