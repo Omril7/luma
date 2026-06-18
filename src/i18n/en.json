@@ -107,12 +107,24 @@
   "cart": {
     "title": "Shopping Cart",
     "empty": "Your cart is empty",
+    "emptyBody": "Browse our collection and add items you love",
+    "continueShopping": "Continue Shopping",
     "subtotal": "Subtotal",
     "shipping": "Shipping",
+    "shippingTbd": "Calculated at checkout",
+    "free": "Free",
     "discount": "Discount",
     "total": "Total",
     "checkout": "Checkout",
-    "couponPlaceholder": "Coupon code"
+    "couponPlaceholder": "Coupon code",
+    "apply": "Apply",
+    "removeCoupon": "Remove",
+    "couponApplied": "Coupon applied!",
+    "removeItem": "Remove Item",
+    "decrease": "Decrease quantity",
+    "increase": "Increase quantity",
+    "items": "{count} items",
+    "unit": "per item"
   },
   "checkout": {
     "title": "Order Details",

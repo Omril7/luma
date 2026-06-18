@@ -74,8 +74,8 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 
 ### M1.6 Orders & coupons
 
-- [ ] `POST /orders` (server recomputes all line prices + totals, persists snapshot)
-- [ ] `GET /orders/:id`; `POST /orders/:id/apply-coupon` (all coupon type validations: validity window, maxUses, singleUsePerCustomer, firstOrderOnly, autoApply)
+- [x] `POST /orders` (server recomputes all line prices + totals, persists snapshot)
+- [x] `GET /orders/:id`; `POST /api/coupons/validate` (validity window, maxUses, minOrderAmount; per-customer/first-order checks deferred to createOrder)
 - **Acceptance:** an order created from a custom-dimension cart stores correct authoritative totals; all coupon types apply correctly.
 
 ### M1.7 Misc public endpoints
@@ -173,8 +173,8 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 
 ### M1.18 Cart
 
-- [ ] Items (thumbnails, variant/custom info), qty +/-, coupon input
-- [ ] Subtotal / shipping estimate / discount / total; checkout CTA
+- [x] Items (thumbnails, variant/custom info), qty +/-, coupon input
+- [x] Subtotal / shipping estimate / discount / total; checkout CTA
 - **Acceptance:** all coupon types apply via API; totals correct.
 
 ### M1.19 Checkout

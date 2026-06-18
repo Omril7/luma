@@ -107,12 +107,24 @@
   "cart": {
     "title": "עגלת הקניות",
     "empty": "העגלה ריקה",
+    "emptyBody": "גלו את הקולקציה שלנו והוסיפו פריטים שאהבתם לסל",
+    "continueShopping": "המשך קנייה",
     "subtotal": "סכום ביניים",
     "shipping": "משלוח",
+    "shippingTbd": "יחושב בתשלום",
+    "free": "חינם",
     "discount": "הנחה",
     "total": "סה\"כ",
     "checkout": "לתשלום",
-    "couponPlaceholder": "קוד קופון"
+    "couponPlaceholder": "קוד קופון",
+    "apply": "החל",
+    "removeCoupon": "הסר",
+    "couponApplied": "קוד הנחה הוחל!",
+    "removeItem": "הסר פריט",
+    "decrease": "הפחת כמות",
+    "increase": "הגדל כמות",
+    "items": "{count} פריטים",
+    "unit": "לפריט"
   },
   "checkout": {
     "title": "פרטי הזמנה",

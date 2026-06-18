@@ -19,6 +19,24 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-06-18 — M1.6 + M1.18: Orders/coupons backend + Cart page
+
+- **Done:** Full orders & coupons backend (M1.6) and cart page UI (M1.18).
+  - `src/server/services/orderService.ts`: `validateCoupon`, `createOrder`, `getOrderById`. Server recomputes all item prices via `pricingService`; coupon `usedCount` incremented atomically after order creation.
+  - `src/app/api/coupons/validate/route.ts`: POST, rate-limited 30/min.
+  - `src/app/api/orders/route.ts`: POST, rate-limited 10/min, returns 201.
+  - `src/app/api/orders/[id]/route.ts`: GET by id, 404-safe.
+  - `src/app/[lang]/(storefront)/cart/page.tsx`: Server Component with locale-aware metadata.
+  - `src/features/cart/CartClient.tsx`: Empty state (fade-in, CTA to /shop); item list with AnimatePresence exit; quantity stepper; coupon input with validate API integration; sticky order summary sidebar; checkout CTA.
+  - Added 12 new i18n keys to `cart` namespace in both `he.json` and `en.json`.
+- **Roadmap:** M1.6 ✅ M1.18 ✅
+- **Decisions:**
+  - Shipping cost hardcoded at ₪150 for NATIONAL_SHIPPING (Settings UI is M1.28; hardcoded is fine for now).
+  - Cart-level coupon validation skips per-customer and first-order-only checks (those need email + order history — full check happens in `createOrder` at checkout).
+  - Coupon subtotal passed to API in ₪ (divide agorot by 100); returned discountAmount multiplied back to agorot before `setCoupon`.
+  - `redirect /` → `/he` added to `next.config.ts` redirects for direct root-path visits.
+- **Notes:** `tsc --noEmit` passes clean. Next step: M1.19 Checkout page.
+
 ## 2026-06-17 — M1.17: Product Detail page (core experience)
 
 - **Done:** Full Product Detail page with live custom-price calculator.
