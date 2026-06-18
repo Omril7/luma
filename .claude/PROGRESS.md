@@ -19,6 +19,20 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-06-18 — M1.24: Products CRUD UI
+
+- **Done:**
+  - `src/app/(admin)/admin/products/page.tsx` — list page
+  - `src/app/(admin)/admin/products/new/page.tsx` — create page
+  - `src/app/(admin)/admin/products/[id]/edit/page.tsx` — edit page
+  - `src/features/admin/products/ProductsListPage.tsx` — products table with search, category filter, active/inactive filter, per-page selector (10/25/50), pagination, soft-delete confirmation dialog
+  - `src/features/admin/products/ProductFormPage.tsx` — 5-tab form: Basic Info, Variants (dynamic rows), Pricing Rule (custom dimensions), Colors (connect/create), Images (upload, reorder, set primary)
+  - `src/app/api/admin/colors/route.ts` — GET list + POST create colors (needed for the colors tab)
+- **Roadmap:** M1.24 ✅
+- **Decisions:** Colors managed as a global `ColorOption` list (connect existing or create inline). Image upload hits `POST /api/admin/upload` directly with FormData + admin JWT. Pricing rule tab disabled with explanation when `customizable=false`.
+
+---
+
 ## 2026-06-18 — M1.7, M1.8, M1.10: Misc public endpoints + admin product CRUD + storage
 
 - **Done:**

@@ -210,11 +210,11 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - [x] Login page + route guard; `AdminLayout` nav (no orders section)
 - **Acceptance:** unauthenticated users redirected; layout navigates to all admin sections.
 
-### M1.24 Products CRUD UI
+### M1.24 Products CRUD UI ✅
 
-- [ ] List + edit; manage variants, pricing rule, colors, image upload (Cloudinary), active/featured/sort
-- [ ] "Preview on site" button on edit forms
-- [ ] All admin tables: pagination with per-page selector (10 / 25 / 50)
+- [x] List + edit; manage variants, pricing rule, colors, image upload (Cloudinary), active/featured/sort
+- [x] "Preview on site" button on edit forms
+- [x] All admin tables: pagination with per-page selector (10 / 25 / 50)
 - **Acceptance:** can create a customizable product end-to-end and see it on the storefront; images upload to Cloudinary.
 
 ### M1.25 Coupons management
