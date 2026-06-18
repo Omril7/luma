@@ -207,7 +207,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 
 ### M1.23 Admin auth + shell
 
-- [ ] Login page + route guard; `AdminLayout` nav (no orders section)
+- [x] Login page + route guard; `AdminLayout` nav (no orders section)
 - **Acceptance:** unauthenticated users redirected; layout navigates to all admin sections.
 
 ### M1.24 Products CRUD UI

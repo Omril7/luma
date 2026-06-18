@@ -19,6 +19,23 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-06-18 — M1.23: Admin auth + shell
+
+- **Done:** Full admin panel shell, login page, and route guard.
+  - `src/stores/adminStore.ts` — Zustand persist store (`luma-admin` key) holding JWT token + email; `setAuth` / `clearAuth`.
+  - `src/features/admin/AdminShell.tsx` — Client component: post-hydration route guard (redirects to `/admin/login` when no token); fixed sidebar (RTL, start-0 = right side) with 8 nav items + `motion` stagger entrance; sticky top header showing current page name; logout + storefront link in sidebar footer.
+  - `src/app/(admin)/layout.tsx` — New route group **outside** `[lang]` so admin lives at `/admin/...` with no locale prefix; wraps everything with `AdminShell`.
+  - `src/app/(admin)/admin/login/page.tsx` — Standalone Hebrew login form (no sidebar); email + password (show/hide toggle); loading + error state; redirects to `/admin` if already authenticated.
+  - `src/app/(admin)/admin/page.tsx` — Dashboard page: 7-card quick-link grid linking to all admin sections.
+  - Old `[lang]/(admin)/layout.tsx` left as passthrough (no pages under it).
+- **Roadmap:** M1.23 ✅
+- **Decisions:**
+  - Admin is moved to `app/(admin)/` (outside `[lang]`) so URLs are `/admin/...` — no locale prefix needed since admin is Hebrew-only.
+  - Hebrew strings hardcoded in admin components — no next-intl for admin (admin doesn't go through `[lang]/layout.tsx`).
+  - Route guard runs client-side after Zustand rehydration to avoid SSR/localStorage mismatch; shows spinner during rehydration.
+  - Active nav item uses `bg-secondary text-primary` (avoids `bg-primary/10` which doesn't work cleanly with CSS-variable colors in Tailwind v3).
+- **Notes:** `typecheck` + `lint` pass clean (zero errors). Next: M1.24 Products CRUD UI.
+
 ## 2026-06-18 — M1.19 + M1.20: Checkout + Order Confirmation pages
 
 - **Done:** Full checkout flow and order confirmation.
