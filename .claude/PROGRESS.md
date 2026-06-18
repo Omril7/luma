@@ -19,6 +19,22 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-06-18 — M1.19 + M1.20: Checkout + Order Confirmation pages
+
+- **Done:** Full checkout flow and order confirmation.
+  - Extended `checkout` namespace in `he.json` / `en.json`: 23 new keys (`street`, `city`, `installments`, `installmentsOne`, `installmentsN`, `notes`, `notesPlaceholder`, `shippingCost`, `freePickup`, `required`, `invalidEmail`, `invalidPhone`, `processing`, `backToCart`, `summary`, `subtotal`, `shippingLabel`, `discountLabel`, `totalLabel`, `emptyCart`, `emptyCartCta`, `termsRequired`, `errorGeneral`).
+  - Added new `confirmation` namespace: 14 keys (`title`, `subtitle`, `orderNumber`, `items`, `subtotal`, `shipping`, `discount`, `total`, `delivery`, `deliveryTime`, `home`, `shop`, `notFound`, `free`).
+  - `src/app/[lang]/(storefront)/checkout/page.tsx` — Server Component with locale-aware metadata; renders `<CheckoutClient>`.
+  - `src/features/checkout/CheckoutClient.tsx` — Client Component: empty-cart guard; customer-info section (name/email/phone with `aria-invalid`/`aria-describedby` error associations); shipping radio-cards (NATIONAL_SHIPPING/PICKUP) with `AnimatePresence` height-reveal for address fields; installments pill selector (1/3/6/12); notes textarea + terms checkbox; live order-summary sidebar (dynamic shipping cost ₪150/Free based on method choice); full client-side validation with first-error focus; `api.post('/api/orders')` → `clear()` + `router.push` to confirmation.
+  - `src/app/[lang]/(storefront)/order-confirmation/[id]/page.tsx` — Server Component; calls `getOrderById(id)` directly; metadata from confirmation namespace.
+  - `src/features/checkout/ConfirmationClient.tsx` — Client Component: not-found guard; success icon + heading; order-number badge (monospace); per-item list (qty × unit price = total); totals summary (subtotal/shipping/discount/total); delivery estimate with clock icon; CTAs to `/` and `/shop`.
+- **Roadmap:** M1.19 ✅ M1.20 ✅
+- **Decisions:**
+  - `formatPrice` in `ConfirmationClient` takes raw ₪ decimal (OrderDTO prices) — does NOT divide by 100, unlike `CartClient`/`CheckoutClient` which take agorot.
+  - Shipping cost for the checkout sidebar is computed client-side (15000 agorot = ₪150) matching the server's hardcoded value in `orderService`; reactive to `form.shippingMethod`.
+  - Installments limited to [1, 3, 6, 12] — matching credit-card processor norms for IL; full range is 1–36 per schema.
+- **Notes:** `tsc --noEmit` passes clean. RTL audit: zero `pl-/pr-/ml-/mr-/left-/right-` usages; zero hardcoded hex in checkout feature.
+
 ## 2026-06-18 — M1.6 + M1.18: Orders/coupons backend + Cart page
 
 - **Done:** Full orders & coupons backend (M1.6) and cart page UI (M1.18).

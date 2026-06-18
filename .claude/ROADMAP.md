@@ -179,14 +179,14 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 
 ### M1.19 Checkout
 
-- [ ] Customer info form, shipping-vs-pickup, order summary sidebar
-- [ ] "Pay with Credit Card" (stub), installments selector, terms checkbox
-- [ ] Create order → `createPayment` → redirect / stub skip → confirmation
+- [x] Customer info form, shipping-vs-pickup, order summary sidebar
+- [x] "Pay with Credit Card" (stub), installments selector, terms checkbox
+- [x] Create order → `createPayment` → redirect / stub skip → confirmation
 - **Acceptance:** completing checkout creates an order; confirmation page reflects it.
 
 ### M1.20 Order confirmation
 
-- [ ] Thank-you, order number, summary, delivery timeframe
+- [x] Thank-you, order number, summary, delivery timeframe
 - **Acceptance:** confirmation reflects the persisted order.
 
 ### M1.21 Static pages
