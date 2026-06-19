@@ -90,15 +90,15 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - [x] `POST /api/admin/upload` → CloudinaryStorageProvider
 - **Acceptance:** admin token required; full product lifecycle manageable via API; images upload to Cloudinary.
 
-### M1.9 Admin: coupons, site content, email, newsletter
+### M1.9 Admin: coupons, site content, email, newsletter ✅
 
-- [ ] CRUD: coupons (all fields: singleUsePerCustomer, firstOrderOnly, autoApply, validUntil, maxUses, …)
-- [ ] CRUD: site-content blobs (home, about, faq, gallery intro, contact)
-- [ ] Read/update: email-settings (fromAddress, fromName bilingual, replyTo)
-- [ ] `GET /admin/newsletter` (list subscribers + CSV export), `POST /admin/newsletter/send` (dispatch via EmailProvider)
-- [ ] CRUD: gallery, faq
-- [ ] Read/update: settings (business info, shipping costs)
-- [ ] Stubs/shells: `/admin/bundles`, `/admin/reviews`
+- [x] CRUD: coupons (all fields: singleUsePerCustomer, firstOrderOnly, autoApply, validUntil, maxUses, …)
+- [x] CRUD: site-content blobs (home, about, faq, gallery intro, contact)
+- [x] Read/update: email-settings (fromAddress, fromName bilingual, replyTo)
+- [x] `GET /admin/newsletter` (list subscribers + CSV export), `POST /admin/newsletter/send` (dispatch via EmailProvider)
+- [x] CRUD: gallery, faq
+- [x] Read/update: settings (business info, shipping costs)
+- [x] Stubs/shells: `/admin/bundles`, `/admin/reviews`
 - **Acceptance:** all endpoints operational; newsletter send dispatches via ConsoleEmailProvider in dev.
 
 ### M1.10 Storage abstraction ✅

@@ -194,3 +194,102 @@ export const applyCouponSchema = z.object({
 })
 
 export type ApplyCouponInput = z.infer<typeof applyCouponSchema>
+
+// ── Update coupon (partial) ───────────────────────────────────────────────────
+
+export const updateCouponSchema = createCouponSchema.partial()
+export type UpdateCouponInput = z.infer<typeof updateCouponSchema>
+
+// ── Email settings ────────────────────────────────────────────────────────────
+
+export const updateEmailSettingsSchema = z.object({
+  fromAddress: z.string().email(),
+  fromName_he: z.string().min(1).max(200),
+  fromName_en: z.string().min(1).max(200),
+  replyTo: z.string().email().optional(),
+})
+
+export type UpdateEmailSettingsInput = z.infer<typeof updateEmailSettingsSchema>
+
+// ── Newsletter send ───────────────────────────────────────────────────────────
+
+export const sendNewsletterSchema = z.object({
+  subject_he: z.string().min(1).max(500),
+  subject_en: z.string().min(1).max(500),
+  body_he: z.string().min(1),
+  body_en: z.string().min(1),
+  targetLanguage: z.enum(['he', 'en']).optional(),
+})
+
+export type SendNewsletterInput = z.infer<typeof sendNewsletterSchema>
+
+// ── Gallery image ─────────────────────────────────────────────────────────────
+
+export const createGalleryImageSchema = z.object({
+  url: z.string().url(),
+  altText_he: z.string().min(1).max(300),
+  altText_en: z.string().min(1).max(300),
+  sortOrder: z.number().int().min(0).optional(),
+})
+
+export type CreateGalleryImageInput = z.infer<typeof createGalleryImageSchema>
+
+export const updateGalleryImageSchema = createGalleryImageSchema.partial()
+export type UpdateGalleryImageInput = z.infer<typeof updateGalleryImageSchema>
+
+// ── FAQ item ──────────────────────────────────────────────────────────────────
+
+export const createFaqItemSchema = z.object({
+  question_he: z.string().min(1).max(500),
+  question_en: z.string().min(1).max(500),
+  answer_he: z.string().min(1).max(3000),
+  answer_en: z.string().min(1).max(3000),
+  sortOrder: z.number().int().min(0).optional(),
+})
+
+export type CreateFaqItemInput = z.infer<typeof createFaqItemSchema>
+
+export const updateFaqItemSchema = createFaqItemSchema.partial()
+export type UpdateFaqItemInput = z.infer<typeof updateFaqItemSchema>
+
+// ── Site settings ─────────────────────────────────────────────────────────────
+
+export const updateSettingsSchema = z.object({
+  businessName_he: z.string().min(1).max(200).optional(),
+  businessName_en: z.string().min(1).max(200).optional(),
+  address_he: z.string().min(1).max(500).optional(),
+  address_en: z.string().min(1).max(500).optional(),
+  phone: z.string().min(1).max(50).optional(),
+  whatsappNumber: z.string().min(1).max(50).optional(),
+  email: z.string().email().optional(),
+  shippingCostNational: z.number().min(0).optional(),
+  freeShippingAbove: z.number().min(0).optional(),
+})
+
+export type UpdateSettingsInput = z.infer<typeof updateSettingsSchema>
+
+// ── Review approval ───────────────────────────────────────────────────────────
+
+export const updateReviewSchema = z.object({
+  isApproved: z.boolean(),
+})
+
+export type UpdateReviewInput = z.infer<typeof updateReviewSchema>
+
+// ── Site content value ────────────────────────────────────────────────────────
+
+export const siteContentValueSchema = z.object({
+  value: z
+    .unknown()
+    .refine((v) => v !== null && typeof v === 'object', {
+      message: 'Value must be a JSON object or array',
+    }),
+})
+
+export type SiteContentValueInput = z.infer<typeof siteContentValueSchema>
+
+// ── Email settings test ───────────────────────────────────────────────────────
+
+export const testEmailSchema = z.object({
+  to: z.string().email(),
+})

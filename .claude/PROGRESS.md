@@ -19,6 +19,21 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-06-19 — M1.9: Admin backend route handlers
+
+- **Done:** 7 new services + 18 route files covering all remaining admin API surface:
+  - Coupons CRUD (`/api/admin/coupons` + `[id]` + `[id]/toggle`) with all coupon-type fields
+  - Site Content GET-all + per-key GET/PUT (`/api/admin/site-content`, `[key]`)
+  - Email Settings GET/PUT + test-send (`/api/admin/email-settings`, `test`)
+  - Newsletter subscriber list + CSV export + send + send history (`/api/admin/newsletter`, `send`, `sends`)
+  - Gallery CRUD + FAQ CRUD — backed by SiteContent JSON blobs (no dedicated DB model in schema)
+  - Settings GET/PUT — business info + shipping costs via SiteContent `settings` key
+  - Phase-2 stubs: `/admin/bundles` (GET `[]` / POST 501), `/admin/reviews` (GET paginated list + PATCH approve/reject)
+  - New Zod schemas added to `src/shared/schemas/index.ts`
+- **Roadmap:** M1.9 ✅
+- **Decisions:** Gallery and FAQ have no dedicated Prisma models — stored as JSON arrays in SiteContent (matches the existing public `/api/gallery` + `/api/faq` pattern). Newsletter CSV triggered by `?export=csv` query param on the GET list endpoint.
+- **Notes:** typecheck clean; 17 pricing tests still green. Next: M1.25 Coupons management UI.
+
 ## 2026-06-18 — M1.24: Products CRUD UI
 
 - **Done:**
