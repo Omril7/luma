@@ -1,6 +1,7 @@
 import 'server-only'
 import { Prisma } from '@prisma/client'
 import { prisma } from '@/server/prisma'
+import { deleteIfOrphaned } from '@/server/services/cloudinaryCleanupService'
 
 // ── Note ──────────────────────────────────────────────────────────────────────
 // The Prisma schema has no dedicated GalleryImage model.
@@ -84,8 +85,15 @@ export async function updateGalleryImage(
   const idx = items.findIndex((i) => i.id === id)
   if (idx === -1) return null
 
+  const oldUrl = items[idx].url
   items[idx] = { ...items[idx], ...data }
   await saveItems(items)
+
+  // If the URL changed, fire-and-forget orphan cleanup on the old URL
+  if (data.url !== undefined && data.url !== oldUrl) {
+    deleteIfOrphaned(oldUrl).catch(console.error)
+  }
+
   return items[idx]
 }
 
@@ -93,8 +101,13 @@ export async function updateGalleryImage(
 
 export async function deleteGalleryImage(id: string): Promise<boolean> {
   const items = await loadItems()
+  const deleted = items.find((i) => i.id === id)
+  if (!deleted) return false
   const filtered = items.filter((i) => i.id !== id)
-  if (filtered.length === items.length) return false
   await saveItems(filtered)
+
+  // Fire-and-forget orphan cleanup for the removed gallery item's URL
+  deleteIfOrphaned(deleted.url).catch(console.error)
+
   return true
 }

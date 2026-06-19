@@ -1,6 +1,7 @@
 import 'server-only'
 import { Prisma } from '@prisma/client'
 import { prisma } from '@/server/prisma'
+import { extractUrlsFromValue, deleteIfOrphaned } from '@/server/services/cloudinaryCleanupService'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -41,11 +42,29 @@ export async function getSiteContentByKey(key: string): Promise<SiteContentDTO |
 // ── Upsert ────────────────────────────────────────────────────────────────────
 
 export async function upsertSiteContent(key: string, value: unknown): Promise<SiteContentDTO> {
+  // Collect URLs from the existing value so we can clean up any that are removed
+  const oldUrls = new Set<string>()
+  const existing = await prisma.siteContent.findUnique({ where: { key } })
+  if (existing) {
+    extractUrlsFromValue(existing.value, oldUrls)
+  }
+
   const jsonValue = value as Prisma.InputJsonValue
   const row = await prisma.siteContent.upsert({
     where: { key },
     create: { key, value: jsonValue },
     update: { value: jsonValue },
   })
+
+  // Determine which URLs were removed and fire-and-forget orphan cleanup
+  const newUrls = new Set<string>()
+  extractUrlsFromValue(value, newUrls)
+
+  for (const url of oldUrls) {
+    if (!newUrls.has(url)) {
+      deleteIfOrphaned(url).catch(console.error)
+    }
+  }
+
   return toDTO(row)
 }

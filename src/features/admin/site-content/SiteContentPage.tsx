@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Plus, Trash2, ArrowUp, ArrowDown, Check } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
+import { ImageUpload } from '@/components/ui/ImageUpload'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -219,9 +220,10 @@ interface HeroTabProps {
   saving: boolean
   success: boolean
   error: string | null
+  token: string
 }
 
-function HeroTab({ data, onChange, onSave, saving, success, error }: HeroTabProps) {
+function HeroTab({ data, onChange, onSave, saving, success, error, token }: HeroTabProps) {
   function set<K extends keyof HomeHero>(k: K, v: HomeHero[K]) {
     onChange({ ...data, [k]: v })
   }
@@ -303,14 +305,11 @@ function HeroTab({ data, onChange, onSave, saving, success, error }: HeroTabProp
       </div>
 
       <div>
-        <label className={labelCls}>כתובת תמונה ראשית</label>
-        <input
-          type="url"
-          value={data.imageUrl}
-          onChange={(e) => set('imageUrl', e.target.value)}
-          dir="ltr"
-          placeholder="https://..."
-          className={inputCls}
+        <label className={labelCls}>תמונה ראשית</label>
+        <ImageUpload
+          value={data.imageUrl || null}
+          onChange={(url) => set('imageUrl', url ?? '')}
+          token={token}
         />
       </div>
 
@@ -329,9 +328,10 @@ interface StoryTabProps {
   saving: boolean
   success: boolean
   error: string | null
+  token: string
 }
 
-function StoryTab({ data, onChange, onSave, saving, success, error }: StoryTabProps) {
+function StoryTab({ data, onChange, onSave, saving, success, error, token }: StoryTabProps) {
   function set<K extends keyof HomeStory>(k: K, v: HomeStory[K]) {
     onChange({ ...data, [k]: v })
   }
@@ -390,14 +390,11 @@ function StoryTab({ data, onChange, onSave, saving, success, error }: StoryTabPr
       </div>
 
       <div>
-        <label className={labelCls}>כתובת תמונה</label>
-        <input
-          type="url"
-          value={data.imageUrl}
-          onChange={(e) => set('imageUrl', e.target.value)}
-          dir="ltr"
-          placeholder="https://..."
-          className={inputCls}
+        <label className={labelCls}>תמונה</label>
+        <ImageUpload
+          value={data.imageUrl || null}
+          onChange={(url) => set('imageUrl', url ?? '')}
+          token={token}
         />
       </div>
 
@@ -416,9 +413,10 @@ interface AboutTabProps {
   saving: boolean
   success: boolean
   error: string | null
+  token: string
 }
 
-function AboutTab({ data, onChange, onSave, saving, success, error }: AboutTabProps) {
+function AboutTab({ data, onChange, onSave, saving, success, error, token }: AboutTabProps) {
   function set<K extends keyof AboutPage>(k: K, v: AboutPage[K]) {
     onChange({ ...data, [k]: v })
   }
@@ -477,14 +475,11 @@ function AboutTab({ data, onChange, onSave, saving, success, error }: AboutTabPr
       </div>
 
       <div>
-        <label className={labelCls}>כתובת תמונה</label>
-        <input
-          type="url"
-          value={data.imageUrl}
-          onChange={(e) => set('imageUrl', e.target.value)}
-          dir="ltr"
-          placeholder="https://..."
-          className={inputCls}
+        <label className={labelCls}>תמונה</label>
+        <ImageUpload
+          value={data.imageUrl || null}
+          onChange={(url) => set('imageUrl', url ?? '')}
+          token={token}
         />
       </div>
 
@@ -945,6 +940,7 @@ export function SiteContentPage() {
                 saving={heroSave.saving}
                 success={heroSave.success}
                 error={heroSave.error}
+                token={token ?? ''}
               />
             )}
             {activeTab === 'home.story' && (
@@ -955,6 +951,7 @@ export function SiteContentPage() {
                 saving={storySave.saving}
                 success={storySave.success}
                 error={storySave.error}
+                token={token ?? ''}
               />
             )}
             {activeTab === 'about.page' && (
@@ -965,6 +962,7 @@ export function SiteContentPage() {
                 saving={aboutSave.saving}
                 success={aboutSave.success}
                 error={aboutSave.error}
+                token={token ?? ''}
               />
             )}
             {activeTab === 'contact.info' && (

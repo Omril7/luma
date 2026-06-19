@@ -7,6 +7,7 @@ import type {
   CreateVariantInput,
   CustomPricingRuleInput,
 } from '@/shared/schemas'
+import { deleteIfOrphaned } from '@/server/services/cloudinaryCleanupService'
 
 // ── Prisma include — all variants/colors (not just active) for admin ──────────
 
@@ -216,6 +217,16 @@ export async function updateAdminProduct(
 ): Promise<ProductDTO> {
   const { variants, customPricingRule, images, colorIds, ...productData } = data
 
+  // Capture old image URLs before they are deleted so we can clean up orphans
+  let oldImageUrls: string[] = []
+  if (images) {
+    const oldImages = await prisma.productImage.findMany({
+      where: { productId: id },
+      select: { url: true },
+    })
+    oldImageUrls = oldImages.map((img) => img.url)
+  }
+
   await prisma.$transaction(async (tx) => {
     if (variants) await tx.productVariant.deleteMany({ where: { productId: id } })
     if (images) await tx.productImage.deleteMany({ where: { productId: id } })
@@ -246,6 +257,14 @@ export async function updateAdminProduct(
       },
     })
   })
+
+  // Fire-and-forget orphan cleanup for every image URL that was removed
+  const newImageUrls = new Set((images ?? []).map((img) => img.url))
+  for (const url of oldImageUrls) {
+    if (!newImageUrls.has(url)) {
+      deleteIfOrphaned(url).catch(console.error)
+    }
+  }
 
   return toProductDTO(await fetchWithRelations(id))
 }
