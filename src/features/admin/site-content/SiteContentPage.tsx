@@ -5,6 +5,7 @@ import { Plus, Trash2, ArrowUp, ArrowDown, Check } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import { ImageUpload } from '@/components/ui/ImageUpload'
+import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -120,17 +121,10 @@ const textareaCls =
 
 const labelCls = 'block text-xs font-medium text-text-muted mb-1'
 
-const badgeHe = (
-  <span className="inline-block text-[10px] font-bold px-1.5 py-0.5 rounded bg-secondary text-text-muted ms-1.5">
-    עב
-  </span>
-)
-
-const badgeEn = (
-  <span className="inline-block text-[10px] font-bold px-1.5 py-0.5 rounded bg-secondary text-text-muted ms-1.5">
-    EN
-  </span>
-)
+const flagCls =
+  'inline-block w-[18px] h-[12px] rounded-[2px] ms-1.5 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]'
+const badgeHe = <IsraelFlag className={flagCls} />
+const badgeEn = <USAFlag className={flagCls} />
 
 interface SaveStatusProps {
   success: boolean
@@ -231,27 +225,29 @@ function HeroTab({ data, onChange, onSave, saving, success, error, token }: Hero
     <div className="space-y-4">
       <h3 className="text-base font-semibold text-text-main mb-4">דף הבית — Hero</h3>
 
-      <div>
-        <label className={labelCls}>כותרת ראשית {badgeHe}</label>
-        <input
-          type="text"
-          value={data.title_he}
-          onChange={(e) => set('title_he', e.target.value)}
-          dir="rtl"
-          placeholder="כותרת ראשית בעברית"
-          className={inputCls}
-        />
-      </div>
-      <div>
-        <label className={labelCls}>כותרת ראשית {badgeEn}</label>
-        <input
-          type="text"
-          value={data.title_en}
-          onChange={(e) => set('title_en', e.target.value)}
-          dir="ltr"
-          placeholder="Main title in English"
-          className={inputCls}
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelCls}>כותרת ראשית {badgeHe}</label>
+          <input
+            type="text"
+            value={data.title_he}
+            onChange={(e) => set('title_he', e.target.value)}
+            dir="rtl"
+            placeholder="כותרת ראשית בעברית"
+            className={inputCls}
+          />
+        </div>
+        <div dir="ltr">
+          <label className={labelCls}>Main title {badgeEn}</label>
+          <input
+            type="text"
+            value={data.title_en}
+            onChange={(e) => set('title_en', e.target.value)}
+            dir="ltr"
+            placeholder="Main title in English"
+            className={inputCls}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -266,8 +262,8 @@ function HeroTab({ data, onChange, onSave, saving, success, error, token }: Hero
             className={`${textareaCls} min-h-[80px]`}
           />
         </div>
-        <div>
-          <label className={labelCls}>תת-כותרת {badgeEn}</label>
+        <div dir="ltr">
+          <label className={labelCls}>Subtitle {badgeEn}</label>
           <textarea
             rows={3}
             value={data.subtitle_en}
@@ -291,8 +287,8 @@ function HeroTab({ data, onChange, onSave, saving, success, error, token }: Hero
             className={inputCls}
           />
         </div>
-        <div>
-          <label className={labelCls}>טקסט כפתור CTA {badgeEn}</label>
+        <div dir="ltr">
+          <label className={labelCls}>CTA button text {badgeEn}</label>
           <input
             type="text"
             value={data.cta_en}
@@ -351,8 +347,8 @@ function StoryTab({ data, onChange, onSave, saving, success, error, token }: Sto
             className={inputCls}
           />
         </div>
-        <div>
-          <label className={labelCls}>כותרת {badgeEn}</label>
+        <div dir="ltr">
+          <label className={labelCls}>Title {badgeEn}</label>
           <input
             type="text"
             value={data.title_en}
@@ -376,8 +372,8 @@ function StoryTab({ data, onChange, onSave, saving, success, error, token }: Sto
             className={`${textareaCls} min-h-[120px]`}
           />
         </div>
-        <div>
-          <label className={labelCls}>גוף טקסט {badgeEn}</label>
+        <div dir="ltr">
+          <label className={labelCls}>Body text {badgeEn}</label>
           <textarea
             rows={5}
             value={data.body_en}
@@ -436,8 +432,8 @@ function AboutTab({ data, onChange, onSave, saving, success, error, token }: Abo
             className={inputCls}
           />
         </div>
-        <div>
-          <label className={labelCls}>כותרת {badgeEn}</label>
+        <div dir="ltr">
+          <label className={labelCls}>Title {badgeEn}</label>
           <input
             type="text"
             value={data.title_en}
@@ -461,8 +457,8 @@ function AboutTab({ data, onChange, onSave, saving, success, error, token }: Abo
             className={`${textareaCls} min-h-[120px]`}
           />
         </div>
-        <div>
-          <label className={labelCls}>גוף טקסט {badgeEn}</label>
+        <div dir="ltr">
+          <label className={labelCls}>Body text {badgeEn}</label>
           <textarea
             rows={8}
             value={data.body_en}
@@ -557,8 +553,8 @@ function ContactTab({ data, onChange, onSave, saving, success, error }: ContactT
             className={inputCls}
           />
         </div>
-        <div>
-          <label className={labelCls}>כתובת {badgeEn}</label>
+        <div dir="ltr">
+          <label className={labelCls}>Address {badgeEn}</label>
           <input
             type="text"
             value={data.address_en}
@@ -582,8 +578,8 @@ function ContactTab({ data, onChange, onSave, saving, success, error }: ContactT
             className={inputCls}
           />
         </div>
-        <div>
-          <label className={labelCls}>שעות פעילות {badgeEn}</label>
+        <div dir="ltr">
+          <label className={labelCls}>Opening hours {badgeEn}</label>
           <input
             type="text"
             value={data.hours_en}
@@ -699,8 +695,8 @@ function FaqTab({ data, onChange, onSave, saving, success, error }: FaqTabProps)
                 className={inputCls}
               />
             </div>
-            <div>
-              <label className={labelCls}>שאלה {badgeEn}</label>
+            <div dir="ltr">
+              <label className={labelCls}>Question {badgeEn}</label>
               <input
                 type="text"
                 value={item.q_en}
@@ -724,8 +720,8 @@ function FaqTab({ data, onChange, onSave, saving, success, error }: FaqTabProps)
                 className={`${textareaCls} min-h-[80px]`}
               />
             </div>
-            <div>
-              <label className={labelCls}>תשובה {badgeEn}</label>
+            <div dir="ltr">
+              <label className={labelCls}>Answer {badgeEn}</label>
               <textarea
                 rows={3}
                 value={item.a_en}
@@ -785,8 +781,8 @@ function GalleryTab({ data, onChange, onSave, saving, success, error }: GalleryT
             className={inputCls}
           />
         </div>
-        <div>
-          <label className={labelCls}>כותרת {badgeEn}</label>
+        <div dir="ltr">
+          <label className={labelCls}>Title {badgeEn}</label>
           <input
             type="text"
             value={data.title_en}
@@ -810,8 +806,8 @@ function GalleryTab({ data, onChange, onSave, saving, success, error }: GalleryT
             className={`${textareaCls} min-h-[80px]`}
           />
         </div>
-        <div>
-          <label className={labelCls}>תת-כותרת {badgeEn}</label>
+        <div dir="ltr">
+          <label className={labelCls}>Subtitle {badgeEn}</label>
           <textarea
             rows={3}
             value={data.subtitle_en}

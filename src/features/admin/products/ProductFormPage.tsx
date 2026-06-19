@@ -20,6 +20,7 @@ import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import type { ProductDTO, ColorOptionDTO } from '@/shared/types'
 import { Select } from '@/components/ui/Select'
+import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -587,15 +588,35 @@ export function ProductFormPage({ mode, productId }: Props) {
           </FieldRow>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FieldRow label="שם המוצר (עברית)" error={errors.name_he} required>
+            <FieldRow
+              label={
+                <>
+                  שם המוצר{' '}
+                  <IsraelFlag className="inline-block w-[18px] h-[12px] rounded-[2px] ms-1.5 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+                </>
+              }
+              error={errors.name_he}
+              required
+            >
               <input
                 type="text"
                 value={form.name_he}
                 onChange={(e) => set('name_he', e.target.value)}
+                dir="rtl"
                 className={inputCls(!!errors.name_he)}
               />
             </FieldRow>
-            <FieldRow label="Product Name (English)" error={errors.name_en} required>
+            <FieldRow
+              label={
+                <>
+                  Product Name{' '}
+                  <USAFlag className="inline-block w-[18px] h-[12px] rounded-[2px] ms-1.5 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+                </>
+              }
+              error={errors.name_en}
+              required
+              labelDir="ltr"
+            >
               <input
                 type="text"
                 value={form.name_en}
@@ -606,24 +627,45 @@ export function ProductFormPage({ mode, productId }: Props) {
             </FieldRow>
           </div>
 
-          <FieldRow label="תיאור (עברית)" error={errors.description_he} required>
-            <textarea
-              value={form.description_he}
-              onChange={(e) => set('description_he', e.target.value)}
-              rows={3}
-              className={inputCls(!!errors.description_he, true) + ' resize-y'}
-            />
-          </FieldRow>
-
-          <FieldRow label="Description (English)" error={errors.description_en} required>
-            <textarea
-              value={form.description_en}
-              onChange={(e) => set('description_en', e.target.value)}
-              dir="ltr"
-              rows={3}
-              className={inputCls(!!errors.description_en, true) + ' resize-y'}
-            />
-          </FieldRow>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FieldRow
+              label={
+                <>
+                  תיאור{' '}
+                  <IsraelFlag className="inline-block w-[18px] h-[12px] rounded-[2px] ms-1.5 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+                </>
+              }
+              error={errors.description_he}
+              required
+            >
+              <textarea
+                value={form.description_he}
+                onChange={(e) => set('description_he', e.target.value)}
+                rows={4}
+                dir="rtl"
+                className={inputCls(!!errors.description_he, true) + ' resize-y'}
+              />
+            </FieldRow>
+            <FieldRow
+              label={
+                <>
+                  Description{' '}
+                  <USAFlag className="inline-block w-[18px] h-[12px] rounded-[2px] ms-1.5 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+                </>
+              }
+              error={errors.description_en}
+              required
+              labelDir="ltr"
+            >
+              <textarea
+                value={form.description_en}
+                onChange={(e) => set('description_en', e.target.value)}
+                dir="ltr"
+                rows={4}
+                className={inputCls(!!errors.description_en, true) + ' resize-y'}
+              />
+            </FieldRow>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <FieldRow label="קטגוריה" required>
@@ -687,17 +729,17 @@ export function ProductFormPage({ mode, productId }: Props) {
               <table className="w-full text-sm min-w-[700px]">
                 <thead>
                   <tr className="bg-bg border-b border-border text-xs font-semibold text-text-muted uppercase tracking-wide">
-                    {[
-                      'שם (עברית)',
-                      'שם (אנגלית)',
-                      'רוחב',
-                      'גובה',
-                      'עומק',
-                      'מחיר ₪',
-                      'SKU',
-                      'פעיל',
-                      '',
-                    ].map((h) => (
+                    <th className="px-3 py-2.5 text-start whitespace-nowrap">
+                      שם{' '}
+                      <IsraelFlag className="inline-block w-[18px] h-[12px] rounded-[2px] ms-1.5 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+                    </th>
+                    <th className="px-3 py-2.5 text-start whitespace-nowrap">
+                      <span dir="ltr">
+                        Name{' '}
+                        <USAFlag className="inline-block w-[18px] h-[12px] rounded-[2px] ms-1.5 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+                      </span>
+                    </th>
+                    {['רוחב', 'גובה', 'עומק', 'מחיר ₪', 'SKU', 'פעיל', ''].map((h) => (
                       <th key={h} className="px-3 py-2.5 text-start whitespace-nowrap">
                         {h}
                       </th>
@@ -916,7 +958,15 @@ export function ProductFormPage({ mode, productId }: Props) {
             <div className="bg-surface border border-border rounded-lg p-4 space-y-4">
               <h4 className="text-sm font-semibold text-text-main">צבע חדש</h4>
               <div className="grid grid-cols-2 gap-4">
-                <FieldRow label="שם (עברית)" required>
+                <FieldRow
+                  label={
+                    <>
+                      שם{' '}
+                      <IsraelFlag className="inline-block w-[18px] h-[12px] rounded-[2px] ms-1.5 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+                    </>
+                  }
+                  required
+                >
                   <input
                     type="text"
                     value={newColor.name_he}
@@ -924,7 +974,16 @@ export function ProductFormPage({ mode, productId }: Props) {
                     className={inputCls(false)}
                   />
                 </FieldRow>
-                <FieldRow label="Name (English)" required>
+                <FieldRow
+                  label={
+                    <>
+                      Name{' '}
+                      <USAFlag className="inline-block w-[18px] h-[12px] rounded-[2px] ms-1.5 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+                    </>
+                  }
+                  required
+                  labelDir="ltr"
+                >
                   <input
                     type="text"
                     value={newColor.name_en}
@@ -1141,15 +1200,17 @@ function FieldRow({
   error,
   required,
   children,
+  labelDir,
 }: {
-  label: string
+  label: React.ReactNode
   error?: string
   required?: boolean
+  labelDir?: 'ltr' | 'rtl'
   children: React.ReactNode
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-text-main mb-1.5">
+      <label dir={labelDir} className="block text-xs font-medium text-text-main mb-1.5">
         {label}
         {required && (
           <span className="text-red-500 ms-0.5" aria-hidden="true">
