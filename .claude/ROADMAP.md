@@ -217,10 +217,10 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - [x] All admin tables: pagination with per-page selector (10 / 25 / 50)
 - **Acceptance:** can create a customizable product end-to-end and see it on the storefront; images upload to Cloudinary.
 
-### M1.25 Coupons management
+### M1.25 Coupons management ✅
 
-- [ ] CRUD + activate/deactivate; all coupon type fields (singleUsePerCustomer, firstOrderOnly, autoApply, validUntil, maxUses, …)
-- [ ] UI makes coupon type combinations clear (e.g. "Deadline code" preset)
+- [x] CRUD + activate/deactivate; all coupon type fields (singleUsePerCustomer, firstOrderOnly, autoApply, validUntil, maxUses, …)
+- [x] UI makes coupon type combinations clear (e.g. "Deadline code" preset)
 - **Acceptance:** every coupon type created here works correctly at cart.
 
 ### M1.26 Site Content + Email Services

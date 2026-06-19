@@ -19,6 +19,16 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-06-19 — M1.25: Coupons management UI
+
+- **Done:**
+  - `src/features/admin/coupons/CouponsListPage.tsx` — table with code/status/per-page filters, optimistic toggle-active (Power icon hits `PATCH /toggle`), pagination, soft-delete confirmation dialog
+  - `src/features/admin/coupons/CouponFormPage.tsx` — create/edit form; three sections (coupon details, usage limits, special options); code auto-uppercase; `%`/`₪` suffix on discount value; read-only `usedCount` in edit mode; redirect to `/admin/coupons` on save
+  - `src/app/(admin)/admin/coupons/page.tsx`, `new/page.tsx`, `[id]/edit/page.tsx` — thin Server Component wrappers
+- **Roadmap:** M1.25 ✅
+- **Decisions:** No tabs needed (coupons are simpler than products); `await params` pattern used in Next.js 15 edit page; sidebar nav was already wired.
+- **Notes:** typecheck clean. Next: M1.26 Site Content + Email Services UI.
+
 ## 2026-06-19 — M1.9: Admin backend route handlers
 
 - **Done:** 7 new services + 18 route files covering all remaining admin API surface:
