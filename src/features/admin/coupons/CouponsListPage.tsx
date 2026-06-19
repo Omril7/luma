@@ -3,7 +3,16 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Search, Pencil, Trash2, Power, ChevronRight, ChevronLeft } from 'lucide-react'
+import {
+  Plus,
+  Search,
+  Pencil,
+  Trash2,
+  Power,
+  ChevronRight,
+  ChevronLeft,
+  Infinity,
+} from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import type { CouponDTO } from '@/shared/types'
@@ -257,9 +266,15 @@ export function CouponsListPage() {
 
                     {/* שימושים */}
                     <td className="px-4 py-3 tabular-nums text-text-muted">
-                      {coupon.usedCount}
-                      {' / '}
-                      {coupon.maxUses != null ? coupon.maxUses : '∞'}
+                      <span className="flex items-center gap-1 whitespace-nowrap">
+                        {coupon.maxUses != null ? (
+                          coupon.maxUses
+                        ) : (
+                          <Infinity size={14} aria-label="ללא הגבלה" />
+                        )}
+                        <span>/</span>
+                        {coupon.usedCount}
+                      </span>
                     </td>
 
                     {/* תוקף */}

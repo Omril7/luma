@@ -10,5 +10,5 @@ export const PATCH = withAdmin<Ctx>(async (_req, _admin: AdminPayload, { params 
   if (!existing) return errorResponse('Coupon not found', 404)
 
   const coupon = await toggleAdminCoupon(id)
-  return NextResponse.json({ coupon })
+  return NextResponse.json({ isActive: coupon.isActive })
 })

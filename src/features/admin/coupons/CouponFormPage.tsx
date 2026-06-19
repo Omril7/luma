@@ -46,10 +46,10 @@ function couponToForm(c: CouponDTO): FormState {
     maxUses: c.maxUses != null ? String(c.maxUses) : '',
     validFrom: c.validFrom ? c.validFrom.slice(0, 10) : '',
     validUntil: c.validUntil ? c.validUntil.slice(0, 10) : '',
-    singleUsePerCustomer: c.singleUsePerCustomer,
-    firstOrderOnly: c.firstOrderOnly,
-    autoApply: c.autoApply,
-    isActive: c.isActive,
+    singleUsePerCustomer: c.singleUsePerCustomer ?? false,
+    firstOrderOnly: c.firstOrderOnly ?? false,
+    autoApply: c.autoApply ?? false,
+    isActive: c.isActive ?? true,
   }
 }
 
