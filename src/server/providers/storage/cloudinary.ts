@@ -1,9 +1,15 @@
 import 'server-only'
+import { v2 as cloudinary } from 'cloudinary'
 import type { StorageProvider, UploadFile, UploadResult } from './index'
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
 
 export class CloudinaryStorageProvider implements StorageProvider {
   async save(file: UploadFile): Promise<UploadResult> {
-    const { v2: cloudinary } = await import('cloudinary')
     return new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         { resource_type: 'image', folder: 'luma' },
@@ -17,7 +23,6 @@ export class CloudinaryStorageProvider implements StorageProvider {
   }
 
   async delete(key: string): Promise<void> {
-    const { v2: cloudinary } = await import('cloudinary')
     await cloudinary.uploader.destroy(key)
   }
 }
