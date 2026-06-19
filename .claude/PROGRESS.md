@@ -19,6 +19,16 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-06-19 — M1.26: Site Content + Email Services UI
+
+- **Done:**
+  - `src/features/admin/site-content/SiteContentPage.tsx` — 6-tab layout (Hero, Story, About, Contact, FAQ, Gallery); per-section save via `PUT /api/admin/site-content/:key`; bilingual field pairs with explicit `dir` attrs; FAQ tab has dynamic add/remove/reorder (ArrowUp/ArrowDown) of Q&A pairs; 3-sec inline success feedback per section
+  - `src/features/admin/email-services/EmailServicesPage.tsx` — sender config (PUT), test-send (POST), read-only provider info card
+  - Page wrappers at `/admin/content`, `/admin/email`, `/admin/site-content`, `/admin/email-services`
+- **Roadmap:** M1.26 ✅
+- **Decisions:** `useSaveSection` local hook reused across all 6 content keys. FAQ mutations are local-only until explicit save. Sidebar links were already wired at `/admin/content` and `/admin/email` — duplicate wrappers created for canonical paths.
+- **Notes:** typecheck clean. Next: M1.27 Newsletter UI.
+
 ## 2026-06-19 — M1.25: Coupons management UI
 
 - **Done:**

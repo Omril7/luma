@@ -223,10 +223,10 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - [x] UI makes coupon type combinations clear (e.g. "Deadline code" preset)
 - **Acceptance:** every coupon type created here works correctly at cart.
 
-### M1.26 Site Content + Email Services
+### M1.26 Site Content + Email Services ✅
 
-- [ ] Site Content page: edit all storefront static sections (home hero, About, FAQ, gallery intro, contact) — bilingual
-- [ ] Email Services page: view/edit from address, display name; send test email; preview templates
+- [x] Site Content page: edit all storefront static sections (home hero, About, FAQ, gallery intro, contact) — bilingual
+- [x] Email Services page: view/edit from address, display name; send test email; preview templates
 - **Acceptance:** site content changes go live immediately; test email dispatches via ConsoleEmailProvider in dev.
 
 ### M1.27 Newsletter
