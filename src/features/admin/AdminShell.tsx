@@ -20,6 +20,8 @@ import {
   ChevronRight,
   Menu,
   X,
+  PackageOpen,
+  Star,
 } from 'lucide-react'
 import { useAdminStore } from '@/stores/adminStore'
 
@@ -31,6 +33,8 @@ const NAV_ITEMS = [
   { href: '/admin/email-services', icon: Mail, label: 'שירותי דואר', exact: false },
   { href: '/admin/newsletter', icon: Send, label: 'ניוזלטר', exact: false },
   { href: '/admin/gallery', icon: ImageIcon, label: 'גלריה', exact: false },
+  { href: '/admin/bundles', icon: PackageOpen, label: 'חבילות', exact: false },
+  { href: '/admin/reviews', icon: Star, label: 'ביקורות', exact: false },
   { href: '/admin/settings', icon: Settings, label: 'הגדרות', exact: false },
 ]
 

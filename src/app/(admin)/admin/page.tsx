@@ -10,6 +10,8 @@ import {
   Settings,
   ArrowLeft,
   ShoppingBag,
+  PackageOpen,
+  Star,
 } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'לוח בקרה — Luma ניהול' }
@@ -50,6 +52,18 @@ const QUICK_LINKS = [
     icon: ImageIcon,
     title: 'גלריה',
     desc: 'ניהול תמונות הגלריה',
+  },
+  {
+    href: '/admin/bundles',
+    icon: PackageOpen,
+    title: 'חבילות',
+    desc: 'ניהול חבילות מוצרים במחיר מיוחד',
+  },
+  {
+    href: '/admin/reviews',
+    icon: Star,
+    title: 'ביקורות',
+    desc: 'אישור ופרסום ביקורות לקוחות',
   },
   {
     href: '/admin/settings',
