@@ -28,7 +28,7 @@ const NAV_ITEMS = [
   { href: '/admin/products', icon: Package, label: 'מוצרים', exact: false },
   { href: '/admin/coupons', icon: Tag, label: 'קופונים', exact: false },
   { href: '/admin/content', icon: FileText, label: 'תוכן האתר', exact: false },
-  { href: '/admin/email', icon: Mail, label: 'שירותי דואר', exact: false },
+  { href: '/admin/email-services', icon: Mail, label: 'שירותי דואר', exact: false },
   { href: '/admin/newsletter', icon: Send, label: 'ניוזלטר', exact: false },
   { href: '/admin/gallery', icon: ImageIcon, label: 'גלריה', exact: false },
   { href: '/admin/settings', icon: Settings, label: 'הגדרות', exact: false },

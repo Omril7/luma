@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Send, Settings, Mail, Check } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
+import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -190,7 +191,8 @@ export function EmailServicesPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={labelCls}>
-              שם שולח (עברית){' '}
+              שם שולח{' '}
+              <IsraelFlag className="inline-block w-[18px] h-[12px] rounded-[2px] ms-1.5 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
               <span className="text-red-500 ms-0.5" aria-hidden="true">
                 *
               </span>
@@ -205,9 +207,10 @@ export function EmailServicesPage() {
               className={inputCls}
             />
           </div>
-          <div>
+          <div dir="ltr">
             <label className={labelCls}>
-              שם שולח (אנגלית){' '}
+              Sender name{' '}
+              <USAFlag className="inline-block w-[18px] h-[12px] rounded-[2px] ms-1.5 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
               <span className="text-red-500 ms-0.5" aria-hidden="true">
                 *
               </span>

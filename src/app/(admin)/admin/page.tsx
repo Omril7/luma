@@ -34,7 +34,7 @@ const QUICK_LINKS = [
     desc: 'עריכת הטקסטים והתוכן הסטטי',
   },
   {
-    href: '/admin/email',
+    href: '/admin/email-services',
     icon: Mail,
     title: 'שירותי דואר',
     desc: 'הגדרות שליחת מיילים',
