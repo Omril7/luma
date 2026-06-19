@@ -19,6 +19,18 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-06-19 — M1.27: Newsletter admin UI
+
+- **Done:**
+  - `src/features/admin/newsletter/NewsletterPage.tsx` — 3-tab layout:
+    - **Subscribers tab**: paginated table (email, name, language badge with flag, date, active/inactive pill); search, language filter, active filter, per-page selector (10/25/50), CSV export (raw fetch + Blob download to bypass JSON wrapper); loading skeleton + error state
+    - **Send Newsletter tab**: target audience radio (all / Hebrew only / English only) with live recipient count fetched from API; bilingual subject + body fields (2-col grid, `dir` attrs, flag labels); confirmation dialog with recipient count; success/error banners; form resets after successful send
+    - **History tab**: chronological list of past sends showing Hebrew subject, English subject, date, recipient count, target language badge; loading skeleton + empty state
+  - `src/app/(admin)/admin/newsletter/page.tsx` — thin Server Component wrapper
+- **Roadmap:** M1.27 ✅
+- **Decisions:** SubscriberDTO and NewsletterSendDTO redeclared in the client component (server-only service types can't cross the boundary). CSV export uses raw `fetch` with `Authorization` header + `URL.createObjectURL` to trigger the browser download. Recipient count is fetched live (pageSize=1, isActive=true, language filter) on tab mount and target language change.
+- **Notes:** typecheck + lint clean (zero new warnings). Next: M1.28 Remaining admin (gallery, settings, bundle/review shells).
+
 ## 2026-06-19 — M1.26: Site Content + Email Services UI
 
 - **Done:**

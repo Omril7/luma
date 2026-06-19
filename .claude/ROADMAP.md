@@ -229,11 +229,11 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - [x] Email Services page: view/edit from address, display name; send test email; preview templates
 - **Acceptance:** site content changes go live immediately; test email dispatches via ConsoleEmailProvider in dev.
 
-### M1.27 Newsletter
+### M1.27 Newsletter ✅
 
-- [ ] Subscribers tab: paginated list, search, CSV export
-- [ ] Send Newsletter tab: compose (subject + body `_he`/`_en`), target by language, preview, send
-- [ ] Send history log (date, subject, recipient count)
+- [x] Subscribers tab: paginated list, search, CSV export
+- [x] Send Newsletter tab: compose (subject + body `_he`/`_en`), target by language, preview, send
+- [x] Send history log (date, subject, recipient count)
 - **Acceptance:** newsletter send dispatches to all matching active subscribers.
 
 ### M1.28 Remaining admin
