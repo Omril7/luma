@@ -236,11 +236,11 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - [x] Send history log (date, subject, recipient count)
 - **Acceptance:** newsletter send dispatches to all matching active subscribers.
 
-### M1.28 Remaining admin
+### M1.28 Remaining admin ✅
 
-- [ ] Gallery management (upload/reorder/delete)
-- [ ] Settings page (business info, shipping costs, WhatsApp number)
-- [ ] Bundles + Reviews page shells (routes + placeholder)
+- [x] Gallery management (upload/reorder/delete)
+- [x] Settings page (business info, shipping costs, WhatsApp number)
+- [x] Bundles + Reviews page shells (routes + placeholder)
 - **Acceptance:** nav complete; settings drive storefront (e.g. shipping cost, WhatsApp number).
 
 ---

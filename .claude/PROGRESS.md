@@ -19,6 +19,17 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-06-19 — M1.28: Remaining admin UI (gallery, settings, shells)
+
+- **Done:**
+  - `src/features/admin/gallery/GalleryPage.tsx` — image grid (2-3 cols responsive); per-card up/down reorder (optimistic swap of sortOrders → two PATCH requests, reverts on failure); delete with confirmation dialog; bottom "add new" form with `ImageUpload` + bilingual altText_he/en; loading/error states; inline success feedback
+  - `src/features/admin/settings/SettingsPage.tsx` — two sections: Business Info (bilingual name, address, phone, whatsapp, email) and Shipping (cost ₪, optional free-shipping threshold); per-section Save with inline success/error; page-level loading spinner
+  - `src/app/(admin)/admin/gallery/page.tsx`, `settings/page.tsx` — thin Server Component wrappers
+  - `src/app/(admin)/admin/bundles/page.tsx`, `reviews/page.tsx` — placeholder shells with PackageOpen/Star icons and "coming soon" messaging
+- **Roadmap:** M1.28 ✅
+- **Decisions:** Reorder persists by swapping `sortOrder` values between two adjacent items and PATCHing both; optimistic update prevents jitter. Shipping `freeShippingAbove` stored as a string in form state to allow an empty value (omitted from payload when blank). Bundles/Reviews pages are intentionally minimal stubs — no nav links added to sidebar since they're Phase 2 features.
+- **Notes:** typecheck clean. Next: M1.29 Quality pass (toasts, validation messages, security, RTL/responsive QA).
+
 ## 2026-06-19 — M1.27: Newsletter admin UI
 
 - **Done:**
