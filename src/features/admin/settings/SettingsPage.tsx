@@ -438,7 +438,7 @@ export function SettingsPage() {
           <div>
             <label className={labelCls}>עלות משלוח ארצי (₪)</label>
             <div className="relative">
-              <span className="absolute top-1/2 -translate-y-1/2 end-3 text-sm text-text-muted pointer-events-none">
+              <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
                 ₪
               </span>
               <input
@@ -449,8 +449,8 @@ export function SettingsPage() {
                 onChange={(e) =>
                   setShip((s) => ({ ...s, shippingCostNational: parseFloat(e.target.value) || 0 }))
                 }
-                dir="ltr"
-                className={`${inputCls} pe-7`}
+                dir="rtl"
+                className={`${inputCls} ps-8`}
               />
             </div>
             <p className="text-xs text-text-muted mt-1">עלות משלוח סטנדרטי לכל הארץ</p>
@@ -459,7 +459,7 @@ export function SettingsPage() {
           <div>
             <label className={labelCls}>סף משלוח חינם (₪, אופציונלי)</label>
             <div className="relative">
-              <span className="absolute top-1/2 -translate-y-1/2 end-3 text-sm text-text-muted pointer-events-none">
+              <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
                 ₪
               </span>
               <input
@@ -468,9 +468,9 @@ export function SettingsPage() {
                 step="1"
                 value={ship.freeShippingAbove}
                 onChange={(e) => setShip((s) => ({ ...s, freeShippingAbove: e.target.value }))}
-                dir="ltr"
+                dir="rtl"
                 placeholder="ריק = אין משלוח חינם"
-                className={`${inputCls} pe-7`}
+                className={`${inputCls} ps-8`}
               />
             </div>
             <p className="text-xs text-text-muted mt-1">השאר ריק אם אין הטבת משלוח חינם</p>
@@ -514,7 +514,7 @@ export function SettingsPage() {
           <div>
             <label className={labelCls}>{'תעריף (₪ לק"מ)'}</label>
             <div className="relative">
-              <span className="absolute top-1/2 -translate-y-1/2 end-3 text-sm text-text-muted pointer-events-none">
+              <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
                 ₪
               </span>
               <input
@@ -525,15 +525,15 @@ export function SettingsPage() {
                 onChange={(e) =>
                   setDelivery((s) => ({ ...s, deliveryRatePerKm: parseFloat(e.target.value) || 0 }))
                 }
-                dir="ltr"
-                className={`${inputCls} pe-7`}
+                dir="rtl"
+                className={`${inputCls} ps-8`}
               />
             </div>
           </div>
           <div>
             <label className={labelCls}>מינימום חיוב (₪)</label>
             <div className="relative">
-              <span className="absolute top-1/2 -translate-y-1/2 end-3 text-sm text-text-muted pointer-events-none">
+              <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
                 ₪
               </span>
               <input
@@ -544,15 +544,15 @@ export function SettingsPage() {
                 onChange={(e) =>
                   setDelivery((s) => ({ ...s, minDeliveryFee: parseFloat(e.target.value) || 0 }))
                 }
-                dir="ltr"
-                className={`${inputCls} pe-7`}
+                dir="rtl"
+                className={`${inputCls} ps-8`}
               />
             </div>
           </div>
           <div>
             <label className={labelCls}>מקסימום חיוב (₪, 0 = ללא הגבלה)</label>
             <div className="relative">
-              <span className="absolute top-1/2 -translate-y-1/2 end-3 text-sm text-text-muted pointer-events-none">
+              <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
                 ₪
               </span>
               <input
@@ -563,8 +563,8 @@ export function SettingsPage() {
                 onChange={(e) =>
                   setDelivery((s) => ({ ...s, maxDeliveryFee: parseFloat(e.target.value) || 0 }))
                 }
-                dir="ltr"
-                className={`${inputCls} pe-7`}
+                dir="rtl"
+                className={`${inputCls} ps-8`}
               />
             </div>
             <p className="text-xs text-text-muted mt-1">0 = ללא תקרה</p>

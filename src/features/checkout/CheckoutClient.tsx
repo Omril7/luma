@@ -271,33 +271,60 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
                   {t('name')}
                 </h2>
 
-                {/* Name */}
-                <div className="mb-4">
-                  <label
-                    htmlFor="name"
-                    className="mb-1 block text-sm font-medium text-[var(--color-text)]"
-                  >
-                    {t('name')}
-                  </label>
-                  <input
-                    id="name"
-                    type="text"
-                    autoComplete="name"
-                    value={form.name}
-                    onChange={(e) => handleChange('name', e.target.value)}
-                    className={inputClass}
-                    aria-describedby={errors.name ? 'error-name' : undefined}
-                    aria-invalid={!!errors.name}
-                  />
-                  {errors.name && (
-                    <p id="error-name" role="alert" className={errorClass}>
-                      {errors.name}
-                    </p>
-                  )}
+                <div className="mb-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  {/* Name */}
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="mb-1 block text-sm font-medium text-[var(--color-text)]"
+                    >
+                      {t('name')}
+                    </label>
+                    <input
+                      id="name"
+                      type="text"
+                      autoComplete="name"
+                      value={form.name}
+                      onChange={(e) => handleChange('name', e.target.value)}
+                      className={inputClass}
+                      aria-describedby={errors.name ? 'error-name' : undefined}
+                      aria-invalid={!!errors.name}
+                    />
+                    {errors.name && (
+                      <p id="error-name" role="alert" className={errorClass}>
+                        {errors.name}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Phone */}
+                  <div>
+                    <label
+                      htmlFor="phone"
+                      className="mb-1 block text-sm font-medium text-[var(--color-text)]"
+                    >
+                      {t('phone')}
+                    </label>
+                    <input
+                      id="phone"
+                      type="tel"
+                      autoComplete="tel"
+                      value={form.phone}
+                      onChange={(e) => handleChange('phone', e.target.value)}
+                      className={inputClass}
+                      aria-describedby={errors.phone ? 'error-phone' : undefined}
+                      aria-invalid={!!errors.phone}
+                    />
+                    {errors.phone && (
+                      <p id="error-phone" role="alert" className={errorClass}>
+                        {errors.phone}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Email */}
-                <div className="mb-4">
+                <div>
                   <label
                     htmlFor="email"
                     className="mb-1 block text-sm font-medium text-[var(--color-text)]"
@@ -317,31 +344,6 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
                   {errors.email && (
                     <p id="error-email" role="alert" className={errorClass}>
                       {errors.email}
-                    </p>
-                  )}
-                </div>
-
-                {/* Phone */}
-                <div>
-                  <label
-                    htmlFor="phone"
-                    className="mb-1 block text-sm font-medium text-[var(--color-text)]"
-                  >
-                    {t('phone')}
-                  </label>
-                  <input
-                    id="phone"
-                    type="tel"
-                    autoComplete="tel"
-                    value={form.phone}
-                    onChange={(e) => handleChange('phone', e.target.value)}
-                    className={inputClass}
-                    aria-describedby={errors.phone ? 'error-phone' : undefined}
-                    aria-invalid={!!errors.phone}
-                  />
-                  {errors.phone && (
-                    <p id="error-phone" role="alert" className={errorClass}>
-                      {errors.phone}
                     </p>
                   )}
                 </div>
@@ -409,7 +411,7 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
                       transition={{ duration: 0.25, ease: 'easeInOut' }}
                       className="overflow-hidden"
                     >
-                      <div className="flex flex-col gap-4 pt-2">
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 m-1">
                         {/* Street */}
                         <div>
                           <label

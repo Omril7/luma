@@ -341,46 +341,48 @@ export function CouponFormPage({ couponId }: Props) {
             </div>
           </FieldRow>
 
-          <FieldRow label={`ערך ההנחה (${discountSuffix})`} error={errors.discountValue} required>
-            <div className="relative">
-              <input
-                type="number"
-                min="0"
-                max={form.discountType === 'PERCENTAGE' ? 100 : undefined}
-                step="0.01"
-                value={form.discountValue}
-                onChange={(e) => set('discountValue', e.target.value)}
-                placeholder={form.discountType === 'PERCENTAGE' ? '15' : '50'}
-                dir="ltr"
-                className={`${inputCls(!!errors.discountValue)} pe-8`}
-              />
-              <span className="absolute top-1/2 -translate-y-1/2 end-3 text-sm text-text-muted pointer-events-none">
-                {discountSuffix}
-              </span>
-            </div>
-          </FieldRow>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FieldRow label={`ערך ההנחה (${discountSuffix})`} error={errors.discountValue} required>
+              <div className="relative">
+                <input
+                  type="number"
+                  min="0"
+                  max={form.discountType === 'PERCENTAGE' ? 100 : undefined}
+                  step="0.01"
+                  value={form.discountValue}
+                  onChange={(e) => set('discountValue', e.target.value)}
+                  placeholder={form.discountType === 'PERCENTAGE' ? '15' : '50'}
+                  dir="rtl"
+                  className={`${inputCls(!!errors.discountValue)} ps-8`}
+                />
+                <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
+                  {discountSuffix}
+                </span>
+              </div>
+            </FieldRow>
 
-          <FieldRow
-            label="מינימום סכום הזמנה (₪)"
-            error={errors.minOrderAmount}
-            helper="השאר ריק ללא מינימום"
-          >
-            <div className="relative">
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.minOrderAmount}
-                onChange={(e) => set('minOrderAmount', e.target.value)}
-                placeholder="200"
-                dir="ltr"
-                className={`${inputCls(!!errors.minOrderAmount)} pe-6`}
-              />
-              <span className="absolute top-1/2 -translate-y-1/2 end-3 text-sm text-text-muted pointer-events-none">
-                ₪
-              </span>
-            </div>
-          </FieldRow>
+            <FieldRow
+              label="מינימום סכום הזמנה (₪)"
+              error={errors.minOrderAmount}
+              helper="השאר ריק ללא מינימום"
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.minOrderAmount}
+                  onChange={(e) => set('minOrderAmount', e.target.value)}
+                  placeholder="200"
+                  dir="rtl"
+                  className={`${inputCls(!!errors.minOrderAmount)} ps-8`}
+                />
+                <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
+                  ₪
+                </span>
+              </div>
+            </FieldRow>
+          </div>
         </section>
 
         {/* ── Section: מגבלות שימוש ──────────────────────────────── */}
