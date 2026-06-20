@@ -16,7 +16,7 @@ export function InstagramSection({ locale: _locale }: InstagramSectionProps) {
   const shouldAnimate = !a11y.noMotion
 
   return (
-    <section className="py-16 md:py-20 bg-secondary">
+    <section className="py-16 md:py-20">
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         {/* Heading */}
         <motion.div

@@ -15,7 +15,7 @@ export function StorySection({ locale: _locale }: StorySectionProps) {
   const shouldAnimate = !a11y.noMotion
 
   return (
-    <section className="py-16 md:py-24 bg-secondary">
+    <section className="py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Image column — mobile: top, desktop: start */}

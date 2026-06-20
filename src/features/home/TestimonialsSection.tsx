@@ -60,7 +60,7 @@ export function TestimonialsSection({ locale }: TestimonialsSectionProps) {
   const items = locale === 'he' ? TESTIMONIALS_HE : TESTIMONIALS_EN
 
   return (
-    <section className="py-16 md:py-24 bg-bg">
+    <section className="py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         {/* Heading */}
         <motion.h2

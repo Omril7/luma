@@ -251,6 +251,12 @@
       "heading": "Follow Us",
       "handle": "@luma.furniture",
       "coming": "Coming Soon"
+    },
+    "contact": {
+      "heading": "Can't find exactly what you're looking for?",
+      "body": "Love the style but can't find the perfect piece? We'll build it for you — custom furniture, made exactly as you imagined.",
+      "whatsapp": "Chat with us on WhatsApp",
+      "email": "Send us an email"
     }
   }
 }

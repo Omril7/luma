@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import { getProducts } from '@/server/services/productService'
 import { HeroSection } from '@/features/home/HeroSection'
-import { FeaturedSection } from '@/features/home/FeaturedSection'
+// import { FeaturedSection } from '@/features/home/FeaturedSection'
 import { StorySection } from '@/features/home/StorySection'
 import { TestimonialsSection } from '@/features/home/TestimonialsSection'
 import { InstagramSection } from '@/features/home/InstagramSection'
+import { ContactSection } from '@/features/home/ContactSection'
 
 export async function generateMetadata({
   params,
@@ -23,15 +23,23 @@ export async function generateMetadata({
 
 export default async function HomePage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params
-  const { products } = await getProducts({ featured: true, limit: 6 })
 
   return (
     <>
       <HeroSection locale={lang} />
-      <FeaturedSection products={products} locale={lang} />
-      <StorySection locale={lang} />
-      <TestimonialsSection locale={lang} />
-      <InstagramSection locale={lang} />
+      {/* <div className="bg-bg"><FeaturedSection products={...} locale={lang} /></div> — restore with getProducts({ featured: true, limit: 6 }) */}
+      <div className="bg-bg">
+        <StorySection locale={lang} />
+      </div>
+      <div className="bg-secondary">
+        <TestimonialsSection locale={lang} />
+      </div>
+      <div className="bg-bg">
+        <InstagramSection locale={lang} />
+      </div>
+      <div className="bg-secondary">
+        <ContactSection locale={lang} />
+      </div>
     </>
   )
 }
