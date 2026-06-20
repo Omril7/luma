@@ -79,6 +79,9 @@ EMAIL_SMTP_USER=
 EMAIL_SMTP_PASS=
 EMAIL_FROM=
 
+# --- delivery distance (OpenRouteService) ---
+OPENROUTESERVICE_API_KEY=            # free tier: openrouteservice.org — 2,000 req/day
+
 # --- business / frontend ---
 NEXT_PUBLIC_WHATSAPP_NUMBER=972500000000
 NEXT_PUBLIC_DEFAULT_LANGUAGE=he
@@ -90,8 +93,8 @@ NEXT_PUBLIC_DEFAULT_LANGUAGE=he
 
 ```ts
 interface StorageProvider {
-  save(file: UploadFile): Promise<{ url: string; key: string }>;
-  delete(key: string): Promise<void>;
+  save(file: UploadFile): Promise<{ url: string; key: string }>
+  delete(key: string): Promise<void>
 }
 ```
 
@@ -106,16 +109,16 @@ Selected by `STORAGE_DRIVER`. Call sites (`POST /api/admin/upload`) never change
 
 ```jsonc
 {
-  "dev":        "next dev",
-  "build":      "next build",
-  "start":      "next start",
-  "typecheck":  "tsc --noEmit",
-  "lint":       "next lint",
-  "format":     "prettier --write .",
-  "test":       "vitest run",
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "typecheck": "tsc --noEmit",
+  "lint": "next lint",
+  "format": "prettier --write .",
+  "test": "vitest run",
   "db:migrate": "prisma migrate dev",
-  "db:seed":    "prisma db seed",
-  "db:studio":  "prisma studio"
+  "db:seed": "prisma db seed",
+  "db:studio": "prisma studio",
 }
 ```
 

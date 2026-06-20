@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Building2, Truck, Check, AlertCircle } from 'lucide-react'
+import { Building2, Truck, MapPin, Check, AlertCircle } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
@@ -21,6 +21,14 @@ interface SiteSettingsDTO {
   shipping: {
     shippingCostNational: number
     freeShippingAbove?: number
+  }
+  delivery: {
+    studioAddress: string
+    studioLat: number | null
+    studioLng: number | null
+    deliveryRatePerKm: number
+    minDeliveryFee: number
+    maxDeliveryFee: number
   }
 }
 
@@ -111,13 +119,24 @@ export function SettingsPage() {
   const [shipSuccess, setShipSuccess] = useState(false)
   const [shipError, setShipError] = useState<string | null>(null)
 
+  // Delivery distance form
+  const [delivery, setDelivery] = useState({
+    studioAddress: '',
+    deliveryRatePerKm: 3,
+    minDeliveryFee: 50,
+    maxDeliveryFee: 0,
+  })
+  const [deliverySaving, setDeliverySaving] = useState(false)
+  const [deliverySuccess, setDeliverySuccess] = useState(false)
+  const [deliveryError, setDeliveryError] = useState<string | null>(null)
+
   const loadSettings = useCallback(async () => {
     if (!token) return
     setPageLoading(true)
     setLoadError(null)
     try {
       const data = await api.get<{ settings: SiteSettingsDTO }>('/api/admin/settings', token)
-      const { business, shipping } = data.settings
+      const { business, shipping, delivery: del } = data.settings
       setBiz({
         businessName_he: business.businessName_he,
         businessName_en: business.businessName_en,
@@ -132,6 +151,14 @@ export function SettingsPage() {
         freeShippingAbove:
           shipping.freeShippingAbove != null ? String(shipping.freeShippingAbove) : '',
       })
+      if (del) {
+        setDelivery({
+          studioAddress: del.studioAddress ?? '',
+          deliveryRatePerKm: del.deliveryRatePerKm ?? 3,
+          minDeliveryFee: del.minDeliveryFee ?? 50,
+          maxDeliveryFee: del.maxDeliveryFee ?? 0,
+        })
+      }
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : 'שגיאה בטעינת ההגדרות')
     } finally {
@@ -208,6 +235,44 @@ export function SettingsPage() {
       setShipError(e instanceof Error ? e.message : 'שגיאה בשמירה')
     } finally {
       setShipSaving(false)
+    }
+  }
+
+  async function handleSaveDelivery() {
+    if (!token) return
+    setDeliverySaving(true)
+    setDeliverySuccess(false)
+    setDeliveryError(null)
+    try {
+      const rate = delivery.deliveryRatePerKm
+      const minFee = delivery.minDeliveryFee
+      const maxFee = delivery.maxDeliveryFee
+
+      if (isNaN(rate) || rate < 0) {
+        setDeliveryError('תעריף לק"מ לא תקין')
+        return
+      }
+      if (isNaN(minFee) || minFee < 0) {
+        setDeliveryError('מינימום חיוב לא תקין')
+        return
+      }
+
+      await api.put<{ settings: SiteSettingsDTO }>(
+        '/api/admin/settings',
+        {
+          studioAddress: delivery.studioAddress.trim(),
+          deliveryRatePerKm: rate,
+          minDeliveryFee: minFee,
+          maxDeliveryFee: maxFee,
+        },
+        token
+      )
+      setDeliverySuccess(true)
+      setTimeout(() => setDeliverySuccess(false), 3000)
+    } catch (e) {
+      setDeliveryError(e instanceof Error ? e.message : 'שגיאה בשמירה')
+    } finally {
+      setDeliverySaving(false)
     }
   }
 
@@ -417,6 +482,100 @@ export function SettingsPage() {
           saving={shipSaving}
           success={shipSuccess}
           error={shipError}
+        />
+      </section>
+
+      {/* ── Delivery Distance ─────────────────────────────────────────────────── */}
+      <section className="bg-surface border border-border rounded-lg p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <MapPin size={16} className="text-text-muted" aria-hidden="true" />
+          <h3 className="text-base font-semibold text-text-main">משלוח לפי מרחק (ORS)</h3>
+        </div>
+        <p className="text-xs text-text-muted">
+          עלות המשלוח מחושבת לפי מרחק כביש ממיקום הסטודיו לכתובת הלקוח.
+        </p>
+
+        <div>
+          <label className={labelCls}>כתובת הסטודיו (נקודת מוצא)</label>
+          <input
+            type="text"
+            value={delivery.studioAddress}
+            onChange={(e) => setDelivery((s) => ({ ...s, studioAddress: e.target.value }))}
+            placeholder="רחוב המלאכה 5, תל אביב"
+            className={inputCls}
+            dir="rtl"
+          />
+          <p className="text-xs text-text-muted mt-1">
+            תיאוחל לקואורדינטות בשמירה — ודאו שהכתובת מדויקת
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className={labelCls}>{'תעריף (₪ לק"מ)'}</label>
+            <div className="relative">
+              <span className="absolute top-1/2 -translate-y-1/2 end-3 text-sm text-text-muted pointer-events-none">
+                ₪
+              </span>
+              <input
+                type="number"
+                min="0"
+                step="0.5"
+                value={delivery.deliveryRatePerKm}
+                onChange={(e) =>
+                  setDelivery((s) => ({ ...s, deliveryRatePerKm: parseFloat(e.target.value) || 0 }))
+                }
+                dir="ltr"
+                className={`${inputCls} pe-7`}
+              />
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>מינימום חיוב (₪)</label>
+            <div className="relative">
+              <span className="absolute top-1/2 -translate-y-1/2 end-3 text-sm text-text-muted pointer-events-none">
+                ₪
+              </span>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={delivery.minDeliveryFee}
+                onChange={(e) =>
+                  setDelivery((s) => ({ ...s, minDeliveryFee: parseFloat(e.target.value) || 0 }))
+                }
+                dir="ltr"
+                className={`${inputCls} pe-7`}
+              />
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>מקסימום חיוב (₪, 0 = ללא הגבלה)</label>
+            <div className="relative">
+              <span className="absolute top-1/2 -translate-y-1/2 end-3 text-sm text-text-muted pointer-events-none">
+                ₪
+              </span>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={delivery.maxDeliveryFee}
+                onChange={(e) =>
+                  setDelivery((s) => ({ ...s, maxDeliveryFee: parseFloat(e.target.value) || 0 }))
+                }
+                dir="ltr"
+                className={`${inputCls} pe-7`}
+              />
+            </div>
+            <p className="text-xs text-text-muted mt-1">0 = ללא תקרה</p>
+          </div>
+        </div>
+
+        <SaveButton
+          onClick={handleSaveDelivery}
+          saving={deliverySaving}
+          success={deliverySuccess}
+          error={deliveryError}
         />
       </section>
     </div>

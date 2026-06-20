@@ -243,6 +243,20 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - [x] Bundles + Reviews page shells (routes + placeholder)
 - **Acceptance:** nav complete; settings drive storefront (e.g. shipping cost, WhatsApp number).
 
+### M1.28b Distance-based delivery pricing ✅
+
+Replace flat-rate national shipping with road-distance-based fee calculated live at checkout using OpenRouteService.
+
+- [x] **Settings fields** — add `delivery` block to `SiteSettingsDTO` + `updateSettingsSchema`: `studioAddress`, cached `studioLat`/`studioLng`, `deliveryRatePerKm` (₪/km), `minDeliveryFee`, `maxDeliveryFee` (₪, 0 = no cap)
+- [x] **Distance service** — `src/server/services/deliveryDistanceService.ts`: geocode address via ORS, fetch road distance via ORS Directions API (driving-car), apply rate + clamp min/max
+- [x] **Estimate endpoint** — `POST /api/delivery/estimate` (public): body `{ address }`, returns `{ distanceKm, fee, ratePerKm, minFee, maxFee }`
+- [x] **Order service** — replace hardcoded ₪150 with server-side distance recalculation for `NATIONAL_SHIPPING`
+- [x] **Admin settings UI** — new "משלוח לפי מרחק" section: studio address, ₪/km rate, min/max fee; save geocodes and caches studio coords
+- [x] **Checkout UI** — debounced (800ms) live estimate after street+city filled; inline loading/success/error states; block submit on unresolved error
+- [x] **i18n** — add `he.json`/`en.json` keys for new checkout + admin strings
+- [x] **Env var** — `OPENROUTESERVICE_API_KEY` documented in `.claude/docs/10-devops.md`
+- **Acceptance:** entering a delivery address in checkout shows a live fee (₪ + km); admin can configure all rate/limit params; order total reflects the distance fee; geocoding error shows an inline "address not found" message and blocks checkout.
+
 ---
 
 ## Phase 1 — Hardening / launch readiness
@@ -281,7 +295,6 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - [ ] **Newsletter system** (Mailchimp/SendGrid) wired to `EmailProvider.sendNewsletter`
 - [ ] **Google Analytics** integration
 - [ ] **Emails:** wire `EmailProvider` (SendGrid/SES) — order confirmation + new order alert on payment success; bilingual templates
-- [ ] **Advanced shipping** calculator by region
 - [ ] **Auth hardening:** refresh tokens + rotation, httpOnly-cookie tokens, password reset, login lockout, optional 2FA/RBAC, or delegate to Supabase Auth
 - **Acceptance:** each ships behind its interface/flag without regressing phase-1 flows.
 

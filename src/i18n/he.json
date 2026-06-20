@@ -158,7 +158,13 @@
     "emptyCart": "הסל שלך ריק",
     "emptyCartCta": "לחנות",
     "termsRequired": "יש לאשר את תנאי השימוש",
-    "errorGeneral": "אירעה שגיאה, נסו שוב"
+    "errorGeneral": "אירעה שגיאה, נסו שוב",
+    "shippingCostEstimated": "מחושב לפי מרחק",
+    "deliveryCalculating": "מחשב עלות משלוח...",
+    "deliveryFeeLabel": "עלות משלוח: {fee} ({km} ק\"מ)",
+    "deliveryAddressNotFound": "הכתובת לא נמצאה — אנא בדקו את הכתובת",
+    "deliveryNotConfigured": "משלוח לפי מרחק אינו מוגדר כרגע",
+    "deliveryEstimateError": "לא ניתן לחשב עלות משלוח — נסו שוב"
   },
   "confirmation": {
     "title": "תודה על הזמנתך!",

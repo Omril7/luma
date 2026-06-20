@@ -1,6 +1,8 @@
 import 'server-only'
 import { prisma } from '@/server/prisma'
 import { calculateProductPrice } from '@/server/services/pricingService'
+import { getSiteSettings } from '@/server/services/adminSettingsService'
+import { calculateDeliveryFee } from '@/server/services/deliveryDistanceService'
 import type { CreateOrderInput } from '@/shared/schemas'
 import type { OrderDTO, ShippingAddressDTO } from '@/shared/types'
 
@@ -170,7 +172,19 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderDTO> {
 
   // 2. Compute order totals
   const subtotal = pricedItems.reduce((sum, item) => sum + item.totalPrice, 0)
-  const shippingCost = input.shippingMethod === 'NATIONAL_SHIPPING' ? 150 : 0
+  let shippingCost = 0
+  if (input.shippingMethod === 'NATIONAL_SHIPPING') {
+    const settings = await getSiteSettings()
+    const dest = [input.shippingAddress.street, input.shippingAddress.city, 'ישראל']
+      .filter(Boolean)
+      .join(', ')
+    try {
+      const estimate = await calculateDeliveryFee(dest, settings)
+      shippingCost = estimate.fee
+    } catch {
+      shippingCost = settings.delivery.minDeliveryFee || 50
+    }
+  }
 
   // 3. Validate coupon if provided
   let discountAmount = 0

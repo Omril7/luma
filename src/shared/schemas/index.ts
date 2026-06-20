@@ -264,6 +264,10 @@ export const updateSettingsSchema = z.object({
   email: z.string().email().optional(),
   shippingCostNational: z.number().min(0).optional(),
   freeShippingAbove: z.number().min(0).optional(),
+  studioAddress: z.string().max(500).optional(),
+  deliveryRatePerKm: z.number().min(0).optional(),
+  minDeliveryFee: z.number().min(0).optional(),
+  maxDeliveryFee: z.number().min(0).optional(),
 })
 
 export type UpdateSettingsInput = z.infer<typeof updateSettingsSchema>
@@ -279,11 +283,9 @@ export type UpdateReviewInput = z.infer<typeof updateReviewSchema>
 // ── Site content value ────────────────────────────────────────────────────────
 
 export const siteContentValueSchema = z.object({
-  value: z
-    .unknown()
-    .refine((v) => v !== null && typeof v === 'object', {
-      message: 'Value must be a JSON object or array',
-    }),
+  value: z.unknown().refine((v) => v !== null && typeof v === 'object', {
+    message: 'Value must be a JSON object or array',
+  }),
 })
 
 export type SiteContentValueInput = z.infer<typeof siteContentValueSchema>

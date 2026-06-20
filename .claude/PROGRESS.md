@@ -19,6 +19,30 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-06-20 — M1.28b: Distance-based delivery pricing ✅
+
+- **Done:**
+  - `src/server/services/deliveryDistanceService.ts` — `geocodeIsraeliAddress` (ORS geocode API, Israel-bounded), `getRoadDistanceKm` (ORS directions driving-car), `calculateDeliveryFee` (rate × km, clamped min/max); custom `DeliveryEstimateError` with typed codes
+  - `src/app/api/delivery/estimate/route.ts` — public `POST` endpoint; 422 on bad address, 503 when unconfigured, 200 with `{ distanceKm, fee, ratePerKm, minFee, maxFee }`
+  - `src/shared/schemas/index.ts` — added `studioAddress`, `deliveryRatePerKm`, `minDeliveryFee`, `maxDeliveryFee` to `updateSettingsSchema`
+  - `src/server/services/adminSettingsService.ts` — new `DeliverySettings` interface + `delivery` block in `SiteSettingsDTO`; auto-geocodes studio address on save and caches lat/lng
+  - `src/server/services/orderService.ts` — replaced hardcoded ₪150 with dynamic `calculateDeliveryFee` call; falls back to `minDeliveryFee` on ORS failure
+  - `src/features/admin/settings/SettingsPage.tsx` — new "משלוח לפי מרחק (ORS)" section with studio address, ₪/km rate, min/max fee inputs; separate Save section
+  - `src/features/checkout/CheckoutClient.tsx` — 800ms debounced estimate on street+city change; inline spinner/error/fee feedback; submit disabled until estimate resolves; sidebar shows live fee or `...`
+  - `src/i18n/he.json` + `en.json` — 6 new `checkout` keys
+  - `.claude/docs/10-devops.md` — `OPENROUTESERVICE_API_KEY` documented in env var reference
+- **Roadmap:** M1.28b ✅
+- **Decisions:**
+  - Use **OpenRouteService (ORS)** free tier (2,000 req/day, no billing account required) for both geocoding and road-distance calculation. Can swap to Google Maps later.
+  - Road distance (not straight-line) for fairness on hilly/winding Israeli terrain.
+  - Delivery fields stored as a new `delivery` block in the existing `SiteContent` JSON settings (no Prisma migration needed).
+  - Studio address is geocoded on admin Save and cached as `studioLat`/`studioLng` to avoid re-geocoding on every order.
+  - Server re-calculates the fee independently on order create (client sends address, server computes authoritative cost).
+  - Geocoding failure → inline "address not found" error in checkout; submit button stays blocked until resolved.
+  - Min/max delivery fee caps configurable by admin (0 maxDeliveryFee = no cap).
+  - `OPENROUTESERVICE_API_KEY` env var required.
+- **Notes/blockers:** Admin must set studio address + rate in Settings before live estimates work. ORS free tier allows 2,000 req/day — sufficient for a small furniture business.
+
 ## 2026-06-19 — M1.28: Remaining admin UI (gallery, settings, shells)
 
 - **Done:**

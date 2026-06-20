@@ -158,7 +158,13 @@
     "emptyCart": "Your cart is empty",
     "emptyCartCta": "Go to shop",
     "termsRequired": "Please accept the terms of service",
-    "errorGeneral": "Something went wrong, please try again"
+    "errorGeneral": "Something went wrong, please try again",
+    "shippingCostEstimated": "Calculated by distance",
+    "deliveryCalculating": "Calculating delivery cost...",
+    "deliveryFeeLabel": "Delivery fee: {fee} ({km} km)",
+    "deliveryAddressNotFound": "Address not found — please verify your address",
+    "deliveryNotConfigured": "Distance-based delivery is not yet configured",
+    "deliveryEstimateError": "Could not calculate delivery cost — please try again"
   },
   "confirmation": {
     "title": "Thank you for your order!",

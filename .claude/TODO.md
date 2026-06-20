@@ -23,6 +23,13 @@ Check items off as you complete them and I'll update future plans accordingly.
 - [ ] Go to **Dashboard → API Keys** and copy the **API URL** (format: `cloudinary://<api_key>:<api_secret>@<cloud_name>`)
 - [ ] Add to `.env.local`: `CLOUDINARY_URL=cloudinary://...` and `STORAGE_DRIVER=cloudinary`
 
+### OpenRouteService (delivery distance)
+
+- [ ] Create a free account at https://openrouteservice.org → sign up → go to **Dashboard → Tokens** → create a new token
+- [ ] Add to `.env.local`: `OPENROUTESERVICE_API_KEY=<your-token>`
+- [ ] In Admin → Settings, set the **studio address** and configure ₪/km rate + min/max delivery fee
+- [ ] Also add `OPENROUTESERVICE_API_KEY` to Vercel env vars when deploying
+
 ### JWT secret
 
 - [x] Generate a strong random secret: https://generate-secret.vercel.app/32

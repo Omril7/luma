@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   User,
   Truck,
@@ -9,6 +9,8 @@ import {
   ChevronRight,
   Loader2,
   ShoppingCart,
+  MapPin,
+  AlertTriangle,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useTranslations } from 'next-intl'
@@ -30,7 +32,6 @@ function formatPrice(agorot: number, locale: string): string {
 }
 
 const INSTALLMENT_OPTIONS = [1, 3, 6, 12]
-const SHIPPING_COST_AGOROT = 15000 // ₪150 in agorot
 
 export function CheckoutClient({ locale }: CheckoutClientProps) {
   const t = useTranslations('checkout')
@@ -54,6 +55,56 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
   const [errors, setErrors] = useState<Partial<Record<keyof typeof form, string>>>({})
   const [submitting, setSubmitting] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
+  const [deliveryEstimate, setDeliveryEstimate] = useState<{
+    distanceKm: number
+    fee: number
+  } | null>(null)
+  const [estimating, setEstimating] = useState(false)
+  const [estimateError, setEstimateError] = useState<string | null>(null)
+
+  // ── Delivery estimate (debounced) ────────────────────────────────────────────
+  useEffect(() => {
+    if (form.shippingMethod !== 'NATIONAL_SHIPPING') {
+      setDeliveryEstimate(null)
+      setEstimateError(null)
+      return
+    }
+    const street = form.street.trim()
+    const city = form.city.trim()
+    if (!street || !city) {
+      setDeliveryEstimate(null)
+      setEstimateError(null)
+      return
+    }
+    const timer = setTimeout(async () => {
+      setEstimating(true)
+      setEstimateError(null)
+      setDeliveryEstimate(null)
+      try {
+        const address = `${street}, ${city}, ישראל`
+        const data = await api.post<{
+          distanceKm: number
+          fee: number
+          ratePerKm: number
+          minFee: number
+          maxFee: number
+          error?: string
+        }>('/api/delivery/estimate', { address })
+        if (data.error === 'ADDRESS_NOT_FOUND') {
+          setEstimateError(t('deliveryAddressNotFound'))
+        } else if (data.error === 'NOT_CONFIGURED') {
+          setEstimateError(t('deliveryNotConfigured'))
+        } else {
+          setDeliveryEstimate({ distanceKm: data.distanceKm, fee: data.fee })
+        }
+      } catch {
+        setEstimateError(t('deliveryEstimateError'))
+      } finally {
+        setEstimating(false)
+      }
+    }, 800)
+    return () => clearTimeout(timer)
+  }, [form.street, form.city, form.shippingMethod, t])
 
   // ── Empty cart guard ─────────────────────────────────────────────────────────
   if (items.length === 0) {
@@ -89,7 +140,8 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
 
   // ── Computed totals ──────────────────────────────────────────────────────────
   const subtotalValue = subtotal()
-  const shippingAgorot = form.shippingMethod === 'NATIONAL_SHIPPING' ? SHIPPING_COST_AGOROT : 0
+  const shippingAgorot =
+    form.shippingMethod === 'NATIONAL_SHIPPING' && deliveryEstimate ? deliveryEstimate.fee * 100 : 0
   const totalValue = Math.max(0, subtotalValue + shippingAgorot - discount)
 
   // ── Validation ───────────────────────────────────────────────────────────────
@@ -326,7 +378,11 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
                           {method === 'NATIONAL_SHIPPING' ? t('nationalShipping') : t('pickup')}
                         </span>
                         <span className="text-xs text-[var(--color-text-muted)]">
-                          {method === 'NATIONAL_SHIPPING' ? t('shippingCost') : t('freePickup')}
+                          {method === 'NATIONAL_SHIPPING'
+                            ? form.shippingMethod === 'NATIONAL_SHIPPING' && deliveryEstimate
+                              ? formatPrice(deliveryEstimate.fee * 100, locale)
+                              : t('shippingCostEstimated')
+                            : t('freePickup')}
                         </span>
                       </div>
                       {/* Visual radio indicator */}
@@ -403,6 +459,37 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
                             </p>
                           )}
                         </div>
+
+                        {/* Delivery estimate feedback */}
+                        {form.shippingMethod === 'NATIONAL_SHIPPING' &&
+                          (form.street.trim() || form.city.trim()) && (
+                            <div className="mt-1">
+                              {estimating && (
+                                <p className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
+                                  <Loader2 size={12} className="animate-spin" aria-hidden="true" />
+                                  {t('deliveryCalculating')}
+                                </p>
+                              )}
+                              {!estimating && estimateError && (
+                                <p
+                                  role="alert"
+                                  className="flex items-center gap-1.5 text-xs text-[var(--color-accent)]"
+                                >
+                                  <AlertTriangle size={12} aria-hidden="true" />
+                                  {estimateError}
+                                </p>
+                              )}
+                              {!estimating && !estimateError && deliveryEstimate && (
+                                <p className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
+                                  <MapPin size={12} aria-hidden="true" />
+                                  {t('deliveryFeeLabel', {
+                                    fee: formatPrice(deliveryEstimate.fee * 100, locale),
+                                    km: deliveryEstimate.distanceKm.toFixed(1),
+                                  })}
+                                </p>
+                              )}
+                            </div>
+                          )}
                       </div>
                     </motion.div>
                   )}
@@ -496,7 +583,11 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
               {/* ── Submit button ─────────────────────────────────────────── */}
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={
+                  submitting ||
+                  (form.shippingMethod === 'NATIONAL_SHIPPING' &&
+                    (estimating || !!estimateError || !deliveryEstimate))
+                }
                 className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[var(--radius)] bg-[var(--color-primary)] font-semibold text-white transition-colors duration-150 hover:bg-[var(--color-primary-600)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {submitting ? (
@@ -559,7 +650,13 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
                     {t('shippingLabel')}
                   </span>
                   <span className="text-sm tabular-nums text-[var(--color-text)]">
-                    {shippingAgorot === 0 ? t('freePickup') : formatPrice(shippingAgorot, locale)}
+                    {form.shippingMethod === 'PICKUP'
+                      ? t('freePickup')
+                      : estimating
+                        ? '...'
+                        : shippingAgorot === 0
+                          ? t('shippingCostEstimated')
+                          : formatPrice(shippingAgorot, locale)}
                   </span>
                 </div>
 
