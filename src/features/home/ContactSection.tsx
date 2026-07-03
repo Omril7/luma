@@ -41,7 +41,7 @@ export function ContactSection({ locale: _locale }: ContactSectionProps) {
 
         {/* Heading */}
         <motion.h2
-          className="text-3xl md:text-4xl font-bold text-text-main mb-4"
+          className="font-heading text-3xl md:text-4xl font-semibold text-text-main mb-4"
           initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
           whileInView={shouldAnimate ? { opacity: 1, y: 0 } : undefined}
           viewport={{ once: true, margin: '-80px' }}
@@ -74,7 +74,7 @@ export function ContactSection({ locale: _locale }: ContactSectionProps) {
             href={`https://wa.me/${WHATSAPP_NUMBER}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2.5 rounded-full bg-accent px-7 py-3 text-base font-semibold text-white shadow-sm hover:opacity-90 active:opacity-80 transition-opacity duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="inline-flex items-center gap-2.5 rounded-lg bg-primary px-7 py-3 text-base font-semibold text-surface shadow-sm hover:bg-primary-600 active:opacity-80 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <svg
               aria-hidden="true"

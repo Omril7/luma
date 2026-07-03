@@ -9,6 +9,7 @@ import { useLanguageSwitch } from '@/hooks/useLanguageSwitch'
 import { useCartStore } from '@/stores/cartStore'
 import { useUiStore } from '@/stores/uiStore'
 import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
+import { Logo } from '@/components/ui/Logo'
 
 const navLinks = [
   { href: '/' as const, key: 'home' },
@@ -55,9 +56,7 @@ export function Header() {
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:h-20 md:px-8">
         {/* Logo */}
-        <Link href="/" className="flex-shrink-0 text-2xl font-bold text-primary">
-          {isHebrew ? 'לומה' : 'Luma'}
-        </Link>
+        <Logo />
 
         {/* Desktop nav — centered */}
         <nav className="hidden items-center gap-6 md:flex" aria-label={t('home')}>
@@ -139,7 +138,7 @@ export function Header() {
             {itemCount > 0 && (
               <span
                 aria-hidden="true"
-                className="absolute end-0 top-0 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-surface"
+                className="absolute end-0 top-0 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-surface"
               >
                 {itemCount > 99 ? '99+' : itemCount}
               </span>

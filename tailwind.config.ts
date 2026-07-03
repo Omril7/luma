@@ -20,11 +20,13 @@ const config: Config = {
         bg: 'var(--color-bg)',
         surface: 'var(--color-surface)',
         border: 'var(--color-border)',
+        charcoal: 'var(--color-charcoal)',
       },
       fontFamily: {
         base: ['var(--font-base)'],
         he: ['var(--font-he)'],
         en: ['var(--font-en)'],
+        heading: ['var(--font-heading)'],
       },
       borderRadius: {
         DEFAULT: 'var(--radius)',

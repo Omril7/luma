@@ -26,7 +26,9 @@ export function InstagramSection({ locale: _locale }: InstagramSectionProps) {
           viewport={{ once: true, margin: '-80px' }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-text-main mb-2">{t('heading')}</h2>
+          <h2 className="font-heading text-3xl md:text-4xl font-semibold text-text-main mb-2">
+            {t('heading')}
+          </h2>
           <p className="text-primary font-semibold text-lg">{t('handle')}</p>
         </motion.div>
 

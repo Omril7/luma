@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
+import { Logo } from '@/components/ui/Logo'
 
 export async function Footer({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: 'footer' })
@@ -21,18 +22,20 @@ export async function Footer({ locale }: { locale: string }) {
   ]
 
   return (
-    <footer className="border-t border-border bg-secondary">
+    <footer className="bg-charcoal">
       <div className="mx-auto max-w-7xl px-4 py-12 md:px-8">
         <div className="grid gap-10 md:grid-cols-3">
           {/* Brand column */}
           <div>
-            <p className="mb-2 text-2xl font-bold text-primary">Luma</p>
-            <p className="text-sm leading-relaxed text-text-muted">{t('tagline')}</p>
+            <Logo inverted className="mb-3" />
+            <p className="text-sm leading-relaxed text-[var(--color-charcoal-muted)]">
+              {t('tagline')}
+            </p>
           </div>
 
           {/* Shop links */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-text-main">
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-accent">
               {t('shopLinks')}
             </h3>
             <ul className="space-y-2">
@@ -40,7 +43,7 @@ export async function Footer({ locale }: { locale: string }) {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-sm text-text-muted transition-colors duration-150 hover:text-primary"
+                    className="text-sm text-secondary transition-colors duration-150 hover:text-accent"
                   >
                     {label}
                   </Link>
@@ -51,7 +54,7 @@ export async function Footer({ locale }: { locale: string }) {
 
           {/* Info links */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-text-main">
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-accent">
               {t('infoLinks')}
             </h3>
             <ul className="space-y-2">
@@ -59,7 +62,7 @@ export async function Footer({ locale }: { locale: string }) {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-sm text-text-muted transition-colors duration-150 hover:text-primary"
+                    className="text-sm text-secondary transition-colors duration-150 hover:text-accent"
                   >
                     {label}
                   </Link>
@@ -70,7 +73,7 @@ export async function Footer({ locale }: { locale: string }) {
         </div>
 
         {/* Copyright */}
-        <div className="mt-10 border-t border-border pt-6 text-center text-xs text-text-muted">
+        <div className="mt-10 border-t border-[var(--color-charcoal-line)] pt-6 text-center text-xs text-[var(--color-charcoal-muted)]">
           &copy; {year} Luma. {t('rights')}
         </div>
       </div>

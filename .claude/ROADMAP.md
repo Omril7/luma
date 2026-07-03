@@ -136,6 +136,12 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - [x] Accessibility widget (font scale, contrast, draggable via `motion/react`)
 - **Acceptance:** shell responsive + RTL-correct; a11y widget is draggable and changes the page.
 
+### M1.14b Header info bar
+
+- [ ] Phone number in navbar (click-to-call `tel:` link, logical placement, sourced from Settings)
+- [ ] Small working-hours bar above the navbar (bilingual, collapses/hides on mobile if too cramped)
+- **Acceptance:** phone number and hours are visible on every storefront page, RTL/LTR correct, and pull from admin Settings rather than being hardcoded.
+
 ### M1.15 Home page ✅
 
 - [x] Hero + CTA, featured products grid, Our Story teaser, testimonials + Instagram placeholders

@@ -39,7 +39,7 @@ export function HeroSection({ locale: _locale }: HeroSectionProps) {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Text column */}
           <motion.div {...entranceProps} className="order-2 md:order-1">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-text-main leading-tight">
+            <h1 className="font-heading text-4xl md:text-6xl lg:text-7xl font-semibold text-text-main leading-tight">
               {t('heading')}
             </h1>
             <p className="text-lg md:text-xl text-text-muted mt-4 mb-8 max-w-md">
@@ -48,7 +48,7 @@ export function HeroSection({ locale: _locale }: HeroSectionProps) {
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/shop"
-                className="inline-block bg-primary hover:bg-primary-600 text-surface rounded-full px-6 py-3 font-semibold transition-colors duration-150 cursor-pointer"
+                className="inline-block bg-primary hover:bg-primary-600 text-surface rounded-lg px-6 py-3 font-semibold transition-colors duration-150 cursor-pointer"
               >
                 {t('shopCta')}
               </Link>
@@ -56,7 +56,7 @@ export function HeroSection({ locale: _locale }: HeroSectionProps) {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block border border-border text-text-main hover:bg-secondary rounded-full px-6 py-3 font-medium transition-colors duration-150 cursor-pointer"
+                className="inline-block border border-border text-text-main hover:bg-secondary rounded-lg px-6 py-3 font-medium transition-colors duration-150 cursor-pointer"
               >
                 {t('whatsappCta')}
               </a>
@@ -65,7 +65,7 @@ export function HeroSection({ locale: _locale }: HeroSectionProps) {
 
           {/* Image column */}
           <motion.div {...imageProps} className="order-1 md:order-2">
-            <div className="bg-secondary rounded-2xl aspect-[4/3] flex items-center justify-center border border-border">
+            <div className="bg-surface rounded-2xl aspect-[4/3] flex items-center justify-center border border-border shadow-soft">
               <svg
                 aria-hidden="true"
                 className="w-24 h-24 text-border"

@@ -64,7 +64,7 @@ export function TestimonialsSection({ locale }: TestimonialsSectionProps) {
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         {/* Heading */}
         <motion.h2
-          className="text-3xl md:text-4xl font-bold text-text-main text-center mb-10 md:mb-14"
+          className="font-heading text-3xl md:text-4xl font-semibold text-text-main text-center mb-10 md:mb-14"
           initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
           whileInView={shouldAnimate ? { opacity: 1, y: 0 } : undefined}
           viewport={{ once: true, margin: '-80px' }}
@@ -90,7 +90,7 @@ export function TestimonialsSection({ locale }: TestimonialsSectionProps) {
             >
               {/* Stars */}
               <div className="mb-3">
-                <span aria-hidden="true" className="text-yellow-500 text-sm tracking-wide">
+                <span aria-hidden="true" className="text-accent text-sm tracking-wide">
                   ★★★★★
                 </span>
                 <span className="sr-only">5 stars</span>

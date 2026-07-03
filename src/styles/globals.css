@@ -4,26 +4,32 @@
 
 /* ── Theme tokens ──────────────────────────────────────────────────────────── */
 :root {
-  /* color palette */
-  --color-primary: #8b6914;
-  --color-primary-600: #6f5410;
-  --color-secondary: #f5f0e8;
-  --color-accent: #c26b3d;
-  --color-text: #2e2a24;
-  --color-text-muted: #6b6358;
-  --color-bg: #fbf8f3;
-  --color-surface: #ffffff;
-  --color-border: #e7ded2;
+  /* color palette — "Luma": warm, handmade, earthy woodworking */
+  --color-primary: #5c6b47; /* sage olive — buttons, links, active states */
+  --color-primary-600: #47543a; /* sage olive, darker — hover */
+  --color-secondary: #e9dcc3; /* linen — alternate section bg, light text on dark */
+  --color-accent: #c9a876; /* kraft tan — tertiary accent, dividers, stars */
+  --color-text: #4a2f1e; /* walnut brown — primary text */
+  --color-text-muted: #7a6552; /* muted warm brown, derived from walnut */
+  --color-bg: #faf5ea; /* soft linen-tinted cream — page background */
+  --color-surface: #fffdf9; /* card / header surface */
+  --color-border: #ddcca9; /* soft kraft-tan border */
+  --color-charcoal: #2b2620; /* dark mode / footer / dark sections */
+  --color-charcoal-muted: #a99a80; /* de-emphasized text on charcoal */
+  --color-charcoal-line: #423a30; /* subtle divider on charcoal */
 
   /* typography */
   --font-he: var(--font-heebo, 'Heebo'), 'Rubik', system-ui, sans-serif;
   --font-en: var(--font-inter, 'Inter'), var(--font-heebo, 'Heebo'), system-ui, sans-serif;
   --font-base: var(--font-he);
+  --font-heading-he: var(--font-frank-ruhl, 'Frank Ruhl Libre'), 'David Libre', serif;
+  --font-heading-en: var(--font-cormorant, 'Cormorant Garamond'), 'Playfair Display', serif;
+  --font-heading: var(--font-heading-he);
 
   /* shape & elevation */
-  --radius: 0.375rem;
-  --radius-lg: 0.625rem;
-  --shadow-soft: 0 4px 20px rgba(46, 42, 36, 0.08);
+  --radius: 0.5rem;
+  --radius-lg: 0.875rem;
+  --shadow-soft: 0 4px 24px rgba(74, 47, 30, 0.08);
 
   /* accessibility (overridable by the a11y widget) */
   --font-scale: 1;
@@ -31,9 +37,11 @@
 
 html[lang='en'] {
   --font-base: var(--font-en);
+  --font-heading: var(--font-heading-en);
 }
 html[lang='he'] {
   --font-base: var(--font-he);
+  --font-heading: var(--font-heading-he);
 }
 
 /* ── Base resets ────────────────────────────────────────────────────────────── */
@@ -55,6 +63,12 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Headings ───────────────────────────────────────────────────────────────── */
+.font-heading {
+  font-family: var(--font-heading);
+  letter-spacing: 0.02em;
 }
 
 /* ── Scrollbar ──────────────────────────────────────────────────────────────── */
@@ -116,15 +130,15 @@ body {
 
 /* ── Dark mode ──────────────────────────────────────────────────────────────── */
 [data-dark='true'] {
-  --color-primary: #c9a94a;
-  --color-primary-600: #a88a35;
-  --color-secondary: #2a2620;
-  --color-accent: #e07a45;
-  --color-text: #f0ece4;
-  --color-text-muted: #a09880;
-  --color-bg: #1a1710;
-  --color-surface: #252118;
-  --color-border: #3a3428;
+  --color-primary: #c9a876;
+  --color-primary-600: #b8945c;
+  --color-secondary: #35302a;
+  --color-accent: #a8835a;
+  --color-text: #e9dcc3;
+  --color-text-muted: #a89a86;
+  --color-bg: #201c17;
+  --color-surface: #2b2620;
+  --color-border: #443c30;
 }
 
 /* ── Visual filters ─────────────────────────────────────────────────────────── */
