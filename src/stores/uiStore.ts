@@ -10,7 +10,7 @@ interface Toast {
 }
 
 export interface A11yPrefs {
-  fontStep: number // 0=100% 1=115% 2=130% 3=150%
+  fontPercent: number // 100–150, step 1
   contrast: boolean
   dark: boolean
   grayscale: boolean
@@ -42,7 +42,7 @@ export const useUiStore = create<UiState>()(
     (set) => ({
       toasts: [],
       a11y: {
-        fontStep: 0,
+        fontPercent: 100,
         contrast: false,
         dark: false,
         grayscale: false,

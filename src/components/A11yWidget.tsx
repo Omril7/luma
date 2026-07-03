@@ -56,11 +56,11 @@ const OPTIONS: Option[] = [
   { key: 'readingGuide', Icon: AlignLeft },
 ]
 
-const FONT_STEP_LABELS = ['100%', '115%', '130%', '150%']
-const FONT_SCALES = [1, 1.15, 1.3, 1.5]
+const FONT_MIN = 100
+const FONT_MAX = 150
 
 const DEFAULT_PREFS: A11yPrefs = {
-  fontStep: 0,
+  fontPercent: 100,
   contrast: false,
   dark: false,
   grayscale: false,
@@ -94,7 +94,7 @@ export function A11yWidget() {
   // Sync all prefs to <html> data attributes
   useEffect(() => {
     const html = document.documentElement
-    html.style.setProperty('--font-scale', String(FONT_SCALES[a11y.fontStep] ?? 1))
+    html.style.setProperty('--font-scale', String(a11y.fontPercent / 100))
     html.setAttribute('data-contrast', a11y.contrast ? 'true' : '')
     html.setAttribute('data-reduce-motion', a11y.noMotion ? 'true' : '')
     html.setAttribute('data-underline-links', a11y.links ? 'true' : '')
@@ -145,7 +145,7 @@ export function A11yWidget() {
     }
   }, [open])
 
-  const hasActive = a11y.fontStep > 0 || OPTIONS.some(({ key }) => a11y[key])
+  const hasActive = a11y.fontPercent > 100 || OPTIONS.some(({ key }) => a11y[key])
 
   const resetAll = () => setA11y(DEFAULT_PREFS)
 
@@ -274,26 +274,21 @@ export function A11yWidget() {
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
                   {t('fontSize')}
                 </p>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setA11y({ fontStep: Math.max(0, a11y.fontStep - 1) })}
-                    disabled={a11y.fontStep === 0}
-                    aria-label={t('decrease')}
-                    className="flex h-10 flex-1 items-center justify-center rounded-lg border border-border text-sm font-semibold text-text-main transition-colors hover:bg-secondary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2"
-                  >
-                    A-
-                  </button>
-                  <span className="min-w-[52px] text-center text-sm font-medium tabular-nums text-text-main">
-                    {FONT_STEP_LABELS[a11y.fontStep]}
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min={FONT_MIN}
+                    max={FONT_MAX}
+                    step={1}
+                    value={a11y.fontPercent}
+                    onChange={(e) => setA11y({ fontPercent: Number(e.target.value) })}
+                    aria-label={t('fontSize')}
+                    aria-valuetext={`${a11y.fontPercent}%`}
+                    className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-border accent-primary"
+                  />
+                  <span className="min-w-[44px] text-center text-sm font-medium tabular-nums text-text-main">
+                    {a11y.fontPercent}%
                   </span>
-                  <button
-                    onClick={() => setA11y({ fontStep: Math.min(3, a11y.fontStep + 1) })}
-                    disabled={a11y.fontStep === 3}
-                    aria-label={t('increase')}
-                    className="flex h-10 flex-1 items-center justify-center rounded-lg border border-border text-sm font-semibold text-text-main transition-colors hover:bg-secondary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2"
-                  >
-                    A+
-                  </button>
                 </div>
               </div>
 

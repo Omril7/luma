@@ -31,8 +31,6 @@
   "a11y": {
     "widget": "Accessibility",
     "fontSize": "Font size",
-    "increase": "Increase font",
-    "decrease": "Decrease font",
     "resetAll": "Reset all",
     "open": "Open accessibility menu",
     "close": "Close accessibility menu",
