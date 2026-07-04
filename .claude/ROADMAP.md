@@ -296,7 +296,7 @@ Replace flat-rate national shipping with road-distance-based fee calculated live
 
 - [ ] **Payments:** integrate Meshulam / Tranzila / PayPlus behind the existing `PaymentProvider`
 - [ ] **Bundles:** admin bundle pricing UI + storefront display
-- [ ] **Reviews:** submission + admin moderation UI; carousel via **embla-carousel**
+- [ ] **Reviews:** public review form (rating + text, per product) so any visitor can leave a review; admin moderation queue (approve/reject) before publishing; storefront carousel via **embla-carousel**
 - [ ] **Instagram feed** integration on Home
 - [ ] **Newsletter system** (Mailchimp/SendGrid) wired to `EmailProvider.sendNewsletter`
 - [ ] **Google Analytics** integration
