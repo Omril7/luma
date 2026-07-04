@@ -29,13 +29,13 @@ export function Logo({ className, inverted }: LogoProps) {
         }}
         className={[
           'h-7 w-7 shrink-0 bg-current transition-opacity duration-150 md:h-8 md:w-8 group-hover:opacity-80',
-          inverted ? 'text-secondary' : 'text-text-main',
+          inverted ? 'text-[var(--color-charcoal-fg)]' : 'text-text-main',
         ].join(' ')}
       />
       <span
         className={[
           'font-heading text-2xl tracking-wide',
-          inverted ? 'text-secondary' : 'text-text-main',
+          inverted ? 'text-[var(--color-charcoal-fg)]' : 'text-text-main',
         ].join(' ')}
       >
         Luma Studio

@@ -7,7 +7,7 @@
   /* color palette — "Luma": warm, handmade, earthy woodworking */
   --color-primary: #5c6b47; /* sage olive — buttons, links, active states */
   --color-primary-600: #47543a; /* sage olive, darker — hover */
-  --color-secondary: #e9dcc3; /* linen — alternate section bg, light text on dark */
+  --color-secondary: #e9dcc3; /* linen — alternate section bg */
   --color-accent: #c9a876; /* kraft tan — tertiary accent, dividers, stars */
   --color-text: #4a2f1e; /* walnut brown — primary text */
   --color-text-muted: #7a6552; /* muted warm brown, derived from walnut */
@@ -17,6 +17,13 @@
   --color-charcoal: #2b2620; /* dark mode / footer / dark sections */
   --color-charcoal-muted: #a99a80; /* de-emphasized text on charcoal */
   --color-charcoal-line: #423a30; /* subtle divider on charcoal */
+  /* Fixed (never swapped by the a11y widget's dark/contrast/etc. modes) — the
+     charcoal surface is always dark by design, so its foreground colors must
+     stay constant instead of following --color-secondary/--color-accent,
+     which the a11y modes redefine to mean something else (e.g. a dark bg
+     tone in dark mode). Used by Footer and Logo's `inverted` variant. */
+  --color-charcoal-heading: #c9a876; /* kraft tan — footer section headings */
+  --color-charcoal-fg: #e9dcc3; /* linen — footer links, inverted logo text */
 
   /* typography */
   --font-he: var(--font-heebo, 'Heebo'), 'Rubik', system-ui, sans-serif;

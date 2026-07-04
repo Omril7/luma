@@ -36,7 +36,7 @@ export async function Footer({ locale }: { locale: string }) {
 
           {/* Shop links */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-accent">
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--color-charcoal-heading)]">
               {t('shopLinks')}
             </h3>
             <ul className="space-y-2">
@@ -44,7 +44,7 @@ export async function Footer({ locale }: { locale: string }) {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-sm text-secondary transition-colors duration-150 hover:text-accent"
+                    className="text-sm text-[var(--color-charcoal-fg)] transition-colors duration-150 hover:text-[var(--color-charcoal-heading)]"
                   >
                     {label}
                   </Link>
@@ -55,7 +55,7 @@ export async function Footer({ locale }: { locale: string }) {
 
           {/* Info links */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-accent">
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--color-charcoal-heading)]">
               {t('infoLinks')}
             </h3>
             <ul className="space-y-2">
@@ -63,7 +63,7 @@ export async function Footer({ locale }: { locale: string }) {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-sm text-secondary transition-colors duration-150 hover:text-accent"
+                    className="text-sm text-[var(--color-charcoal-fg)] transition-colors duration-150 hover:text-[var(--color-charcoal-heading)]"
                   >
                     {label}
                   </Link>
