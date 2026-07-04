@@ -4,22 +4,23 @@ import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link, usePathname } from '@/i18n/navigation'
 import { AnimatePresence, motion } from 'motion/react'
-import { ShoppingBag, Menu, X } from 'lucide-react'
+import { ShoppingBag, Menu, X, Phone } from 'lucide-react'
 import { useLanguageSwitch } from '@/hooks/useLanguageSwitch'
 import { useCartStore } from '@/stores/cartStore'
 import { useUiStore } from '@/stores/uiStore'
 import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
 import { Logo } from '@/components/ui/Logo'
+import { FEATURES } from '@/lib/featureFlags'
 
 const navLinks = [
   { href: '/' as const, key: 'home' },
-  { href: '/shop' as const, key: 'shop' },
+  ...(FEATURES.shop ? [{ href: '/shop' as const, key: 'shop' }] : []),
   { href: '/about' as const, key: 'about' },
   { href: '/gallery' as const, key: 'gallery' },
   { href: '/contact' as const, key: 'contact' },
 ] as const
 
-export function Header() {
+export function Header({ phone }: { phone?: string }) {
   const t = useTranslations('nav')
   const tHeader = useTranslations('header')
   const { switchTo, isHebrew } = useLanguageSwitch()
@@ -31,6 +32,7 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   const shouldAnimate = !a11y.noMotion
+  const telHref = phone ? `tel:${phone.replace(/[^0-9+]/g, '')}` : undefined
 
   const itemCount = cartItems.reduce((sum, i) => sum + i.quantity, 0)
 
@@ -83,6 +85,20 @@ export function Header() {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          {/* Click-to-call phone number — desktop only, sourced from Settings */}
+          {telHref && (
+            <a
+              href={telHref}
+              className="hidden min-h-[44px] items-center gap-2 rounded-full border border-border bg-secondary/60 ps-2 pe-3 text-sm font-semibold text-primary transition-colors duration-150 hover:border-primary/40 hover:bg-secondary focus-visible:outline-2 lg:flex"
+              aria-label={tHeader('callUs')}
+            >
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-surface">
+                <Phone size={13} aria-hidden="true" />
+              </span>
+              <span dir="ltr">{phone}</span>
+            </a>
+          )}
+
           {/* Language switcher — flag group button */}
           <div
             dir="ltr"
@@ -129,21 +145,23 @@ export function Header() {
           </div>
 
           {/* Cart */}
-          <Link
-            href="/cart"
-            className="relative flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-text-main transition-colors hover:text-primary focus-visible:outline-2"
-            aria-label={`${t('cart')}${itemCount > 0 ? ` (${itemCount})` : ''}`}
-          >
-            <ShoppingBag size={22} />
-            {itemCount > 0 && (
-              <span
-                aria-hidden="true"
-                className="absolute end-0 top-0 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-surface"
-              >
-                {itemCount > 99 ? '99+' : itemCount}
-              </span>
-            )}
-          </Link>
+          {FEATURES.shop && (
+            <Link
+              href="/cart"
+              className="relative flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-text-main transition-colors hover:text-primary focus-visible:outline-2"
+              aria-label={`${t('cart')}${itemCount > 0 ? ` (${itemCount})` : ''}`}
+            >
+              <ShoppingBag size={22} />
+              {itemCount > 0 && (
+                <span
+                  aria-hidden="true"
+                  className="absolute end-0 top-0 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-surface"
+                >
+                  {itemCount > 99 ? '99+' : itemCount}
+                </span>
+              )}
+            </Link>
+          )}
 
           {/* Mobile menu toggle */}
           <button
@@ -191,6 +209,16 @@ export function Header() {
                   </Link>
                 )
               })}
+              {telHref && (
+                <a
+                  href={telHref}
+                  className="mt-2 flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-border bg-secondary/60 text-base font-semibold text-primary transition-colors hover:bg-secondary focus-visible:outline-2"
+                  aria-label={tHeader('callUs')}
+                >
+                  <Phone size={18} aria-hidden="true" />
+                  <span dir="ltr">{phone}</span>
+                </a>
+              )}
             </nav>
           </motion.div>
         )}

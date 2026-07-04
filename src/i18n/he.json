@@ -26,7 +26,8 @@
   "header": {
     "openMenu": "פתח תפריט",
     "closeMenu": "סגור תפריט",
-    "skipToMain": "דלג לתוכן הראשי"
+    "skipToMain": "דלג לתוכן הראשי",
+    "callUs": "התקשרו אלינו"
   },
   "a11y": {
     "widget": "נגישות",
@@ -225,7 +226,7 @@
     "hero": {
       "heading": "ריהוט בהזמנה אישית",
       "subheading": "כל פריט עשוי ביד, בהתאמה מושלמת לבית שלך",
-      "shopCta": "לחנות",
+      "contactCta": "צור קשר",
       "whatsappCta": "דברו איתנו"
     },
     "featured": {

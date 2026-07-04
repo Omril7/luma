@@ -17,7 +17,7 @@ export function ContactSection({ locale: _locale }: ContactSectionProps) {
   const shouldAnimate = !a11y.noMotion
 
   return (
-    <section className="py-16 md:py-24">
+    <section id="contact" className="py-16 md:py-24">
       <div className="max-w-3xl mx-auto px-4 md:px-8 text-center">
         {/* Decorative divider */}
         <motion.div

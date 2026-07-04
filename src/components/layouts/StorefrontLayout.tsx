@@ -1,9 +1,11 @@
 import { getTranslations } from 'next-intl/server'
 import { Header } from './Header'
 import { Footer } from './Footer'
+import { InfoBar } from './InfoBar'
 import { WhatsAppButton } from '@/components/WhatsAppButton'
 import { A11yWidget } from '@/components/A11yWidget'
 import { ToastContainer } from '@/components/ToastContainer'
+import { getSiteSettings } from '@/server/services/adminSettingsService'
 
 export async function StorefrontLayout({
   children,
@@ -13,6 +15,8 @@ export async function StorefrontLayout({
   locale: string
 }) {
   const t = await getTranslations({ locale, namespace: 'header' })
+  const { business } = await getSiteSettings()
+  const hours = locale === 'he' ? business.hours_he : business.hours_en
 
   return (
     <>
@@ -22,7 +26,8 @@ export async function StorefrontLayout({
       >
         {t('skipToMain')}
       </a>
-      <Header />
+      <InfoBar locale={locale} hours={hours} />
+      <Header phone={business.phone || undefined} />
       <main id="main-content" tabIndex={-1}>
         {children}
       </main>

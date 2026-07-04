@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Building2, Truck, MapPin, Check, AlertCircle } from 'lucide-react'
+import { Building2, Truck, MapPin, Clock, Check, AlertCircle } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
@@ -17,6 +17,8 @@ interface SiteSettingsDTO {
     phone: string
     whatsappNumber: string
     email: string
+    hours_he: string
+    hours_en: string
   }
   shipping: {
     shippingCostNational: number
@@ -105,6 +107,8 @@ export function SettingsPage() {
     phone: '',
     whatsappNumber: '',
     email: '',
+    hours_he: '',
+    hours_en: '',
   })
   const [bizSaving, setBizSaving] = useState(false)
   const [bizSuccess, setBizSuccess] = useState(false)
@@ -145,6 +149,8 @@ export function SettingsPage() {
         phone: business.phone,
         whatsappNumber: business.whatsappNumber,
         email: business.email,
+        hours_he: business.hours_he,
+        hours_en: business.hours_en,
       })
       setShip({
         shippingCostNational: shipping.shippingCostNational,
@@ -190,6 +196,8 @@ export function SettingsPage() {
           phone: biz.phone.trim(),
           whatsappNumber: biz.whatsappNumber.trim(),
           email: biz.email.trim(),
+          hours_he: biz.hours_he.trim(),
+          hours_en: biz.hours_en.trim(),
         },
         token
       )
@@ -417,6 +425,42 @@ export function SettingsPage() {
             className={inputCls}
             autoComplete="email"
           />
+        </div>
+
+        {/* Bilingual working hours */}
+        <div className="flex items-center gap-2 pt-2">
+          <Clock size={14} className="text-text-muted" aria-hidden="true" />
+          <span className="text-xs font-medium text-text-muted">שעות פעילות</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>
+              שעות פעילות{' '}
+              <IsraelFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+            </label>
+            <input
+              type="text"
+              value={biz.hours_he}
+              onChange={(e) => setBizField('hours_he', e.target.value)}
+              dir="rtl"
+              placeholder="א׳-ה׳: 9:00-18:00, ו׳: 9:00-13:00"
+              className={inputCls}
+            />
+          </div>
+          <div dir="ltr">
+            <label className={labelCls}>
+              Working hours{' '}
+              <USAFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+            </label>
+            <input
+              type="text"
+              value={biz.hours_en}
+              onChange={(e) => setBizField('hours_en', e.target.value)}
+              dir="ltr"
+              placeholder="Sun-Thu: 9AM-6PM, Fri: 9AM-1PM"
+              className={inputCls}
+            />
+          </div>
         </div>
 
         <SaveButton

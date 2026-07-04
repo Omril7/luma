@@ -14,6 +14,8 @@ export interface BusinessSettings {
   phone: string
   whatsappNumber: string
   email: string
+  hours_he: string
+  hours_en: string
 }
 
 export interface ShippingSettings {
@@ -47,6 +49,8 @@ const DEFAULT_SETTINGS: SiteSettingsDTO = {
     phone: '',
     whatsappNumber: '',
     email: '',
+    hours_he: 'א׳-ה׳: 9:00-18:00, ו׳: 9:00-13:00',
+    hours_en: 'Sun-Thu: 9AM-6PM, Fri: 9AM-1PM',
   },
   shipping: {
     shippingCostNational: 0,
@@ -99,6 +103,8 @@ export async function upsertSiteSettings(data: UpdateSettingsInput): Promise<Sit
       phone: data.phone ?? current.business.phone,
       whatsappNumber: data.whatsappNumber ?? current.business.whatsappNumber,
       email: data.email ?? current.business.email,
+      hours_he: data.hours_he ?? current.business.hours_he,
+      hours_en: data.hours_en ?? current.business.hours_en,
     },
     shipping: {
       shippingCostNational: data.shippingCostNational ?? current.shipping.shippingCostNational,

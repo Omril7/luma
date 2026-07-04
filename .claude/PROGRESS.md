@@ -19,6 +19,22 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-07-04 — M1.14b: Header info bar ✅
+
+- **Done:**
+  - `src/shared/schemas/index.ts` — added `hours_he`/`hours_en` to `updateSettingsSchema`
+  - `src/server/services/adminSettingsService.ts` — `BusinessSettings.hours_he`/`hours_en` (with sensible defaults), threaded through `DEFAULT_SETTINGS` and `upsertSiteSettings`
+  - `src/features/admin/settings/SettingsPage.tsx` — bilingual "שעות פעילות / Working hours" fields in the Business Info section, saved via the existing `handleSaveBiz`
+  - `src/components/layouts/InfoBar.tsx` — new server component: thin bar above the navbar showing the locale's hours text, `hidden md:block` (hides on mobile per the roadmap note), renders nothing if empty
+  - `src/components/layouts/Header.tsx` — new `phone` prop; click-to-call `tel:` link (digits/`+` stripped) shown in the desktop actions row (`lg:flex`) and appended to the mobile dropdown nav so it's reachable on every breakpoint
+  - `src/components/layouts/StorefrontLayout.tsx` — fetches `getSiteSettings()` server-side and passes `business.phone` to `Header` and the locale's hours string to `InfoBar`, inserted above `<Header />`
+  - `src/i18n/en.json` / `he.json` — added `header.callUs` aria-label
+- **Roadmap:** M1.14b ✅
+- **Decisions:** No new Prisma model/migration — hours live on the existing `SiteContent`-backed `BusinessSettings` JSON blob, consistent with how `phone`/`whatsappNumber` are already stored. Phone number is a single field (not `_he`/`_en`) since digits aren't language-dependent; hours are bilingual since they're free text. Data is fetched directly via the server-only `getSiteSettings()` service (not through the admin HTTP API), matching the existing pattern already used by `src/app/api/delivery/estimate/route.ts`.
+- **Notes/blockers:** none.
+
+---
+
 ## 2026-06-20 — M1.28b: Distance-based delivery pricing ✅
 
 - **Done:**

@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { Logo } from '@/components/ui/Logo'
+import { FEATURES } from '@/lib/featureFlags'
 
 export async function Footer({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: 'footer' })
@@ -9,7 +10,7 @@ export async function Footer({ locale }: { locale: string }) {
   const year = new Date().getFullYear()
 
   const shopLinks = [
-    { href: '/shop', label: tNav('shop') },
+    ...(FEATURES.shop ? [{ href: '/shop', label: tNav('shop') }] : []),
     { href: '/gallery', label: tNav('gallery') },
     { href: '/about', label: tNav('about') },
   ]

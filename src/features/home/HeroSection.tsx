@@ -50,10 +50,10 @@ export function HeroSection({ locale }: HeroSectionProps) {
           <p className="text-lg md:text-xl text-primary/70 mt-4 mb-8 max-w-md">{t('subheading')}</p>
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/shop"
+              href="/contact"
               className="inline-block bg-primary hover:bg-primary-600 text-surface rounded-lg px-6 py-3 font-semibold transition-colors duration-150 cursor-pointer"
             >
-              {t('shopCta')}
+              {t('contactCta')}
             </Link>
             <a
               href={whatsappUrl}

@@ -26,7 +26,8 @@
   "header": {
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
-    "skipToMain": "Skip to main content"
+    "skipToMain": "Skip to main content",
+    "callUs": "Call us"
   },
   "a11y": {
     "widget": "Accessibility",
@@ -225,7 +226,7 @@
     "hero": {
       "heading": "Custom Furniture, Handmade",
       "subheading": "Every piece crafted by hand, perfectly tailored for your home",
-      "shopCta": "Shop Now",
+      "contactCta": "Get in Touch",
       "whatsappCta": "Chat with Us"
     },
     "featured": {

@@ -262,6 +262,8 @@ export const updateSettingsSchema = z.object({
   phone: z.string().min(1).max(50).optional(),
   whatsappNumber: z.string().min(1).max(50).optional(),
   email: z.string().email().optional(),
+  hours_he: z.string().max(300).optional(),
+  hours_en: z.string().max(300).optional(),
   shippingCostNational: z.number().min(0).optional(),
   freeShippingAbove: z.number().min(0).optional(),
   studioAddress: z.string().max(500).optional(),
