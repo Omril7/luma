@@ -85,7 +85,7 @@ export function HeroSection({ locale }: HeroSectionProps) {
       <div className="relative aspect-[4/5] md:aspect-auto md:flex-1 overflow-hidden">
         <motion.div {...imageEntranceProps} className="absolute inset-0">
           <Image
-            src="/hero2.jpeg"
+            src="/hero.jpeg"
             alt=""
             fill
             priority
