@@ -32,6 +32,7 @@ export default function middleware(request: NextRequest) {
 
 export const config = {
   // `admin` is excluded: the admin panel is not locale-prefixed and must not be
-  // touched by next-intl's locale routing.
+  // touched by next-intl's locale routing. Static files (icon.png, apple-icon.png,
+  // manifest, etc.) are already excluded by the `.*\..*` (any path with a dot) rule.
   matcher: ['/((?!api|admin|_next|_vercel|.*\\..*).*)'],
 }
