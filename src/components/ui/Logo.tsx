@@ -1,4 +1,7 @@
+'use client'
+
 import { Link } from '@/i18n/navigation'
+import { useUiStore } from '@/stores/uiStore'
 
 interface LogoProps {
   className?: string
@@ -6,6 +9,13 @@ interface LogoProps {
 }
 
 export function Logo({ className, inverted }: LogoProps) {
+  const { a11y } = useUiStore()
+  // Mirrors Footer's logic: once dark mode / high contrast override the page's
+  // swappable tokens, the inverted (footer) logo should follow those tokens
+  // too instead of the fixed charcoal-fg color.
+  const useThemeTokens = inverted && (a11y.contrast || a11y.dark)
+  const invertedCls = useThemeTokens ? 'text-text-main' : 'text-[var(--color-charcoal-fg)]'
+
   return (
     <Link
       href="/"
@@ -29,13 +39,13 @@ export function Logo({ className, inverted }: LogoProps) {
         }}
         className={[
           'h-7 w-7 shrink-0 bg-current transition-opacity duration-150 md:h-8 md:w-8 group-hover:opacity-80',
-          inverted ? 'text-[var(--color-charcoal-fg)]' : 'text-text-main',
+          inverted ? invertedCls : 'text-text-main',
         ].join(' ')}
       />
       <span
         className={[
           'font-heading text-2xl tracking-wide',
-          inverted ? 'text-[var(--color-charcoal-fg)]' : 'text-text-main',
+          inverted ? invertedCls : 'text-text-main',
         ].join(' ')}
       >
         Luma Studio

@@ -197,9 +197,12 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 
 ### M1.21 Static pages
 
-- [ ] About, Gallery (masonry + lightbox), Contact (form + WhatsApp + hours), FAQ (accordion)
-- [ ] Legal: terms / privacy / returns (bilingual placeholder content)
-- **Acceptance:** all render bilingually; contact + newsletter submit successfully.
+- [x] About, Gallery (masonry + lightbox), Contact (form + WhatsApp + hours), FAQ (accordion)
+- [ ] Legal: terms / privacy / returns (bilingual placeholder content) — deferred with the rest of
+      the shop/checkout flow; footer links are hidden while `FEATURES.shop` is `false`
+      (`src/lib/featureFlags.ts`). Build alongside re-enabling the shop.
+- **Acceptance:** all render bilingually; contact submits successfully. _(Newsletter subscribe has
+  no storefront UI yet — only the admin-facing send flow from M1.27; not part of this milestone.)_
 
 ### M1.22 SEO + performance
 

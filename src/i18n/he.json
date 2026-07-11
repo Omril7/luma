@@ -183,6 +183,7 @@
   },
   "footer": {
     "rights": "כל הזכויות שמורות",
+    "faq": "שאלות נפוצות",
     "terms": "תנאי שימוש",
     "privacy": "פרטיות",
     "returns": "מדיניות החזרות",
@@ -221,6 +222,43 @@
     "page": "עמוד {page} מתוך {total}",
     "prevPage": "עמוד קודם",
     "nextPage": "עמוד הבא"
+  },
+  "about": {
+    "title": "אודות לומה",
+    "imageAlt": "לומה — סדנת נגרות"
+  },
+  "gallery": {
+    "title": "הגלריה שלנו",
+    "empty": "עוד לא הועלו תמונות לגלריה",
+    "lightboxClose": "סגור",
+    "lightboxPrev": "תמונה קודמת",
+    "lightboxNext": "תמונה הבאה",
+    "imageCount": "תמונה {current} מתוך {total}"
+  },
+  "contact": {
+    "title": "צור קשר",
+    "subtitle": "נשמח לשמוע מכם — לשאלות, הצעות מחיר או ביקור בסדנה",
+    "formName": "שם מלא",
+    "formEmail": "דוא\"ל",
+    "formPhone": "טלפון (אופציונלי)",
+    "formSubject": "נושא",
+    "formMessage": "הודעה",
+    "formSubmit": "שליחת הודעה",
+    "formSubmitting": "שולח...",
+    "formSuccess": "ההודעה נשלחה בהצלחה! נחזור אליכם בהקדם.",
+    "formError": "אירעה שגיאה בשליחה, נסו שוב",
+    "required": "שדה חובה",
+    "invalidEmail": "כתובת אימייל לא תקינה",
+    "tooShortMessage": "ההודעה קצרה מדי (לפחות 10 תווים)",
+    "infoHeading": "פרטי התקשרות",
+    "whatsapp": "שוחחו איתנו בוואטסאפ",
+    "hoursHeading": "שעות פעילות",
+    "addressHeading": "כתובת"
+  },
+  "faq": {
+    "title": "שאלות נפוצות",
+    "subtitle": "התשובות לשאלות הנפוצות ביותר שלקוחותינו שואלים",
+    "empty": "עוד לא נוספו שאלות נפוצות"
   },
   "home": {
     "hero": {

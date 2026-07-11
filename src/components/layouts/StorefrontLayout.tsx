@@ -31,7 +31,7 @@ export async function StorefrontLayout({
       <main id="main-content" tabIndex={-1}>
         {children}
       </main>
-      <Footer locale={locale} />
+      <Footer />
       <WhatsAppButton />
       <A11yWidget />
       <ToastContainer />

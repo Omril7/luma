@@ -19,6 +19,54 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-07-11 — M1.21: Static pages (About, Gallery, Contact, FAQ) ✅
+
+- **Done:**
+  - `src/app/[lang]/(storefront)/about/page.tsx` + `src/features/about/AboutContent.tsx` — reads
+    `about.page` SiteContent (title/body/image, bilingual), animated 2-col layout, SVG placeholder
+    when no image is set.
+  - `src/app/[lang]/(storefront)/gallery/page.tsx` + `src/features/gallery/GalleryClient.tsx` —
+    reads `gallery.intro` SiteContent + `listGalleryImages()`; CSS-columns masonry grid (raw
+    `<img>`, not `next/image`, since intrinsic dimensions aren't stored — matches the existing
+    `eslint-disable-next-line @next/next/no-img-element` pattern in `ImageUpload.tsx`); lightbox
+    modal with keyboard (Esc/Arrow, RTL-aware), backdrop-click, and button navigation; empty state.
+  - `src/app/[lang]/(storefront)/contact/page.tsx` + `src/features/contact/ContactClient.tsx` —
+    reads `contact.info` SiteContent; form (name/email/phone/subject/message) posts to the existing
+    `POST /api/contact`; client validation with focus-first-invalid-field; info sidebar
+    (click-to-call, mailto, address, hours) + WhatsApp CTA.
+  - `src/app/[lang]/(storefront)/faq/page.tsx` + `src/features/faq/FaqClient.tsx` — reads
+    `faq.items` SiteContent; single-open accordion (`motion` height reveal, WAI-ARIA accordion
+    pattern: `h2` > `button[aria-expanded]` > `region[aria-labelledby]`).
+  - `he.json`/`en.json` — new `about`, `gallery`, `contact`, `faq` top-level namespaces;
+    `footer.faq` key.
+  - `Footer.tsx` — added `/faq` link; `terms`/`privacy`/`returns` links now gated behind
+    `FEATURES.shop` (see Decisions).
+- **Roadmap:** M1.21 ✅ (static content pages); legal pages intentionally left unchecked — see
+  roadmap note.
+- **Decisions:**
+  - Legal pages (terms/privacy/returns) were **not** built this session per direction: they ship
+    alongside the shop/checkout flow, which is on hold (`FEATURES.shop = false` in
+    `src/lib/featureFlags.ts`). The footer already linked `/terms`, `/privacy`, `/returns`
+    unconditionally (dead links); they're now gated behind `FEATURES.shop` like the other
+    shop-only nav entries so nothing 404s while the flag is off.
+  - Contact page sources phone/whatsapp/email/address/hours from the `contact.info` SiteContent
+    key (edited via the admin Site Content → "יצירת קשר" tab, built ahead of time in M1.26) rather
+    than `adminSettingsService`'s `BusinessSettings` (used by Header/InfoBar). Only `contact.info`
+    has realistic seed data; `BusinessSettings` phone/whatsapp/email are still blank by default.
+    These two stores overlap in purpose (both hold phone/address/hours) — worth consolidating in
+    a future pass, but out of scope here.
+  - Gallery images render as plain `<img>` (masonry needs each image's natural aspect ratio;
+    `GalleryImageDTO` has no width/height field, so `next/image`'s `fill` mode isn't usable without
+    forcing a fixed aspect ratio that would defeat the masonry look).
+  - Roadmap's original M1.21 acceptance line mentioned "newsletter submit successfully" — no
+    storefront newsletter signup UI exists (only the admin send flow from M1.27); left as a gap,
+    not built, since it wasn't part of the four pages requested.
+- **Notes/blockers:** `npm run typecheck`, `npm run lint` (no new warnings), `npm run test` (17/17
+  pricing tests) all green. `npm run build` requires `NODE_ENV` unset/production (pre-existing
+  quirk, see M0.2 notes below) — confirmed all four new routes prerender for `he`/`en`.
+
+---
+
 ## 2026-07-04 — M1.14b: Header info bar ✅
 
 - **Done:**
