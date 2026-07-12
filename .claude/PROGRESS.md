@@ -19,6 +19,54 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-07-12 — Admin-managed homepage testimonials
+
+- **Done:** Added a "דף הבית — המלצות לקוחות" tab to `SiteContentPage.tsx` (`TestimonialsTab`,
+  mirrors the existing `FaqTab` add/reorder/delete pattern; rating via the shared
+  `StarRating` component), storing to the generic `SiteContent` key `home.testimonials` —
+  no new backend needed (same generic `PUT /api/admin/site-content/:key` used by
+  hero/story/faq/gallery). `TestimonialsSection.tsx` converted from hardcoded
+  `TESTIMONIALS_HE`/`TESTIMONIALS_EN` arrays to an `items` prop (returns `null` when empty);
+  `(storefront)/page.tsx` now fetches `home.testimonials` server-side via
+  `getSiteContentByKey` (same pattern as the FAQ/About pages) and passes it down.
+- **Decisions:** Discovered `home.hero`/`home.story` SiteContent tabs exist in the admin but
+  are **not** actually wired to `HeroSection`/`StorySection` (those read static i18n strings
+  instead) — pre-existing disconnect, left as-is/out of scope. Also found orphaned
+  `adminFaqService.ts` + `/api/admin/faq` + `/api/faq` routes (an earlier design using a
+  dedicated `key: 'faq'` blob) that the live FAQ page doesn't use (it reads `faq.items` via
+  the generic site-content service) — noted but not cleaned up, out of scope for this task.
+- **Notes/blockers:** typecheck + lint clean. Verified end-to-end with Playwright: added a
+  testimonial in admin, saved, confirmed it rendered on both `/he` and `/en` homepages with
+  correct rating/quote/author/location, then cleaned up the test data via the API.
+
+---
+
+## 2026-07-12 — Phase 2: Reviews (public submission + admin moderation + carousel) ✅
+
+- **Done:**
+  - Backend: `src/server/services/reviewService.ts` (`getApprovedReviewsForProduct`,
+    `createReview`); `createReviewSchema` + `ReviewDTO`/`PublicReviewDTO`; public
+    `POST /api/reviews` (rate-limited, 5/15min) alongside the existing
+    `GET /api/reviews/[productId]`; admin `DELETE /api/admin/reviews/[id]` added next to the
+    existing GET/PATCH.
+  - Admin: `src/features/admin/reviews/ReviewsListPage.tsx` — real moderation queue (status
+    filter, approve/unpublish, delete with confirm dialog) replacing the `/admin/reviews`
+    placeholder shell.
+  - Storefront: `src/components/ui/StarRating.tsx` (shared read-only/interactive component);
+    `src/features/reviews/{ReviewsCarousel,ReviewForm,ReviewsSection}.tsx` (embla-carousel,
+    RTL-aware); wired into `ProductDetail.tsx` after "Related products" via
+    `product/[slug]/page.tsx` fetching reviews server-side. New `"reviews"` i18n section in
+    `he.json`/`en.json`.
+- **Roadmap:** Phase 2 "Reviews" item ✅ (Bundles and other Phase 2 items untouched).
+- **Decisions:** `Review.isApproved` is a plain boolean (no "rejected" state), so moderation
+  uses approve/unpublish + a separate delete action rather than a three-state workflow.
+  Verified end-to-end via API (curl) + a Playwright pass against the admin UI; the storefront
+  form/carousel couldn't be screenshotted in this session because `FEATURES.shop` is
+  currently `false` (shop on hold) — user will verify that part visually themselves.
+- **Notes/blockers:** none — typecheck + lint clean.
+
+---
+
 ## 2026-07-11 — M1.21: Static pages (About, Gallery, Contact, FAQ) ✅
 
 - **Done:**

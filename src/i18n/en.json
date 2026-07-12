@@ -260,6 +260,24 @@
     "subtitle": "Answers to the questions our customers ask most",
     "empty": "No FAQs added yet"
   },
+  "reviews": {
+    "title": "Customer Reviews",
+    "empty": "No reviews yet for this product — be the first to write one!",
+    "average": "{rating} out of 5 ({count} reviews)",
+    "carouselPrev": "Previous review",
+    "carouselNext": "Next review",
+    "carouselDot": "Go to review {index}",
+    "formHeading": "Write a review",
+    "formName": "Full name",
+    "formRating": "Rating",
+    "formComment": "Your review (optional)",
+    "formSubmit": "Submit review",
+    "formSubmitting": "Submitting...",
+    "formPendingNotice": "Thank you! Your review has been received and will be published after approval.",
+    "formError": "Something went wrong, please try again",
+    "required": "This field is required",
+    "ratingRequired": "Please select a rating"
+  },
   "home": {
     "hero": {
       "eyebrow": "Handmade in Israel",

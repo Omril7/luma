@@ -36,3 +36,13 @@ export const PATCH = withAdmin<Ctx>(async (req: NextRequest, _admin: AdminPayloa
     },
   })
 })
+
+export const DELETE = withAdmin<Ctx>(async (_req, _admin: AdminPayload, { params }) => {
+  const { id } = await params
+
+  const existing = await prisma.review.findUnique({ where: { id } })
+  if (!existing) return errorResponse('Review not found', 404)
+
+  await prisma.review.delete({ where: { id } })
+  return NextResponse.json({ success: true })
+})

@@ -152,6 +152,31 @@ export interface CouponDTO {
   autoApply: boolean
 }
 
+// ── Review DTO ────────────────────────────────────────────────────────────────
+
+export interface ReviewDTO {
+  id: string
+  productId: string
+  productName_he: string
+  productName_en: string
+  productSlug: string
+  customerName: string
+  rating: number
+  comment_he?: string
+  comment_en?: string
+  isApproved: boolean
+  createdAt: string
+}
+
+export interface PublicReviewDTO {
+  id: string
+  customerName: string
+  rating: number
+  comment_he?: string
+  comment_en?: string
+  createdAt: string
+}
+
 // ── Pricing (shared between UI price preview and API validation) ──────────────
 
 export interface PriceRequestDTO {

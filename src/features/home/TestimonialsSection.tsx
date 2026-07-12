@@ -3,61 +3,29 @@
 import { motion } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { useUiStore } from '@/stores/uiStore'
+import { StarRating } from '@/components/ui/StarRating'
 
-interface TestimonialItem {
-  quote: string
-  author: string
-  location: string
+export interface TestimonialItem {
+  quote_he: string
+  quote_en: string
+  author_he: string
+  author_en: string
+  location_he: string
+  location_en: string
+  rating: number
 }
-
-const TESTIMONIALS_HE: TestimonialItem[] = [
-  {
-    quote: 'שולחן האוכל שקיבלנו הוא פשוט מדהים. האיכות מעולה והשירות היה מעל ומעבר.',
-    author: 'מיכל כהן',
-    location: 'תל אביב',
-  },
-  {
-    quote: 'הזמנו שידת לילה מותאמת אישית ועמדנו בכל הדרישות שלנו. ממליצה בחום!',
-    author: 'רותם לוי',
-    location: 'ירושלים',
-  },
-  {
-    quote: 'ריהוט איכותי שנראה בדיוק כמו בתמונה. המשלוח היה מהיר והמוצר מושלם.',
-    author: 'יוסי אברהם',
-    location: 'חיפה',
-  },
-]
-
-const TESTIMONIALS_EN: TestimonialItem[] = [
-  {
-    quote:
-      'The dining table we received is simply stunning. The quality is excellent and the service was above and beyond.',
-    author: 'Michal Cohen',
-    location: 'Tel Aviv',
-  },
-  {
-    quote: 'We ordered a custom nightstand and it met every requirement. Highly recommended!',
-    author: 'Rotem Levi',
-    location: 'Jerusalem',
-  },
-  {
-    quote:
-      'Quality furniture that looks exactly like the picture. Delivery was fast and the product is perfect.',
-    author: 'Yossi Abraham',
-    location: 'Haifa',
-  },
-]
 
 interface TestimonialsSectionProps {
   locale: string
+  items: TestimonialItem[]
 }
 
-export function TestimonialsSection({ locale }: TestimonialsSectionProps) {
+export function TestimonialsSection({ locale, items }: TestimonialsSectionProps) {
   const t = useTranslations('home.testimonials')
   const { a11y } = useUiStore()
   const shouldAnimate = !a11y.noMotion
 
-  const items = locale === 'he' ? TESTIMONIALS_HE : TESTIMONIALS_EN
+  if (items.length === 0) return null
 
   return (
     <section className="py-16 md:py-24">
@@ -75,39 +43,42 @@ export function TestimonialsSection({ locale }: TestimonialsSectionProps) {
 
         {/* Cards grid */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {items.map((item, index) => (
-            <motion.div
-              key={index}
-              initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
-              whileInView={shouldAnimate ? { opacity: 1, y: 0 } : undefined}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{
-                delay: index * 0.08,
-                duration: 0.4,
-                ease: 'easeOut',
-              }}
-              className="bg-surface rounded-lg border border-border p-6 shadow-soft"
-            >
-              {/* Stars */}
-              <div className="mb-3">
-                <span aria-hidden="true" className="text-accent text-sm tracking-wide">
-                  ★★★★★
-                </span>
-                <span className="sr-only">5 stars</span>
-              </div>
+          {items.map((item, index) => {
+            const quote = locale === 'he' ? item.quote_he : item.quote_en
+            const author = locale === 'he' ? item.author_he : item.author_en
+            const location = locale === 'he' ? item.location_he : item.location_en
 
-              {/* Quote */}
-              <blockquote className="text-text-main italic text-sm leading-relaxed mb-4">
-                {item.quote}
-              </blockquote>
+            return (
+              <motion.div
+                key={index}
+                initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
+                whileInView={shouldAnimate ? { opacity: 1, y: 0 } : undefined}
+                viewport={{ once: true, margin: '-80px' }}
+                transition={{
+                  delay: index * 0.08,
+                  duration: 0.4,
+                  ease: 'easeOut',
+                }}
+                className="bg-surface rounded-lg border border-border p-6 shadow-soft"
+              >
+                {/* Stars */}
+                <div className="mb-3">
+                  <StarRating value={item.rating} readonly size="sm" />
+                </div>
 
-              {/* Author */}
-              <footer>
-                <p className="font-semibold text-text-main text-sm">{item.author}</p>
-                <p className="text-text-muted text-xs">{item.location}</p>
-              </footer>
-            </motion.div>
-          ))}
+                {/* Quote */}
+                <blockquote className="text-text-main italic text-sm leading-relaxed mb-4">
+                  {quote}
+                </blockquote>
+
+                {/* Author */}
+                <footer>
+                  <p className="font-semibold text-text-main text-sm">{author}</p>
+                  <p className="text-text-muted text-xs">{location}</p>
+                </footer>
+              </motion.div>
+            )
+          })}
         </div>
       </div>
     </section>

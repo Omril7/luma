@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withApi, errorResponse } from '@/server/http'
 import { prisma } from '@/server/prisma'
+import { getApprovedReviewsForProduct } from '@/server/services/reviewService'
 
 type Ctx = { params: Promise<{ productId: string }> }
 
@@ -16,15 +17,6 @@ export const GET = withApi<Ctx>(async (req: NextRequest, { params }) => {
   })
   if (!product) return errorResponse('Product not found', 404)
 
-  const [reviews, total] = await prisma.$transaction([
-    prisma.review.findMany({
-      where: { productId, isApproved: true },
-      orderBy: { createdAt: 'desc' },
-      skip: (page - 1) * limit,
-      take: limit,
-    }),
-    prisma.review.count({ where: { productId, isApproved: true } }),
-  ])
-
-  return NextResponse.json({ reviews, total, page, pages: Math.ceil(total / limit) })
+  const result = await getApprovedReviewsForProduct(productId, { page, limit })
+  return NextResponse.json(result)
 })

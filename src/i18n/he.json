@@ -260,6 +260,24 @@
     "subtitle": "התשובות לשאלות הנפוצות ביותר שלקוחותינו שואלים",
     "empty": "עוד לא נוספו שאלות נפוצות"
   },
+  "reviews": {
+    "title": "ביקורות לקוחות",
+    "empty": "עדיין אין ביקורות למוצר זה — היו הראשונים לכתוב אחת!",
+    "average": "{rating} מתוך 5 ({count} ביקורות)",
+    "carouselPrev": "ביקורת קודמת",
+    "carouselNext": "ביקורת הבאה",
+    "carouselDot": "מעבר לביקורת {index}",
+    "formHeading": "כתבו ביקורת",
+    "formName": "שם מלא",
+    "formRating": "דירוג",
+    "formComment": "הביקורת שלכם (אופציונלי)",
+    "formSubmit": "שליחת ביקורת",
+    "formSubmitting": "שולח...",
+    "formPendingNotice": "תודה! הביקורת שלכם התקבלה ותפורסם לאחר אישור.",
+    "formError": "אירעה שגיאה בשליחה, נסו שוב",
+    "required": "שדה חובה",
+    "ratingRequired": "יש לבחור דירוג"
+  },
   "home": {
     "hero": {
       "eyebrow": "עשוי ביד בישראל",

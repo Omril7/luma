@@ -11,11 +11,13 @@ import { useWishlistStore } from '@/stores/wishlistStore'
 import { useUiStore } from '@/stores/uiStore'
 import { ImageGallery } from './ImageGallery'
 import { ProductCard } from './ProductCard'
-import type { ProductDTO, ProductVariantDTO } from '@/shared/types'
+import { ReviewsSection } from '@/features/reviews/ReviewsSection'
+import type { ProductDTO, ProductVariantDTO, PublicReviewDTO } from '@/shared/types'
 
 interface ProductDetailProps {
   product: ProductDTO
   relatedProducts: ProductDTO[]
+  reviews: PublicReviewDTO[]
   locale: string
 }
 
@@ -27,7 +29,7 @@ function formatPrice(agorot: number, locale: string): string {
   }).format(agorot / 100)
 }
 
-export function ProductDetail({ product, relatedProducts, locale }: ProductDetailProps) {
+export function ProductDetail({ product, relatedProducts, reviews, locale }: ProductDetailProps) {
   const t = useTranslations('product')
   const { addItem } = useCartStore()
   const { toggle, has } = useWishlistStore()
@@ -606,6 +608,9 @@ export function ProductDetail({ product, relatedProducts, locale }: ProductDetai
             </div>
           </section>
         )}
+
+        {/* Reviews */}
+        <ReviewsSection reviews={reviews} productId={product.id} locale={locale} />
       </div>
 
       {/* Sticky mobile add-to-cart bar */}

@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getProductBySlug, getProducts } from '@/server/services/productService'
+import { getApprovedReviewsForProduct } from '@/server/services/reviewService'
 import { ProductDetail } from '@/features/products/ProductDetail'
 
 export async function generateMetadata({
@@ -39,5 +40,14 @@ export default async function ProductPage({
   })
   const relatedProducts = allRelated.filter((p) => p.id !== product.id).slice(0, 4)
 
-  return <ProductDetail product={product} relatedProducts={relatedProducts} locale={lang} />
+  const { reviews } = await getApprovedReviewsForProduct(product.id, { limit: 10 })
+
+  return (
+    <ProductDetail
+      product={product}
+      relatedProducts={relatedProducts}
+      reviews={reviews}
+      locale={lang}
+    />
+  )
 }

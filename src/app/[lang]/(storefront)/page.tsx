@@ -2,9 +2,10 @@ import type { Metadata } from 'next'
 import { HeroSection } from '@/features/home/HeroSection'
 // import { FeaturedSection } from '@/features/home/FeaturedSection'
 import { StorySection } from '@/features/home/StorySection'
-import { TestimonialsSection } from '@/features/home/TestimonialsSection'
+import { TestimonialsSection, type TestimonialItem } from '@/features/home/TestimonialsSection'
 import { InstagramSection } from '@/features/home/InstagramSection'
 import { ContactSection } from '@/features/home/ContactSection'
+import { getSiteContentByKey } from '@/server/services/adminSiteContentService'
 
 export async function generateMetadata({
   params,
@@ -24,6 +25,9 @@ export async function generateMetadata({
 export default async function HomePage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params
 
+  const row = await getSiteContentByKey('home.testimonials')
+  const testimonials = (row?.value as { items?: TestimonialItem[] } | undefined)?.items ?? []
+
   return (
     <>
       <HeroSection locale={lang} />
@@ -32,7 +36,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         <StorySection locale={lang} />
       </div>
       <div className="bg-secondary">
-        <TestimonialsSection locale={lang} />
+        <TestimonialsSection locale={lang} items={testimonials} />
       </div>
       <div className="bg-bg">
         <InstagramSection locale={lang} />
