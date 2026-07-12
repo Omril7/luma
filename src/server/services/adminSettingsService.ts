@@ -16,6 +16,8 @@ export interface BusinessSettings {
   email: string
   hours_he: string
   hours_en: string
+  instagramUrl: string
+  facebookUrl: string
 }
 
 export interface ShippingSettings {
@@ -51,6 +53,8 @@ const DEFAULT_SETTINGS: SiteSettingsDTO = {
     email: '',
     hours_he: 'א׳-ה׳: 9:00-18:00, ו׳: 9:00-13:00',
     hours_en: 'Sun-Thu: 9AM-6PM, Fri: 9AM-1PM',
+    instagramUrl: '',
+    facebookUrl: '',
   },
   shipping: {
     shippingCostNational: 0,
@@ -105,6 +109,8 @@ export async function upsertSiteSettings(data: UpdateSettingsInput): Promise<Sit
       email: data.email ?? current.business.email,
       hours_he: data.hours_he ?? current.business.hours_he,
       hours_en: data.hours_en ?? current.business.hours_en,
+      instagramUrl: data.instagramUrl ?? current.business.instagramUrl,
+      facebookUrl: data.facebookUrl ?? current.business.facebookUrl,
     },
     shipping: {
       shippingCostNational: data.shippingCostNational ?? current.shipping.shippingCostNational,

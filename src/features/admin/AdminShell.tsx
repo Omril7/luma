@@ -24,6 +24,7 @@ import {
   Star,
 } from 'lucide-react'
 import { useAdminStore } from '@/stores/adminStore'
+import { InstagramIcon } from '@/components/icons/InstagramIcon'
 
 const NAV_ITEMS = [
   { href: '/admin', icon: LayoutDashboard, label: 'לוח בקרה', exact: true },
@@ -33,6 +34,7 @@ const NAV_ITEMS = [
   { href: '/admin/email-services', icon: Mail, label: 'שירותי דואר', exact: false },
   { href: '/admin/newsletter', icon: Send, label: 'ניוזלטר', exact: false },
   { href: '/admin/gallery', icon: ImageIcon, label: 'גלריה', exact: false },
+  { href: '/admin/instagram', icon: InstagramIcon, label: 'אינסטגרם', exact: false },
   { href: '/admin/bundles', icon: PackageOpen, label: 'חבילות', exact: false },
   { href: '/admin/reviews', icon: Star, label: 'ביקורות', exact: false },
   { href: '/admin/settings', icon: Settings, label: 'הגדרות', exact: false },

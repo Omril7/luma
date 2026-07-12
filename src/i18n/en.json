@@ -101,7 +101,10 @@
     "wishlistAdd": "Add to wishlist",
     "wishlistRemove": "Remove from wishlist",
     "decreaseQuantity": "Decrease quantity",
-    "increaseQuantity": "Increase quantity"
+    "increaseQuantity": "Increase quantity",
+    "share": "Share",
+    "shareCopied": "Link copied to clipboard",
+    "shareCopyFailed": "Couldn't copy the link"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -189,7 +192,9 @@
     "returns": "Returns Policy",
     "tagline": "Custom furniture, handmade to order",
     "shopLinks": "Shop",
-    "infoLinks": "Info"
+    "infoLinks": "Info",
+    "instagramLabel": "Follow us on Instagram",
+    "facebookLabel": "Follow us on Facebook"
   },
   "shop": {
     "title": "Shop",
@@ -306,7 +311,8 @@
     "instagram": {
       "heading": "Follow Us",
       "handle": "@luma.furniture",
-      "coming": "Coming Soon"
+      "coming": "Coming Soon",
+      "viewPost": "View on Instagram"
     },
     "contact": {
       "heading": "Can't find exactly what you're looking for?",

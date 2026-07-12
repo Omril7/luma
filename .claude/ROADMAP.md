@@ -204,6 +204,17 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - **Acceptance:** all render bilingually; contact submits successfully. _(Newsletter subscribe has
   no storefront UI yet — only the admin-facing send flow from M1.27; not part of this milestone.)_
 
+### M1.21.b Footer, sharing & theming polish
+
+- [x] Footer: add links to socials (Instagram, Facebook)
+- [x] Share button — copies the page URL; when shared via WhatsApp shows a rich link
+      preview (title/image via Open Graph tags)
+- [x] Audit OS-level dark mode (`prefers-color-scheme: dark`) so colors match the custom
+      dark mode already defined for the accessibility widget, instead of diverging
+- [x] `InstagramSection` (`src/features/home/InstagramSection.tsx`) — wire up to a real
+      Instagram account (decide: Graph API feed vs. manual admin-curated images — went with
+      admin-curated images via a new `/admin/instagram` panel, mirroring the Gallery pattern)
+
 ### M1.22 SEO + performance
 
 - [ ] Next Metadata API per-page meta (bilingual, correct lang)

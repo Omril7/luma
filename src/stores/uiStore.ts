@@ -27,6 +27,9 @@ export interface A11yPrefs {
   bold: boolean
   focus: boolean
   readingGuide: boolean
+  // True once the user has explicitly picked a visual mode (dark/contrast/grayscale/sepia)
+  // via the widget. Until then, `dark` auto-follows the OS `prefers-color-scheme`.
+  systemThemeDismissed: boolean
 }
 
 interface UiState {
@@ -59,6 +62,7 @@ export const useUiStore = create<UiState>()(
         bold: false,
         focus: false,
         readingGuide: false,
+        systemThemeDismissed: false,
       },
 
       addToast: (toast) => {

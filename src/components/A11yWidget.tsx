@@ -77,6 +77,7 @@ const DEFAULT_PREFS: A11yPrefs = {
   bold: false,
   focus: false,
   readingGuide: false,
+  systemThemeDismissed: false,
 }
 
 export function A11yWidget() {
@@ -110,6 +111,17 @@ export function A11yWidget() {
     html.setAttribute('data-focus', a11y.focus ? 'true' : '')
     html.setAttribute('data-cursor', a11y.cursor ? 'true' : '')
   }, [a11y])
+
+  // Follow the OS `prefers-color-scheme` for the custom dark palette until the user
+  // explicitly picks a visual mode (dark/contrast/grayscale/sepia) in the widget.
+  useEffect(() => {
+    if (a11y.systemThemeDismissed) return
+    const mql = window.matchMedia('(prefers-color-scheme: dark)')
+    const applySystemPreference = () => setA11y({ dark: mql.matches })
+    applySystemPreference()
+    mql.addEventListener('change', applySystemPreference)
+    return () => mql.removeEventListener('change', applySystemPreference)
+  }, [a11y.systemThemeDismissed, setA11y])
 
   // Pause all media when enabled
   useEffect(() => {
@@ -155,11 +167,13 @@ export function A11yWidget() {
   const toggle = (key: BoolKey) => {
     if (VISUAL_MODES.includes(key)) {
       const willEnable = !a11y[key]
-      setA11y(
-        Object.fromEntries(
+      setA11y({
+        ...(Object.fromEntries(
           VISUAL_MODES.map((k) => [k, willEnable && k === key])
-        ) as Partial<A11yPrefs>
-      )
+        ) as Partial<A11yPrefs>),
+        // Manually choosing a visual mode opts out of auto-following the OS theme.
+        systemThemeDismissed: true,
+      })
     } else {
       setA11y({ [key]: !a11y[key] } as Partial<A11yPrefs>)
     }

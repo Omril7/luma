@@ -19,6 +19,8 @@ interface SiteSettingsDTO {
     email: string
     hours_he: string
     hours_en: string
+    instagramUrl: string
+    facebookUrl: string
   }
   shipping: {
     shippingCostNational: number
@@ -109,6 +111,8 @@ export function SettingsPage() {
     email: '',
     hours_he: '',
     hours_en: '',
+    instagramUrl: '',
+    facebookUrl: '',
   })
   const [bizSaving, setBizSaving] = useState(false)
   const [bizSuccess, setBizSuccess] = useState(false)
@@ -151,6 +155,8 @@ export function SettingsPage() {
         email: business.email,
         hours_he: business.hours_he,
         hours_en: business.hours_en,
+        instagramUrl: business.instagramUrl,
+        facebookUrl: business.facebookUrl,
       })
       setShip({
         shippingCostNational: shipping.shippingCostNational,
@@ -198,6 +204,8 @@ export function SettingsPage() {
           email: biz.email.trim(),
           hours_he: biz.hours_he.trim(),
           hours_en: biz.hours_en.trim(),
+          instagramUrl: biz.instagramUrl.trim(),
+          facebookUrl: biz.facebookUrl.trim(),
         },
         token
       )
@@ -458,6 +466,32 @@ export function SettingsPage() {
               onChange={(e) => setBizField('hours_en', e.target.value)}
               dir="ltr"
               placeholder="Sun-Thu: 9AM-6PM, Fri: 9AM-1PM"
+              className={inputCls}
+            />
+          </div>
+        </div>
+
+        {/* Social links */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div dir="ltr">
+            <label className={labelCls}>Instagram</label>
+            <input
+              type="url"
+              value={biz.instagramUrl}
+              onChange={(e) => setBizField('instagramUrl', e.target.value)}
+              dir="ltr"
+              placeholder="https://instagram.com/luma.furniture"
+              className={inputCls}
+            />
+          </div>
+          <div dir="ltr">
+            <label className={labelCls}>Facebook</label>
+            <input
+              type="url"
+              value={biz.facebookUrl}
+              onChange={(e) => setBizField('facebookUrl', e.target.value)}
+              dir="ltr"
+              placeholder="https://facebook.com/luma.furniture"
               className={inputCls}
             />
           </div>

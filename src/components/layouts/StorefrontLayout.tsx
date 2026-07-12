@@ -31,7 +31,10 @@ export async function StorefrontLayout({
       <main id="main-content" tabIndex={-1}>
         {children}
       </main>
-      <Footer />
+      <Footer
+        instagramUrl={business.instagramUrl || undefined}
+        facebookUrl={business.facebookUrl || undefined}
+      />
       <WhatsAppButton whatsappNumber={business.whatsappNumber} />
       <A11yWidget />
       <ToastContainer />

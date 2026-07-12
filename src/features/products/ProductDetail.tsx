@@ -9,6 +9,7 @@ import type { VariantTier, PricingRule, PriceResult } from '@/shared/pricing'
 import { useCartStore } from '@/stores/cartStore'
 import { useWishlistStore } from '@/stores/wishlistStore'
 import { useUiStore } from '@/stores/uiStore'
+import { ShareButton } from '@/components/ShareButton'
 import { ImageGallery } from './ImageGallery'
 import { ProductCard } from './ProductCard'
 import { ReviewsSection } from '@/features/reviews/ReviewsSection'
@@ -586,6 +587,8 @@ export function ProductDetail({ product, relatedProducts, reviews, locale }: Pro
                   className={isWishlisted ? 'fill-current text-accent' : 'text-text-muted'}
                 />
               </button>
+
+              <ShareButton title={productName} text={productDesc || undefined} />
             </div>
 
             {/* Description */}

@@ -237,6 +237,20 @@ export type CreateGalleryImageInput = z.infer<typeof createGalleryImageSchema>
 export const updateGalleryImageSchema = createGalleryImageSchema.partial()
 export type UpdateGalleryImageInput = z.infer<typeof updateGalleryImageSchema>
 
+// ── Instagram highlight ───────────────────────────────────────────────────────
+
+export const createInstagramHighlightSchema = z.object({
+  url: z.string().url(),
+  linkUrl: z.string().url().optional(),
+  sortOrder: z.number().int().min(0).optional(),
+  isActive: z.boolean().optional(),
+})
+
+export type CreateInstagramHighlightInput = z.infer<typeof createInstagramHighlightSchema>
+
+export const updateInstagramHighlightSchema = createInstagramHighlightSchema.partial()
+export type UpdateInstagramHighlightInput = z.infer<typeof updateInstagramHighlightSchema>
+
 // ── FAQ item ──────────────────────────────────────────────────────────────────
 
 export const createFaqItemSchema = z.object({
@@ -264,6 +278,8 @@ export const updateSettingsSchema = z.object({
   email: z.string().email().optional(),
   hours_he: z.string().max(300).optional(),
   hours_en: z.string().max(300).optional(),
+  instagramUrl: z.string().max(300).optional(),
+  facebookUrl: z.string().max(300).optional(),
   shippingCostNational: z.number().min(0).optional(),
   freeShippingAbove: z.number().min(0).optional(),
   studioAddress: z.string().max(500).optional(),

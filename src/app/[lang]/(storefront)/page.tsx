@@ -7,6 +7,7 @@ import { InstagramSection } from '@/features/home/InstagramSection'
 import { ContactSection } from '@/features/home/ContactSection'
 import { getSiteContentByKey } from '@/server/services/adminSiteContentService'
 import { getSiteSettings } from '@/server/services/adminSettingsService'
+import { listActiveInstagramHighlights } from '@/server/services/adminInstagramService'
 
 export async function generateMetadata({
   params,
@@ -29,6 +30,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
   const row = await getSiteContentByKey('home.testimonials')
   const testimonials = (row?.value as { items?: TestimonialItem[] } | undefined)?.items ?? []
   const { business } = await getSiteSettings()
+  const instagramHighlights = await listActiveInstagramHighlights()
 
   return (
     <>
@@ -41,7 +43,11 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         <TestimonialsSection locale={lang} items={testimonials} />
       </div>
       <div className="bg-bg">
-        <InstagramSection locale={lang} />
+        <InstagramSection
+          locale={lang}
+          items={instagramHighlights}
+          instagramUrl={business.instagramUrl || undefined}
+        />
       </div>
       <div className="bg-secondary">
         <ContactSection whatsappNumber={business.whatsappNumber} email={business.email} />

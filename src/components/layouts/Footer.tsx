@@ -5,8 +5,14 @@ import { Link } from '@/i18n/navigation'
 import { Logo } from '@/components/ui/Logo'
 import { FEATURES } from '@/lib/featureFlags'
 import { useUiStore } from '@/stores/uiStore'
+import { InstagramIcon } from '@/components/icons/InstagramIcon'
 
-export function Footer() {
+interface FooterProps {
+  instagramUrl?: string
+  facebookUrl?: string
+}
+
+export function Footer({ instagramUrl, facebookUrl }: FooterProps) {
   const t = useTranslations('footer')
   const tNav = useTranslations('nav')
   const { a11y } = useUiStore()
@@ -55,6 +61,39 @@ export function Footer() {
           <div>
             <Logo inverted className="mb-3" />
             <p className={`text-sm leading-relaxed ${mutedCls}`}>{t('tagline')}</p>
+            {(instagramUrl || facebookUrl) && (
+              <div className="flex items-center gap-1 mt-4 -ms-2.5">
+                {instagramUrl && (
+                  <a
+                    href={instagramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={t('instagramLabel')}
+                    className={`flex h-11 w-11 items-center justify-center rounded-full ${fgCls} ${fgHoverCls} transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
+                  >
+                    <InstagramIcon aria-hidden="true" className="h-5 w-5" />
+                  </a>
+                )}
+                {facebookUrl && (
+                  <a
+                    href={facebookUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={t('facebookLabel')}
+                    className={`flex h-11 w-11 items-center justify-center rounded-full ${fgCls} ${fgHoverCls} transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
+                  >
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      className="h-5 w-5"
+                    >
+                      <path d="M13.5 21v-7.8h2.6l.4-3h-3v-1.9c0-.87.24-1.46 1.49-1.46H16.6V4.14C16.34 4.1 15.46 4 14.44 4c-2.13 0-3.59 1.3-3.59 3.68v2.52H8.25v3h2.6V21h2.65z" />
+                    </svg>
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Shop links */}

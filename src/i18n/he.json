@@ -101,7 +101,10 @@
     "wishlistAdd": "הוסף לרשימת המשאלות",
     "wishlistRemove": "הסר מרשימת המשאלות",
     "decreaseQuantity": "הקטן כמות",
-    "increaseQuantity": "הגדל כמות"
+    "increaseQuantity": "הגדל כמות",
+    "share": "שיתוף",
+    "shareCopied": "הקישור הועתק",
+    "shareCopyFailed": "לא ניתן להעתיק את הקישור"
   },
   "cart": {
     "title": "עגלת הקניות",
@@ -189,7 +192,9 @@
     "returns": "מדיניות החזרות",
     "tagline": "ריהוט בהזמנה אישית, עשוי ביד",
     "shopLinks": "קישורי חנות",
-    "infoLinks": "מידע"
+    "infoLinks": "מידע",
+    "instagramLabel": "עקבו אחרינו באינסטגרם",
+    "facebookLabel": "עקבו אחרינו בפייסבוק"
   },
   "shop": {
     "title": "החנות",
@@ -306,7 +311,8 @@
     "instagram": {
       "heading": "עקבו אחרינו",
       "handle": "@luma.furniture",
-      "coming": "בקרוב"
+      "coming": "בקרוב",
+      "viewPost": "צפייה באינסטגרם"
     },
     "contact": {
       "heading": "לא מצאתם בדיוק מה שחיפשתם?",

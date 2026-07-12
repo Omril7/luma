@@ -40,6 +40,9 @@
 
   /* accessibility (overridable by the a11y widget) */
   --font-scale: 1;
+
+  /* native form controls / scrollbars follow our theme, not the OS default */
+  color-scheme: light;
 }
 
 html[lang='en'] {
@@ -146,6 +149,7 @@ body {
   --color-bg: #201c17;
   --color-surface: #2b2620;
   --color-border: #443c30;
+  color-scheme: dark;
 }
 
 /* ── Visual filters ─────────────────────────────────────────────────────────── */
