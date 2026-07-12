@@ -36,16 +36,6 @@ interface AboutPage {
   imageUrl: string
 }
 
-interface ContactInfo {
-  phone: string
-  whatsapp: string
-  email: string
-  address_he: string
-  address_en: string
-  hours_he: string
-  hours_en: string
-}
-
 interface FaqItem {
   q_he: string
   q_en: string
@@ -83,7 +73,6 @@ type SiteContentMap = {
   'home.story': HomeStory
   'home.testimonials': TestimonialsData
   'about.page': AboutPage
-  'contact.info': ContactInfo
   'faq.items': FaqItems
   'gallery.intro': GalleryIntro
 }
@@ -108,17 +97,6 @@ function defaultStory(): HomeStory {
 }
 function defaultAbout(): AboutPage {
   return { title_he: '', title_en: '', body_he: '', body_en: '', imageUrl: '' }
-}
-function defaultContact(): ContactInfo {
-  return {
-    phone: '',
-    whatsapp: '',
-    email: '',
-    address_he: '',
-    address_en: '',
-    hours_he: '',
-    hours_en: '',
-  }
 }
 function defaultFaq(): FaqItems {
   return { items: [] }
@@ -220,7 +198,6 @@ const TABS: { key: ContentKey; label: string }[] = [
   { key: 'home.story', label: 'דף הבית — הסיפור שלנו' },
   { key: 'home.testimonials', label: 'דף הבית — המלצות לקוחות' },
   { key: 'about.page', label: 'אודות' },
-  { key: 'contact.info', label: 'יצירת קשר' },
   { key: 'faq.items', label: 'שאלות נפוצות' },
   { key: 'gallery.intro', label: 'גלריה' },
 ]
@@ -497,118 +474,6 @@ function AboutTab({ data, onChange, onSave, saving, success, error, token }: Abo
           onChange={(url) => set('imageUrl', url ?? '')}
           token={token}
         />
-      </div>
-
-      <div className="flex items-center justify-between pt-2">
-        <SaveStatus success={success} error={error} />
-        <SaveButton saving={saving} onClick={onSave} />
-      </div>
-    </div>
-  )
-}
-
-interface ContactTabProps {
-  data: ContactInfo
-  onChange: (d: ContactInfo) => void
-  onSave: () => void
-  saving: boolean
-  success: boolean
-  error: string | null
-}
-
-function ContactTab({ data, onChange, onSave, saving, success, error }: ContactTabProps) {
-  function set<K extends keyof ContactInfo>(k: K, v: ContactInfo[K]) {
-    onChange({ ...data, [k]: v })
-  }
-  return (
-    <div className="space-y-4">
-      <h3 className="text-base font-semibold text-text-main mb-4">יצירת קשר</h3>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div>
-          <label className={labelCls}>טלפון</label>
-          <input
-            type="text"
-            value={data.phone}
-            onChange={(e) => set('phone', e.target.value)}
-            dir="ltr"
-            placeholder="050-1234567"
-            className={inputCls}
-          />
-        </div>
-        <div>
-          <label className={labelCls}>וואטסאפ</label>
-          <input
-            type="text"
-            value={data.whatsapp}
-            onChange={(e) => set('whatsapp', e.target.value)}
-            dir="ltr"
-            placeholder="972501234567"
-            className={inputCls}
-          />
-          <p className="text-xs text-text-muted mt-1">מספר בינלאומי, ללא + למשל 972501234567</p>
-        </div>
-        <div>
-          <label className={labelCls}>אימייל</label>
-          <input
-            type="email"
-            value={data.email}
-            onChange={(e) => set('email', e.target.value)}
-            dir="ltr"
-            placeholder="hello@example.com"
-            className={inputCls}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className={labelCls}>כתובת {badgeHe}</label>
-          <input
-            type="text"
-            value={data.address_he}
-            onChange={(e) => set('address_he', e.target.value)}
-            dir="rtl"
-            placeholder="רחוב הרצל 1, תל אביב"
-            className={inputCls}
-          />
-        </div>
-        <div dir="ltr">
-          <label className={labelCls}>Address {badgeEn}</label>
-          <input
-            type="text"
-            value={data.address_en}
-            onChange={(e) => set('address_en', e.target.value)}
-            dir="ltr"
-            placeholder="1 Herzl St, Tel Aviv"
-            className={inputCls}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className={labelCls}>שעות פעילות {badgeHe}</label>
-          <input
-            type="text"
-            value={data.hours_he}
-            onChange={(e) => set('hours_he', e.target.value)}
-            dir="rtl"
-            placeholder="א׳-ה׳ 09:00–18:00"
-            className={inputCls}
-          />
-        </div>
-        <div dir="ltr">
-          <label className={labelCls}>Opening hours {badgeEn}</label>
-          <input
-            type="text"
-            value={data.hours_en}
-            onChange={(e) => set('hours_en', e.target.value)}
-            dir="ltr"
-            placeholder="Sun–Thu 09:00–18:00"
-            className={inputCls}
-          />
-        </div>
       </div>
 
       <div className="flex items-center justify-between pt-2">
@@ -1056,7 +921,6 @@ export function SiteContentPage() {
   const [story, setStory] = useState<HomeStory>(defaultStory())
   const [testimonials, setTestimonials] = useState<TestimonialsData>(defaultTestimonials())
   const [about, setAbout] = useState<AboutPage>(defaultAbout())
-  const [contact, setContact] = useState<ContactInfo>(defaultContact())
   const [faq, setFaq] = useState<FaqItems>(defaultFaq())
   const [gallery, setGallery] = useState<GalleryIntro>(defaultGallery())
 
@@ -1067,7 +931,6 @@ export function SiteContentPage() {
   const storySave = useSaveSection('home.story', token)
   const testimonialsSave = useSaveSection('home.testimonials', token)
   const aboutSave = useSaveSection('about.page', token)
-  const contactSave = useSaveSection('contact.info', token)
   const faqSave = useSaveSection('faq.items', token)
   const gallerySave = useSaveSection('gallery.intro', token)
 
@@ -1081,7 +944,6 @@ export function SiteContentPage() {
       if (data['home.story']) setStory(data['home.story'] as HomeStory)
       if (data['home.testimonials']) setTestimonials(data['home.testimonials'] as TestimonialsData)
       if (data['about.page']) setAbout(data['about.page'] as AboutPage)
-      if (data['contact.info']) setContact(data['contact.info'] as ContactInfo)
       if (data['faq.items']) setFaq(data['faq.items'] as FaqItems)
       if (data['gallery.intro']) setGallery(data['gallery.intro'] as GalleryIntro)
     } catch (e) {
@@ -1191,16 +1053,6 @@ export function SiteContentPage() {
                 success={aboutSave.success}
                 error={aboutSave.error}
                 token={token ?? ''}
-              />
-            )}
-            {activeTab === 'contact.info' && (
-              <ContactTab
-                data={contact}
-                onChange={setContact}
-                onSave={() => contactSave.save(contact)}
-                saving={contactSave.saving}
-                success={contactSave.success}
-                error={contactSave.error}
               />
             )}
             {activeTab === 'faq.items' && (

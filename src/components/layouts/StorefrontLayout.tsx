@@ -32,7 +32,7 @@ export async function StorefrontLayout({
         {children}
       </main>
       <Footer />
-      <WhatsAppButton />
+      <WhatsAppButton whatsappNumber={business.whatsappNumber} />
       <A11yWidget />
       <ToastContainer />
     </>

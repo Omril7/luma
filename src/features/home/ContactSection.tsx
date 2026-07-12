@@ -4,14 +4,17 @@ import { motion } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { useUiStore } from '@/stores/uiStore'
 
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '972500000000'
-const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'hello@luma.co.il'
+const DEFAULT_WHATSAPP_NUMBER = '972500000000'
+const DEFAULT_CONTACT_EMAIL = 'hello@luma.co.il'
 
 interface ContactSectionProps {
-  locale: string
+  whatsappNumber: string
+  email: string
 }
 
-export function ContactSection({ locale: _locale }: ContactSectionProps) {
+export function ContactSection({ whatsappNumber, email }: ContactSectionProps) {
+  const WHATSAPP_NUMBER = whatsappNumber || DEFAULT_WHATSAPP_NUMBER
+  const CONTACT_EMAIL = email || DEFAULT_CONTACT_EMAIL
   const t = useTranslations('home.contact')
   const { a11y } = useUiStore()
   const shouldAnimate = !a11y.noMotion

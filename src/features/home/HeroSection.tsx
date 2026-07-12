@@ -7,18 +7,20 @@ import { Link } from '@/i18n/navigation'
 import { useUiStore } from '@/stores/uiStore'
 import { cn } from '@/lib/utils'
 
+const DEFAULT_WHATSAPP_NUMBER = '972500000000'
+
 interface HeroSectionProps {
   locale: string
+  whatsappNumber: string
 }
 
-export function HeroSection({ locale }: HeroSectionProps) {
+export function HeroSection({ locale, whatsappNumber }: HeroSectionProps) {
   const t = useTranslations('home.hero')
   const { a11y } = useUiStore()
   const shouldAnimate = !a11y.noMotion
   const isRTL = locale === 'he'
 
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '972500000000'
-  const whatsappUrl = `https://wa.me/${whatsappNumber}`
+  const whatsappUrl = `https://wa.me/${whatsappNumber || DEFAULT_WHATSAPP_NUMBER}`
 
   const entranceProps = shouldAnimate
     ? {

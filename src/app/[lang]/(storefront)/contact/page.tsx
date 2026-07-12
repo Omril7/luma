@@ -1,27 +1,7 @@
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
-import { getSiteContentByKey } from '@/server/services/adminSiteContentService'
+import { getSiteSettings } from '@/server/services/adminSettingsService'
 import { ContactClient } from '@/features/contact/ContactClient'
-
-interface ContactInfo {
-  phone: string
-  whatsapp: string
-  email: string
-  address_he: string
-  address_en: string
-  hours_he: string
-  hours_en: string
-}
-
-const DEFAULTS: ContactInfo = {
-  phone: '',
-  whatsapp: '',
-  email: '',
-  address_he: '',
-  address_en: '',
-  hours_he: '',
-  hours_en: '',
-}
 
 export async function generateMetadata({
   params,
@@ -35,10 +15,15 @@ export async function generateMetadata({
 
 export default async function ContactPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params
-  const row = await getSiteContentByKey('contact.info')
-  const info: ContactInfo = {
-    ...DEFAULTS,
-    ...((row?.value as Partial<ContactInfo>) ?? {}),
+  const { business } = await getSiteSettings()
+  const info = {
+    phone: business.phone,
+    whatsapp: business.whatsappNumber,
+    email: business.email,
+    address_he: business.address_he,
+    address_en: business.address_en,
+    hours_he: business.hours_he,
+    hours_en: business.hours_en,
   }
 
   return <ContactClient locale={lang} info={info} />

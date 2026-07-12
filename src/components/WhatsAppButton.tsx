@@ -4,16 +4,20 @@ import { motion } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { useUiStore } from '@/stores/uiStore'
 
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '972500000000'
+const DEFAULT_WHATSAPP_NUMBER = '972500000000'
 
-export function WhatsAppButton() {
+interface WhatsAppButtonProps {
+  whatsappNumber?: string
+}
+
+export function WhatsAppButton({ whatsappNumber }: WhatsAppButtonProps) {
   const t = useTranslations('whatsapp')
   const { a11y } = useUiStore()
   const shouldAnimate = !a11y.noMotion
 
   return (
     <motion.a
-      href={`https://wa.me/${WHATSAPP_NUMBER}`}
+      href={`https://wa.me/${whatsappNumber || DEFAULT_WHATSAPP_NUMBER}`}
       target="_blank"
       rel="noopener noreferrer"
       aria-label={t('label')}
