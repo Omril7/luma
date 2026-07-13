@@ -111,21 +111,22 @@ npm run build           # next build
 
 ## Documentation index (`.claude/docs/`)
 
-| Doc                                                      | Topic                                              |
-| -------------------------------------------------------- | -------------------------------------------------- |
-| [00-overview](.claude/docs/00-overview.md)               | Vision, scope, glossary, phase summary             |
-| [01-architecture](.claude/docs/01-architecture.md)       | Monorepo layout, layering, shared package          |
-| [02-data-models](.claude/docs/02-data-models.md)         | Prisma models, relations, enums, decisions         |
-| [03-pricing-engine](.claude/docs/03-pricing-engine.md)   | The custom-dimension pricing algorithm (core)      |
-| [04-api-contract](.claude/docs/04-api-contract.md)       | REST endpoints, request/response shapes, errors    |
-| [05-frontend](.claude/docs/05-frontend.md)               | Pages, components, routing, Zustand stores         |
-| [06-i18n-rtl](.claude/docs/06-i18n-rtl.md)               | Hebrew/English, RTL switching, translation rules   |
-| [07-design-system](.claude/docs/07-design-system.md)     | Theme tokens, typography, UI, accessibility widget |
-| [08-admin-panel](.claude/docs/08-admin-panel.md)         | Admin pages, JWT auth, CRUD patterns               |
-| [09-payments](.claude/docs/09-payments.md)               | Stubbed payment interface, IL processors           |
-| [10-devops](.claude/docs/10-devops.md)                   | Vercel deploy, env vars, scripts, storage, tooling |
-| [11-testing-quality](.claude/docs/11-testing-quality.md) | Tests, lint/format, CI, perf/a11y gates            |
-| [12-showcase-mode](.claude/docs/12-showcase-mode.md)     | Browse-only catalog while `FEATURES.shop` is off   |
+| Doc                                                          | Topic                                              |
+| ------------------------------------------------------------ | -------------------------------------------------- |
+| [00-overview](.claude/docs/00-overview.md)                   | Vision, scope, glossary, phase summary             |
+| [01-architecture](.claude/docs/01-architecture.md)           | Monorepo layout, layering, shared package          |
+| [02-data-models](.claude/docs/02-data-models.md)             | Prisma models, relations, enums, decisions         |
+| [03-pricing-engine](.claude/docs/03-pricing-engine.md)       | The custom-dimension pricing algorithm (core)      |
+| [04-api-contract](.claude/docs/04-api-contract.md)           | REST endpoints, request/response shapes, errors    |
+| [05-frontend](.claude/docs/05-frontend.md)                   | Pages, components, routing, Zustand stores         |
+| [06-i18n-rtl](.claude/docs/06-i18n-rtl.md)                   | Hebrew/English, RTL switching, translation rules   |
+| [07-design-system](.claude/docs/07-design-system.md)         | Theme tokens, typography, UI, accessibility widget |
+| [08-admin-panel](.claude/docs/08-admin-panel.md)             | Admin pages, JWT auth, CRUD patterns               |
+| [09-payments](.claude/docs/09-payments.md)                   | Stubbed payment interface, IL processors           |
+| [10-devops](.claude/docs/10-devops.md)                       | Vercel deploy, env vars, scripts, storage, tooling |
+| [11-testing-quality](.claude/docs/11-testing-quality.md)     | Tests, lint/format, CI, perf/a11y gates            |
+| [12-showcase-mode](.claude/docs/12-showcase-mode.md)         | Browse-only catalog while `FEATURES.shop` is off   |
+| [13-category-taxonomy](.claude/docs/13-category-taxonomy.md) | `Category` enum → admin-managed table              |
 
 **Build sequence:** [`.claude/ROADMAP.md`](.claude/ROADMAP.md) (planned work + checkboxes).
 **Progress log:** [`.claude/PROGRESS.md`](.claude/PROGRESS.md) (chronological journal — append an
