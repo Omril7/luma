@@ -7,18 +7,12 @@ import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { useWishlistStore } from '@/stores/wishlistStore'
 import { useUiStore } from '@/stores/uiStore'
+import { getStartingPrice } from '@/shared/pricing'
 import type { ProductDTO } from '@/shared/types'
 
 interface ProductCardProps {
   product: ProductDTO
   locale: string
-}
-
-function lowestPrice(product: ProductDTO): number {
-  if (product.variants.length > 0) {
-    return Math.min(...product.variants.map((v) => v.price))
-  }
-  return product.basePrice
 }
 
 function formatPrice(price: number, locale: string): string {
@@ -38,7 +32,7 @@ export function ProductCard({ product, locale }: ProductCardProps) {
   const isWishlisted = has(product.id)
   const productName = locale === 'he' ? product.name_he : product.name_en
   const primaryImage = product.images.find((img) => img.isPrimary) ?? product.images[0]
-  const price = lowestPrice(product)
+  const price = getStartingPrice(product)
   const priceLabel = `${t('home.featured.from')}${formatPrice(price, locale)}`
 
   function handleWishlistClick(e: React.MouseEvent) {

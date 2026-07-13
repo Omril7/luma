@@ -62,6 +62,7 @@
     "quantity": "כמות",
     "price": "מחיר",
     "from": "מ-",
+    "startingFrom": "החל מ-",
     "width": "רוחב (ס\"מ)",
     "height": "גובה (ס\"מ)",
     "depth": "עומק (ס\"מ)",

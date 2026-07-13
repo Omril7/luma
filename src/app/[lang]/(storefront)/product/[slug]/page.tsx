@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { getProductBySlug, getProducts } from '@/server/services/productService'
 import { getApprovedReviewsForProduct } from '@/server/services/reviewService'
 import { ProductDetail } from '@/features/products/ProductDetail'
+import { FEATURES } from '@/lib/featureFlags'
 
 export async function generateMetadata({
   params,
@@ -48,6 +49,7 @@ export default async function ProductPage({
       relatedProducts={relatedProducts}
       reviews={reviews}
       locale={lang}
+      purchasingEnabled={FEATURES.shop}
     />
   )
 }

@@ -5,8 +5,9 @@ import { FEATURES } from '@/lib/featureFlags'
 
 const intlMiddleware = createMiddleware(routing)
 
-// Storefront route prefixes (without locale) that are on hold while the shop is disabled.
-const disabledShopPaths = ['/shop', '/product', '/cart', '/checkout', '/order-confirmation']
+// Storefront route prefixes (without locale) that are on hold while purchasing is disabled.
+// Catalog browsing (/shop, /product) stays open — only the purchase flow is gated.
+const disabledShopPaths = ['/cart', '/checkout', '/order-confirmation']
 
 export default function middleware(request: NextRequest) {
   if (!FEATURES.shop) {

@@ -14,7 +14,7 @@ import { FEATURES } from '@/lib/featureFlags'
 
 const navLinks = [
   { href: '/' as const, key: 'home' },
-  ...(FEATURES.shop ? [{ href: '/shop' as const, key: 'shop' }] : []),
+  { href: '/shop' as const, key: 'shop' },
   { href: '/about' as const, key: 'about' },
   { href: '/gallery' as const, key: 'gallery' },
   { href: '/contact' as const, key: 'contact' },

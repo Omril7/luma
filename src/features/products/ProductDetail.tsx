@@ -4,7 +4,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'motion/react'
 import { ShoppingBag, Heart, Minus, Plus, Check } from 'lucide-react'
-import { calculatePrice, PricingError } from '@/shared/pricing'
+import { calculatePrice, PricingError, getStartingPrice } from '@/shared/pricing'
 import type { VariantTier, PricingRule, PriceResult } from '@/shared/pricing'
 import { useCartStore } from '@/stores/cartStore'
 import { useWishlistStore } from '@/stores/wishlistStore'
@@ -20,6 +20,8 @@ interface ProductDetailProps {
   relatedProducts: ProductDTO[]
   reviews: PublicReviewDTO[]
   locale: string
+  /** When false, hides all purchase controls and shows a static "starting from" price instead. */
+  purchasingEnabled: boolean
 }
 
 function formatPrice(agorot: number, locale: string): string {
@@ -30,7 +32,13 @@ function formatPrice(agorot: number, locale: string): string {
   }).format(agorot / 100)
 }
 
-export function ProductDetail({ product, relatedProducts, reviews, locale }: ProductDetailProps) {
+export function ProductDetail({
+  product,
+  relatedProducts,
+  reviews,
+  locale,
+  purchasingEnabled,
+}: ProductDetailProps) {
   const t = useTranslations('product')
   const { addItem } = useCartStore()
   const { toggle, has } = useWishlistStore()
@@ -55,6 +63,7 @@ export function ProductDetail({ product, relatedProducts, reviews, locale }: Pro
 
   // ── Sticky bar via IntersectionObserver ───────────────────────────────────────
   useEffect(() => {
+    if (!purchasingEnabled) return
     const el = ctaRef.current
     if (!el) return
     const obs = new IntersectionObserver(([entry]) => setStickyVisible(!entry.isIntersecting), {
@@ -62,7 +71,7 @@ export function ProductDetail({ product, relatedProducts, reviews, locale }: Pro
     })
     obs.observe(el)
     return () => obs.disconnect()
-  }, [])
+  }, [purchasingEnabled])
 
   // ── Pricing engine call ───────────────────────────────────────────────────────
   const { priceResult, priceError } = useMemo<{
@@ -267,329 +276,366 @@ export function ProductDetail({ product, relatedProducts, reviews, locale }: Pro
               <h1 className="mt-3 text-3xl font-bold text-text-main leading-snug">{productName}</h1>
             </div>
 
-            {/* Live price display */}
-            <div className="bg-secondary rounded-xl p-4 border border-border min-h-[72px] flex items-center">
-              <AnimatePresence mode="wait">
-                {priceResult ? (
-                  <motion.div
-                    key="price"
-                    className="flex items-baseline gap-2 flex-wrap"
-                    initial={shouldAnimate ? { opacity: 0, y: 4 } : false}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={shouldAnimate ? { opacity: 0, y: -4 } : undefined}
-                    transition={{ duration: 0.15 }}
-                  >
-                    <span className="text-3xl font-bold text-primary tabular-nums">
-                      {formatPrice(priceResult.unitPrice, locale)}
-                    </span>
-                    {quantity > 1 && (
-                      <span className="text-sm text-text-muted">
-                        × {quantity} ={' '}
-                        <span className="font-semibold text-text-main tabular-nums">
-                          {formatPrice(priceResult.totalPrice, locale)}
+            {purchasingEnabled ? (
+              <>
+                {/* Live price display */}
+                <div className="bg-secondary rounded-xl p-4 border border-border min-h-[72px] flex items-center">
+                  <AnimatePresence mode="wait">
+                    {priceResult ? (
+                      <motion.div
+                        key="price"
+                        className="flex items-baseline gap-2 flex-wrap"
+                        initial={shouldAnimate ? { opacity: 0, y: 4 } : false}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={shouldAnimate ? { opacity: 0, y: -4 } : undefined}
+                        transition={{ duration: 0.15 }}
+                      >
+                        <span className="text-3xl font-bold text-primary tabular-nums">
+                          {formatPrice(priceResult.unitPrice, locale)}
                         </span>
-                      </span>
+                        {quantity > 1 && (
+                          <span className="text-sm text-text-muted">
+                            × {quantity} ={' '}
+                            <span className="font-semibold text-text-main tabular-nums">
+                              {formatPrice(priceResult.totalPrice, locale)}
+                            </span>
+                          </span>
+                        )}
+                        {isCustom && (
+                          <span className="text-xs text-text-muted">{t('estimatedPrice')}</span>
+                        )}
+                      </motion.div>
+                    ) : priceError ? (
+                      <motion.p
+                        key="error"
+                        className="text-sm text-accent"
+                        role="alert"
+                        aria-live="polite"
+                        initial={shouldAnimate ? { opacity: 0 } : false}
+                        animate={{ opacity: 1 }}
+                        exit={shouldAnimate ? { opacity: 0 } : undefined}
+                        transition={{ duration: 0.15 }}
+                      >
+                        {priceError}
+                      </motion.p>
+                    ) : (
+                      <motion.p
+                        key="placeholder"
+                        className="text-sm text-text-muted"
+                        initial={shouldAnimate ? { opacity: 0 } : false}
+                        animate={{ opacity: 1 }}
+                        exit={shouldAnimate ? { opacity: 0 } : undefined}
+                        transition={{ duration: 0.15 }}
+                      >
+                        {isCustom ? t('enterDimensions') : null}
+                      </motion.p>
                     )}
-                    {isCustom && (
-                      <span className="text-xs text-text-muted">{t('estimatedPrice')}</span>
-                    )}
-                  </motion.div>
-                ) : priceError ? (
-                  <motion.p
-                    key="error"
-                    className="text-sm text-accent"
-                    role="alert"
-                    aria-live="polite"
-                    initial={shouldAnimate ? { opacity: 0 } : false}
-                    animate={{ opacity: 1 }}
-                    exit={shouldAnimate ? { opacity: 0 } : undefined}
-                    transition={{ duration: 0.15 }}
-                  >
-                    {priceError}
-                  </motion.p>
-                ) : (
-                  <motion.p
-                    key="placeholder"
-                    className="text-sm text-text-muted"
-                    initial={shouldAnimate ? { opacity: 0 } : false}
-                    animate={{ opacity: 1 }}
-                    exit={shouldAnimate ? { opacity: 0 } : undefined}
-                    transition={{ duration: 0.15 }}
-                  >
-                    {isCustom ? t('enterDimensions') : null}
-                  </motion.p>
-                )}
-              </AnimatePresence>
-            </div>
+                  </AnimatePresence>
+                </div>
 
-            {/* Standard variant selector */}
-            {product.variants.length > 0 && (
-              <div>
-                <p className="text-sm font-semibold text-text-main mb-2">{t('standardSizes')}</p>
-                <div className="flex flex-wrap gap-2">
-                  {product.variants.map((v) => {
-                    const isSelected = !isCustom && selectedVariantId === v.id
-                    return (
+                {/* Standard variant selector */}
+                {product.variants.length > 0 && (
+                  <div>
+                    <p className="text-sm font-semibold text-text-main mb-2">
+                      {t('standardSizes')}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {product.variants.map((v) => {
+                        const isSelected = !isCustom && selectedVariantId === v.id
+                        return (
+                          <button
+                            key={v.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedVariantId(v.id)
+                              setIsCustom(false)
+                            }}
+                            disabled={isCustom}
+                            aria-pressed={isSelected}
+                            className={`min-h-[44px] rounded-full border px-4 py-2 text-sm font-medium transition-colors duration-150 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                              isSelected
+                                ? 'bg-primary border-primary text-surface'
+                                : 'bg-surface border-border text-text-main hover:border-primary hover:text-primary'
+                            }`}
+                          >
+                            {variantLabel(v)}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Custom dimensions section — only if product.customizable */}
+                {product.customizable && (
+                  <div className="border border-border rounded-xl p-4 flex flex-col gap-4">
+                    {/* Toggle row */}
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="font-medium text-text-main">
+                        {t('customDimensionsToggle')}
+                      </span>
                       <button
-                        key={v.id}
                         type="button"
-                        onClick={() => {
-                          setSelectedVariantId(v.id)
-                          setIsCustom(false)
+                        role="switch"
+                        aria-checked={isCustom}
+                        onClick={() => setIsCustom((v) => !v)}
+                        onKeyDown={(e) => {
+                          if (e.key === ' ' || e.key === 'Enter') {
+                            e.preventDefault()
+                            setIsCustom((v) => !v)
+                          }
                         }}
-                        disabled={isCustom}
-                        aria-pressed={isSelected}
-                        className={`min-h-[44px] rounded-full border px-4 py-2 text-sm font-medium transition-colors duration-150 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
-                          isSelected
-                            ? 'bg-primary border-primary text-surface'
-                            : 'bg-surface border-border text-text-main hover:border-primary hover:text-primary'
+                        className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full border-2 transition-colors duration-200 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${
+                          isCustom ? 'bg-primary border-primary' : 'bg-secondary border-border'
                         }`}
                       >
-                        {variantLabel(v)}
+                        <span
+                          className={`inline-block h-4 w-4 rounded-full bg-surface shadow-sm transition-transform duration-200 ${
+                            isCustom ? 'translate-x-5' : 'translate-x-0.5'
+                          }`}
+                        />
                       </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
+                    </div>
 
-            {/* Custom dimensions section — only if product.customizable */}
-            {product.customizable && (
-              <div className="border border-border rounded-xl p-4 flex flex-col gap-4">
-                {/* Toggle row */}
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-medium text-text-main">{t('customDimensionsToggle')}</span>
+                    {/* Dimension inputs — animated reveal */}
+                    <AnimatePresence>
+                      {isCustom && (
+                        <motion.div
+                          initial={shouldAnimate ? { opacity: 0, height: 0 } : false}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={shouldAnimate ? { opacity: 0, height: 0 } : undefined}
+                          transition={{ duration: 0.25, ease: 'easeOut' }}
+                          className="overflow-hidden"
+                        >
+                          <div className="grid grid-cols-3 gap-3 pt-2">
+                            {/* Width */}
+                            <div className="flex flex-col gap-1">
+                              <label
+                                htmlFor="dim-width"
+                                className="text-xs font-medium text-text-muted"
+                              >
+                                {t('width')}
+                              </label>
+                              <input
+                                id="dim-width"
+                                type="number"
+                                inputMode="decimal"
+                                min={product.customPricingRule?.minWidth}
+                                max={product.customPricingRule?.maxWidth}
+                                value={customWidth}
+                                onChange={(e) => setCustomWidth(e.target.value)}
+                                placeholder="—"
+                                className="min-h-[44px] rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-main focus:outline focus:outline-2 focus:outline-primary w-full"
+                              />
+                              {product.customPricingRule?.minWidth != null && (
+                                <span className="text-xs text-text-muted">
+                                  {t('minHint', { min: product.customPricingRule.minWidth })}
+                                </span>
+                              )}
+                              {product.customPricingRule?.maxWidth != null && (
+                                <span className="text-xs text-text-muted">
+                                  {t('maxHint', { max: product.customPricingRule.maxWidth })}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Height */}
+                            <div className="flex flex-col gap-1">
+                              <label
+                                htmlFor="dim-height"
+                                className="text-xs font-medium text-text-muted"
+                              >
+                                {t('height')}
+                              </label>
+                              <input
+                                id="dim-height"
+                                type="number"
+                                inputMode="decimal"
+                                min={product.customPricingRule?.minHeight}
+                                max={product.customPricingRule?.maxHeight}
+                                value={customHeight}
+                                onChange={(e) => setCustomHeight(e.target.value)}
+                                placeholder="—"
+                                className="min-h-[44px] rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-main focus:outline focus:outline-2 focus:outline-primary w-full"
+                              />
+                              {product.customPricingRule?.minHeight != null && (
+                                <span className="text-xs text-text-muted">
+                                  {t('minHint', { min: product.customPricingRule.minHeight })}
+                                </span>
+                              )}
+                              {product.customPricingRule?.maxHeight != null && (
+                                <span className="text-xs text-text-muted">
+                                  {t('maxHint', { max: product.customPricingRule.maxHeight })}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Depth */}
+                            <div className="flex flex-col gap-1">
+                              <label
+                                htmlFor="dim-depth"
+                                className="text-xs font-medium text-text-muted"
+                              >
+                                {t('depth')}
+                              </label>
+                              <input
+                                id="dim-depth"
+                                type="number"
+                                inputMode="decimal"
+                                min={product.customPricingRule?.minDepth}
+                                max={product.customPricingRule?.maxDepth}
+                                value={customDepth}
+                                onChange={(e) => setCustomDepth(e.target.value)}
+                                placeholder="—"
+                                className="min-h-[44px] rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-main focus:outline focus:outline-2 focus:outline-primary w-full"
+                              />
+                              {product.customPricingRule?.minDepth != null && (
+                                <span className="text-xs text-text-muted">
+                                  {t('minHint', { min: product.customPricingRule.minDepth })}
+                                </span>
+                              )}
+                              {product.customPricingRule?.maxDepth != null && (
+                                <span className="text-xs text-text-muted">
+                                  {t('maxHint', { max: product.customPricingRule.maxDepth })}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
+
+                {/* Color swatches */}
+                {product.colorOptions.length > 0 && (
+                  <div>
+                    <p className="text-sm font-semibold text-text-main mb-2">{t('colorLabel')}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {product.colorOptions.map((color) => {
+                        const colorName = locale === 'he' ? color.name_he : color.name_en
+                        const isSelected = selectedColorId === color.id
+                        return (
+                          <button
+                            key={color.id}
+                            type="button"
+                            onClick={() => setSelectedColorId(color.id)}
+                            aria-label={colorName}
+                            aria-pressed={isSelected}
+                            title={colorName}
+                            className={`w-9 h-9 rounded-full cursor-pointer transition-all duration-150 ring-offset-2 ${
+                              isSelected
+                                ? 'ring-2 ring-primary scale-110'
+                                : 'ring-1 ring-border hover:ring-primary hover:scale-105'
+                            }`}
+                            style={{ backgroundColor: color.hexCode }}
+                          />
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Quantity stepper */}
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-semibold text-text-main">{t('quantity')}</span>
+                  <div className="flex items-center border border-border rounded-full overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      disabled={quantity <= 1}
+                      aria-label={t('decreaseQuantity')}
+                      className="flex min-h-[44px] min-w-[44px] items-center justify-center text-text-main hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                    >
+                      <Minus size={16} aria-hidden="true" />
+                    </button>
+                    <span
+                      className="w-10 text-center text-sm font-semibold text-text-main tabular-nums"
+                      aria-live="polite"
+                      aria-atomic="true"
+                    >
+                      {quantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setQuantity((q) => Math.min(99, q + 1))}
+                      disabled={quantity >= 99}
+                      aria-label={t('increaseQuantity')}
+                      className="flex min-h-[44px] min-w-[44px] items-center justify-center text-text-main hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                    >
+                      <Plus size={16} aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Add to Cart + Wishlist */}
+                <div className="flex gap-3">
                   <button
+                    ref={ctaRef}
                     type="button"
-                    role="switch"
-                    aria-checked={isCustom}
-                    onClick={() => setIsCustom((v) => !v)}
-                    onKeyDown={(e) => {
-                      if (e.key === ' ' || e.key === 'Enter') {
-                        e.preventDefault()
-                        setIsCustom((v) => !v)
-                      }
-                    }}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full border-2 transition-colors duration-200 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${
-                      isCustom ? 'bg-primary border-primary' : 'bg-secondary border-border'
+                    onClick={handleAddToCart}
+                    disabled={!canAddToCart}
+                    className={`flex-1 flex items-center justify-center gap-2 min-h-[52px] rounded-full font-semibold text-base transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                      addedFeedback
+                        ? 'bg-green-600 text-surface'
+                        : 'bg-primary hover:opacity-90 text-surface'
                     }`}
                   >
-                    <span
-                      className={`inline-block h-4 w-4 rounded-full bg-surface shadow-sm transition-transform duration-200 ${
-                        isCustom ? 'translate-x-5' : 'translate-x-0.5'
-                      }`}
+                    {addedFeedback ? (
+                      <Check size={20} aria-hidden="true" />
+                    ) : (
+                      <ShoppingBag size={20} aria-hidden="true" />
+                    )}
+                    {addedFeedback ? t('addedToCart') : t('addToCart')}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => toggle(product.id)}
+                    aria-label={isWishlisted ? t('wishlistRemove') : t('wishlistAdd')}
+                    aria-pressed={isWishlisted}
+                    className="flex min-h-[52px] min-w-[52px] items-center justify-center rounded-full border border-border bg-surface hover:bg-secondary transition-colors duration-150 cursor-pointer"
+                  >
+                    <Heart
+                      size={22}
+                      aria-hidden="true"
+                      className={isWishlisted ? 'fill-current text-accent' : 'text-text-muted'}
                     />
                   </button>
+
+                  <ShareButton title={productName} text={productDesc || undefined} />
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Static starting price */}
+                <div className="bg-secondary rounded-xl p-4 border border-border min-h-[72px] flex items-center">
+                  <span className="text-3xl font-bold text-primary tabular-nums">
+                    {t('startingFrom')}
+                    {formatPrice(Math.round(getStartingPrice(product) * 100), locale)}
+                  </span>
                 </div>
 
-                {/* Dimension inputs — animated reveal */}
-                <AnimatePresence>
-                  {isCustom && (
-                    <motion.div
-                      initial={shouldAnimate ? { opacity: 0, height: 0 } : false}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={shouldAnimate ? { opacity: 0, height: 0 } : undefined}
-                      transition={{ duration: 0.25, ease: 'easeOut' }}
-                      className="overflow-hidden"
-                    >
-                      <div className="grid grid-cols-3 gap-3 pt-2">
-                        {/* Width */}
-                        <div className="flex flex-col gap-1">
-                          <label
-                            htmlFor="dim-width"
-                            className="text-xs font-medium text-text-muted"
-                          >
-                            {t('width')}
-                          </label>
-                          <input
-                            id="dim-width"
-                            type="number"
-                            inputMode="decimal"
-                            min={product.customPricingRule?.minWidth}
-                            max={product.customPricingRule?.maxWidth}
-                            value={customWidth}
-                            onChange={(e) => setCustomWidth(e.target.value)}
-                            placeholder="—"
-                            className="min-h-[44px] rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-main focus:outline focus:outline-2 focus:outline-primary w-full"
-                          />
-                          {product.customPricingRule?.minWidth != null && (
-                            <span className="text-xs text-text-muted">
-                              {t('minHint', { min: product.customPricingRule.minWidth })}
-                            </span>
-                          )}
-                          {product.customPricingRule?.maxWidth != null && (
-                            <span className="text-xs text-text-muted">
-                              {t('maxHint', { max: product.customPricingRule.maxWidth })}
-                            </span>
-                          )}
-                        </div>
+                {/* Wishlist + Share — no purchase actions in showcase mode */}
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => toggle(product.id)}
+                    aria-label={isWishlisted ? t('wishlistRemove') : t('wishlistAdd')}
+                    aria-pressed={isWishlisted}
+                    className="flex min-h-[52px] min-w-[52px] items-center justify-center rounded-full border border-border bg-surface hover:bg-secondary transition-colors duration-150 cursor-pointer"
+                  >
+                    <Heart
+                      size={22}
+                      aria-hidden="true"
+                      className={isWishlisted ? 'fill-current text-accent' : 'text-text-muted'}
+                    />
+                  </button>
 
-                        {/* Height */}
-                        <div className="flex flex-col gap-1">
-                          <label
-                            htmlFor="dim-height"
-                            className="text-xs font-medium text-text-muted"
-                          >
-                            {t('height')}
-                          </label>
-                          <input
-                            id="dim-height"
-                            type="number"
-                            inputMode="decimal"
-                            min={product.customPricingRule?.minHeight}
-                            max={product.customPricingRule?.maxHeight}
-                            value={customHeight}
-                            onChange={(e) => setCustomHeight(e.target.value)}
-                            placeholder="—"
-                            className="min-h-[44px] rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-main focus:outline focus:outline-2 focus:outline-primary w-full"
-                          />
-                          {product.customPricingRule?.minHeight != null && (
-                            <span className="text-xs text-text-muted">
-                              {t('minHint', { min: product.customPricingRule.minHeight })}
-                            </span>
-                          )}
-                          {product.customPricingRule?.maxHeight != null && (
-                            <span className="text-xs text-text-muted">
-                              {t('maxHint', { max: product.customPricingRule.maxHeight })}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Depth */}
-                        <div className="flex flex-col gap-1">
-                          <label
-                            htmlFor="dim-depth"
-                            className="text-xs font-medium text-text-muted"
-                          >
-                            {t('depth')}
-                          </label>
-                          <input
-                            id="dim-depth"
-                            type="number"
-                            inputMode="decimal"
-                            min={product.customPricingRule?.minDepth}
-                            max={product.customPricingRule?.maxDepth}
-                            value={customDepth}
-                            onChange={(e) => setCustomDepth(e.target.value)}
-                            placeholder="—"
-                            className="min-h-[44px] rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-main focus:outline focus:outline-2 focus:outline-primary w-full"
-                          />
-                          {product.customPricingRule?.minDepth != null && (
-                            <span className="text-xs text-text-muted">
-                              {t('minHint', { min: product.customPricingRule.minDepth })}
-                            </span>
-                          )}
-                          {product.customPricingRule?.maxDepth != null && (
-                            <span className="text-xs text-text-muted">
-                              {t('maxHint', { max: product.customPricingRule.maxDepth })}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
-
-            {/* Color swatches */}
-            {product.colorOptions.length > 0 && (
-              <div>
-                <p className="text-sm font-semibold text-text-main mb-2">{t('colorLabel')}</p>
-                <div className="flex flex-wrap gap-2">
-                  {product.colorOptions.map((color) => {
-                    const colorName = locale === 'he' ? color.name_he : color.name_en
-                    const isSelected = selectedColorId === color.id
-                    return (
-                      <button
-                        key={color.id}
-                        type="button"
-                        onClick={() => setSelectedColorId(color.id)}
-                        aria-label={colorName}
-                        aria-pressed={isSelected}
-                        title={colorName}
-                        className={`w-9 h-9 rounded-full cursor-pointer transition-all duration-150 ring-offset-2 ${
-                          isSelected
-                            ? 'ring-2 ring-primary scale-110'
-                            : 'ring-1 ring-border hover:ring-primary hover:scale-105'
-                        }`}
-                        style={{ backgroundColor: color.hexCode }}
-                      />
-                    )
-                  })}
+                  <ShareButton title={productName} text={productDesc || undefined} />
                 </div>
-              </div>
+              </>
             )}
-
-            {/* Quantity stepper */}
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-semibold text-text-main">{t('quantity')}</span>
-              <div className="flex items-center border border-border rounded-full overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  disabled={quantity <= 1}
-                  aria-label={t('decreaseQuantity')}
-                  className="flex min-h-[44px] min-w-[44px] items-center justify-center text-text-main hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                >
-                  <Minus size={16} aria-hidden="true" />
-                </button>
-                <span
-                  className="w-10 text-center text-sm font-semibold text-text-main tabular-nums"
-                  aria-live="polite"
-                  aria-atomic="true"
-                >
-                  {quantity}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setQuantity((q) => Math.min(99, q + 1))}
-                  disabled={quantity >= 99}
-                  aria-label={t('increaseQuantity')}
-                  className="flex min-h-[44px] min-w-[44px] items-center justify-center text-text-main hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                >
-                  <Plus size={16} aria-hidden="true" />
-                </button>
-              </div>
-            </div>
-
-            {/* Add to Cart + Wishlist */}
-            <div className="flex gap-3">
-              <button
-                ref={ctaRef}
-                type="button"
-                onClick={handleAddToCart}
-                disabled={!canAddToCart}
-                className={`flex-1 flex items-center justify-center gap-2 min-h-[52px] rounded-full font-semibold text-base transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
-                  addedFeedback
-                    ? 'bg-green-600 text-surface'
-                    : 'bg-primary hover:opacity-90 text-surface'
-                }`}
-              >
-                {addedFeedback ? (
-                  <Check size={20} aria-hidden="true" />
-                ) : (
-                  <ShoppingBag size={20} aria-hidden="true" />
-                )}
-                {addedFeedback ? t('addedToCart') : t('addToCart')}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => toggle(product.id)}
-                aria-label={isWishlisted ? t('wishlistRemove') : t('wishlistAdd')}
-                aria-pressed={isWishlisted}
-                className="flex min-h-[52px] min-w-[52px] items-center justify-center rounded-full border border-border bg-surface hover:bg-secondary transition-colors duration-150 cursor-pointer"
-              >
-                <Heart
-                  size={22}
-                  aria-hidden="true"
-                  className={isWishlisted ? 'fill-current text-accent' : 'text-text-muted'}
-                />
-              </button>
-
-              <ShareButton title={productName} text={productDesc || undefined} />
-            </div>
 
             {/* Description */}
             {productDesc && (
@@ -618,7 +664,7 @@ export function ProductDetail({ product, relatedProducts, reviews, locale }: Pro
 
       {/* Sticky mobile add-to-cart bar */}
       <AnimatePresence>
-        {stickyVisible && (
+        {purchasingEnabled && stickyVisible && (
           <motion.div
             initial={shouldAnimate ? { y: 100, opacity: 0 } : false}
             animate={{ y: 0, opacity: 1 }}

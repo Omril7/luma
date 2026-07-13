@@ -27,7 +27,7 @@ export function Footer({ instagramUrl, facebookUrl }: FooterProps) {
   const year = new Date().getFullYear()
 
   const shopLinks = [
-    ...(FEATURES.shop ? [{ href: '/shop', label: tNav('shop') }] : []),
+    { href: '/shop', label: tNav('shop') },
     { href: '/gallery', label: tNav('gallery') },
     { href: '/about', label: tNav('about') },
   ]

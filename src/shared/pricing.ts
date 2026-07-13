@@ -67,6 +67,23 @@ export class PricingError extends Error {
   }
 }
 
+// ── Display helpers ──────────────────────────────────────────────────────────
+
+/**
+ * Lowest price to show as "from X" for a product card/listing. The engine never
+ * prices a custom order below the smallest variant (dimensionSurcharge floors delta
+ * at 0), so the cheapest variant is always the true floor even for customizable
+ * products. Values are ₪ (not agorot), matching ProductDTO.basePrice/variant.price.
+ */
+export function getStartingPrice(product: {
+  basePrice: number
+  variants: { price: number }[]
+}): number {
+  return product.variants.length > 0
+    ? Math.min(...product.variants.map((v) => v.price))
+    : product.basePrice
+}
+
 // ── Main function ─────────────────────────────────────────────────────────────
 
 /**

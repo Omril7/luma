@@ -62,6 +62,7 @@
     "quantity": "Quantity",
     "price": "Price",
     "from": "From ",
+    "startingFrom": "Starting from ",
     "width": "Width (cm)",
     "height": "Height (cm)",
     "depth": "Depth (cm)",
