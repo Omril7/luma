@@ -271,7 +271,7 @@ export function ProductDetail({
             {/* Category badge + name */}
             <div>
               <span className="text-xs font-semibold uppercase tracking-wide text-accent bg-accent/10 rounded-full px-3 py-1">
-                {t(`category.${product.category}`)}
+                {locale === 'he' ? product.category.name_he : product.category.name_en}
               </span>
               <h1 className="mt-3 text-3xl font-bold text-text-main leading-snug">{productName}</h1>
             </div>

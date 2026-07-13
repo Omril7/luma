@@ -29,12 +29,12 @@ export const GET = withAdmin(async (req: NextRequest, _admin, _ctx) => {
   const { searchParams } = new URL(req.url)
   const page = parseInt(searchParams.get('page') ?? '1', 10)
   const limit = parseInt(searchParams.get('limit') ?? '25', 10)
-  const category = searchParams.get('category') ?? undefined
+  const categoryId = searchParams.get('category') ?? undefined
   const search = searchParams.get('search') ?? undefined
   const isActiveParam = searchParams.get('isActive')
   const isActive = isActiveParam === null ? undefined : isActiveParam === 'true'
 
-  const result = await listAdminProducts({ page, limit, category, search, isActive })
+  const result = await listAdminProducts({ page, limit, categoryId, search, isActive })
   return NextResponse.json(result)
 })
 

@@ -14,18 +14,6 @@ datasource db {
 
 // ── Enums ─────────────────────────────────────────────────────────────────────
 
-enum Category {
-  TABLE
-  SHELF
-  CONSOLE
-  SHOE_RACK
-  NIGHTSTAND
-  ARMCHAIR
-  TV_STAND
-  BENCH
-  OTHER
-}
-
 enum ShippingMethod {
   NATIONAL_SHIPPING
   PICKUP
@@ -66,7 +54,8 @@ model Product {
   name_en     String
   description_he String
   description_en String
-  category    Category
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
   basePrice   Decimal  @db.Decimal(10, 2)
   customizable Boolean @default(false)
   isActive    Boolean  @default(true)
@@ -129,6 +118,16 @@ model ColorOption {
 
   products   Product[]
   orderItems OrderItem[]
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name_he   String
+  name_en   String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+
+  products Product[]
 }
 
 model ProductImage {

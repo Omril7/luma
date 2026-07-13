@@ -67,17 +67,6 @@
     "height": "גובה (ס\"מ)",
     "depth": "עומק (ס\"מ)",
     "diameter": "קוטר (ס\"מ)",
-    "category": {
-      "TABLE": "שולחן",
-      "SHELF": "מדף",
-      "CONSOLE": "קונסולה",
-      "SHOE_RACK": "מתלה נעלים",
-      "NIGHTSTAND": "שידת לילה",
-      "ARMCHAIR": "כורסא",
-      "TV_STAND": "מזנון טלוויזיה",
-      "BENCH": "ספסל",
-      "OTHER": "אחר"
-    },
     "fromPrice": "החל מ-",
     "estimatedPrice": "מחיר משוער",
     "standardSizes": "מידות סטנדרטיות",
@@ -206,17 +195,6 @@
       "price_asc": "מחיר: נמוך לגבוה",
       "price_desc": "מחיר: גבוה לנמוך",
       "name_he": "שם"
-    },
-    "categories": {
-      "TABLE": "שולחנות",
-      "SHELF": "מדפים",
-      "CONSOLE": "קונסולות",
-      "SHOE_RACK": "מתלי נעלים",
-      "NIGHTSTAND": "שידות לילה",
-      "ARMCHAIR": "כורסאות",
-      "TV_STAND": "מזנונים לטלוויזיה",
-      "BENCH": "ספסלים",
-      "OTHER": "אחר"
     },
     "results": "{count} מוצרים",
     "empty": {

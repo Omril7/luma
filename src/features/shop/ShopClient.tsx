@@ -6,8 +6,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { ChevronDown } from 'lucide-react'
 import { useUiStore } from '@/stores/uiStore'
 import { ProductCard } from '@/features/products/ProductCard'
-import { CATEGORY_VALUES } from '@/shared/constants'
-import type { ProductDTO } from '@/shared/types'
+import type { ProductDTO, CategoryDTO } from '@/shared/types'
 import type { ProductSortKey } from '@/server/services/productService'
 
 interface ShopClientProps {
@@ -17,6 +16,7 @@ interface ShopClientProps {
   currentPage: number
   currentCategory: string | undefined
   currentSort: ProductSortKey
+  categories: CategoryDTO[]
   locale: string
 }
 
@@ -29,6 +29,7 @@ export function ShopClient({
   currentPage,
   currentCategory,
   currentSort,
+  categories,
   locale,
 }: ShopClientProps) {
   const t = useTranslations('shop')
@@ -52,9 +53,15 @@ export function ShopClient({
   }
 
   // ── Category pill component ──────────────────────────────────────────────────
-  function CategoryPill({ cat, vertical = false }: { cat: string | null; vertical?: boolean }) {
-    const isActive = cat === null ? currentCategory === undefined : currentCategory === cat
-    const label = cat === null ? t('allCategories') : t(`categories.${cat}`)
+  function CategoryPill({
+    cat,
+    vertical = false,
+  }: {
+    cat: CategoryDTO | null
+    vertical?: boolean
+  }) {
+    const isActive = cat === null ? currentCategory === undefined : currentCategory === cat.id
+    const label = cat === null ? t('allCategories') : locale === 'he' ? cat.name_he : cat.name_en
 
     return (
       <button
@@ -62,7 +69,7 @@ export function ShopClient({
         onClick={() =>
           cat === null
             ? setParam('category', null)
-            : setParam('category', currentCategory === cat ? null : cat)
+            : setParam('category', currentCategory === cat.id ? null : cat.id)
         }
         aria-pressed={isActive}
         className={[
@@ -117,8 +124,8 @@ export function ShopClient({
             {/* Category filter */}
             <div className="flex flex-col gap-2">
               <CategoryPill cat={null} vertical />
-              {CATEGORY_VALUES.map((cat) => (
-                <CategoryPill key={cat} cat={cat} vertical />
+              {categories.map((cat) => (
+                <CategoryPill key={cat.id} cat={cat} vertical />
               ))}
             </div>
 
@@ -136,8 +143,8 @@ export function ShopClient({
                 style={{ scrollbarWidth: 'none' }}
               >
                 <CategoryPill cat={null} />
-                {CATEGORY_VALUES.map((cat) => (
-                  <CategoryPill key={cat} cat={cat} />
+                {categories.map((cat) => (
+                  <CategoryPill key={cat.id} cat={cat} />
                 ))}
               </div>
 

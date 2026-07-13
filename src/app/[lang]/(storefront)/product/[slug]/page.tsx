@@ -36,7 +36,7 @@ export default async function ProductPage({
 
   // Fetch up to 4 related products (same category, exclude self)
   const { products: allRelated } = await getProducts({
-    category: product.category,
+    categoryId: product.category.id,
     limit: 5,
   })
   const relatedProducts = allRelated.filter((p) => p.id !== product.id).slice(0, 4)

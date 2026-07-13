@@ -67,17 +67,6 @@
     "height": "Height (cm)",
     "depth": "Depth (cm)",
     "diameter": "Diameter (cm)",
-    "category": {
-      "TABLE": "Table",
-      "SHELF": "Shelf",
-      "CONSOLE": "Console",
-      "SHOE_RACK": "Shoe Rack",
-      "NIGHTSTAND": "Nightstand",
-      "ARMCHAIR": "Armchair",
-      "TV_STAND": "TV Stand",
-      "BENCH": "Bench",
-      "OTHER": "Other"
-    },
     "fromPrice": "From ",
     "estimatedPrice": "Estimated price",
     "standardSizes": "Standard Sizes",
@@ -206,17 +195,6 @@
       "price_asc": "Price: Low to High",
       "price_desc": "Price: High to Low",
       "name_he": "Name"
-    },
-    "categories": {
-      "TABLE": "Tables",
-      "SHELF": "Shelves",
-      "CONSOLE": "Consoles",
-      "SHOE_RACK": "Shoe Racks",
-      "NIGHTSTAND": "Nightstands",
-      "ARMCHAIR": "Armchairs",
-      "TV_STAND": "TV Stands",
-      "BENCH": "Benches",
-      "OTHER": "Other"
     },
     "results": "{count} products",
     "empty": {

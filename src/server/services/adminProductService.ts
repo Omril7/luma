@@ -1,5 +1,5 @@
 import 'server-only'
-import { Prisma, type Category } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import { prisma } from '@/server/prisma'
 import type { ProductDTO } from '@/shared/types'
 import type {
@@ -16,6 +16,7 @@ const adminProductInclude = {
   variants: { orderBy: { price: 'asc' as const } },
   customPricingRule: true,
   colorOptions: true,
+  category: { select: { id: true, name_he: true, name_en: true } },
 } satisfies Prisma.ProductInclude
 
 type AdminProductWithRelations = Prisma.ProductGetPayload<{ include: typeof adminProductInclude }>
@@ -28,7 +29,7 @@ function toProductDTO(p: AdminProductWithRelations): ProductDTO {
     name_en: p.name_en,
     description_he: p.description_he,
     description_en: p.description_en,
-    category: p.category,
+    category: { id: p.category.id, name_he: p.category.name_he, name_en: p.category.name_en },
     basePrice: Number(p.basePrice),
     customizable: p.customizable,
     isActive: p.isActive,
@@ -125,7 +126,7 @@ async function fetchWithRelations(id: string): Promise<AdminProductWithRelations
 export interface ListProductsOptions {
   page?: number
   limit?: number
-  category?: string
+  categoryId?: string
   search?: string
   isActive?: boolean
 }
@@ -137,7 +138,7 @@ export async function listAdminProducts(opts: ListProductsOptions = {}) {
 
   const where: Prisma.ProductWhereInput = {
     ...(opts.isActive !== undefined ? { isActive: opts.isActive } : {}),
-    ...(opts.category ? { category: opts.category as Category } : {}),
+    ...(opts.categoryId ? { categoryId: opts.categoryId } : {}),
     ...(opts.search
       ? {
           OR: [
@@ -191,7 +192,6 @@ export async function createAdminProduct(data: FullCreateProductInput): Promise<
     const product = await tx.product.create({
       data: {
         ...productData,
-        category: productData.category as Category,
         variants: {
           create: variants.map(({ id: _id, isActive, ...v }) => ({
             ...v,
@@ -233,12 +233,12 @@ export async function updateAdminProduct(
     if (customPricingRule !== undefined)
       await tx.customPricingRule.deleteMany({ where: { productId: id } })
 
-    const { category, ...restProductData } = productData
+    const { categoryId, ...restProductData } = productData
     await tx.product.update({
       where: { id },
       data: {
         ...restProductData,
-        ...(category ? { category: category as Category } : {}),
+        ...(categoryId ? { categoryId } : {}),
         ...(variants
           ? {
               variants: {

@@ -57,6 +57,32 @@ async function main() {
 
   console.log('✓ Colors')
 
+  // ── Categories ────────────────────────────────────────────────────────────────
+
+  const categoryData: { id: string; name_he: string; name_en: string; sortOrder: number }[] = [
+    { id: 'cat-table', name_he: 'שולחנות', name_en: 'Tables', sortOrder: 0 },
+    { id: 'cat-shelf', name_he: 'מדפים', name_en: 'Shelves', sortOrder: 1 },
+    { id: 'cat-console', name_he: 'קונסולות', name_en: 'Consoles', sortOrder: 2 },
+    { id: 'cat-shoe-rack', name_he: 'מתלי נעליים', name_en: 'Shoe Racks', sortOrder: 3 },
+    { id: 'cat-nightstand', name_he: 'שידות לילה', name_en: 'Nightstands', sortOrder: 4 },
+    { id: 'cat-armchair', name_he: 'כורסאות', name_en: 'Armchairs', sortOrder: 5 },
+    { id: 'cat-tv-stand', name_he: 'מזנונים לטלוויזיה', name_en: 'TV Stands', sortOrder: 6 },
+    { id: 'cat-bench', name_he: 'ספסלים', name_en: 'Benches', sortOrder: 7 },
+    { id: 'cat-other', name_he: 'אחר', name_en: 'Other', sortOrder: 8 },
+  ]
+
+  await Promise.all(
+    categoryData.map((c) =>
+      prisma.category.upsert({
+        where: { id: c.id },
+        update: {},
+        create: { ...c, isActive: true },
+      })
+    )
+  )
+
+  console.log('✓ Categories')
+
   // ── Product 1: Dining Table (customizable) ────────────────────────────────────
 
   const table = await prisma.product.upsert({
@@ -71,7 +97,7 @@ async function main() {
         'שולחן אוכל עשוי עץ אלון מלא, מיוצר בעבודת יד בישראל. ניתן להתאמה אישית לכל מידה לפי הזמנה. גימור שמן טבעי לאורך חיים.',
       description_en:
         'Solid oak dining table, handcrafted in Israel. Available in custom dimensions to order. Finished with natural oil for lasting beauty.',
-      category: 'TABLE',
+      categoryId: 'cat-table',
       basePrice: 2800,
       customizable: true,
       isActive: true,
@@ -168,7 +194,7 @@ async function main() {
         'מדף קיר צף עשוי עץ מלא, מתאים לסלון, חדר שינה או משרד. זמין בכל אורך לפי הזמנה. הרכבה פשוטה עם חומרה מוסתרת.',
       description_en:
         'Solid wood floating wall shelf, perfect for living room, bedroom or office. Available in any length to order. Easy installation with hidden hardware.',
-      category: 'SHELF',
+      categoryId: 'cat-shelf',
       basePrice: 350,
       customizable: true,
       isActive: true,
@@ -260,7 +286,7 @@ async function main() {
         'שידת לילה מעץ מלא עם מגירה אחת, שתיים או שלוש. עיצוב נקי ומינימליסטי המתאים לכל חדר שינה. זמינה בשלל גוונים.',
       description_en:
         'Solid wood nightstand with one, two or three drawers. Clean minimalist design suited for any bedroom. Available in a range of finishes.',
-      category: 'NIGHTSTAND',
+      categoryId: 'cat-nightstand',
       basePrice: 890,
       customizable: false,
       isActive: true,
@@ -339,7 +365,7 @@ async function main() {
         'מזנון טלוויזיה מעץ מלא עם תאים פתוחים ומגירות. ניתן לכל רוחב לפי הזמנה. עיצוב סקנדינבי עם גימור ישראלי.',
       description_en:
         'Solid wood TV console with open compartments and drawers. Available in custom widths to order. Scandinavian design with an Israeli touch.',
-      category: 'TV_STAND',
+      categoryId: 'cat-tv-stand',
       basePrice: 1800,
       customizable: true,
       isActive: true,

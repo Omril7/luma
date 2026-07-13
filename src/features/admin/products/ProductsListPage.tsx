@@ -7,32 +7,8 @@ import { useRouter } from 'next/navigation'
 import { Plus, Search, Pencil, Trash2, Eye, ChevronRight, ChevronLeft } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
-import type { ProductDTO } from '@/shared/types'
+import type { ProductDTO, CategoryDTO } from '@/shared/types'
 import { Select } from '@/components/ui/Select'
-
-const CATEGORY_LABELS: Record<string, string> = {
-  TABLE: 'שולחן',
-  SHELF: 'מדף',
-  CONSOLE: 'קונסולה',
-  SHOE_RACK: 'מדף נעליים',
-  NIGHTSTAND: 'שידת לילה',
-  ARMCHAIR: 'כורסא',
-  TV_STAND: 'מזנון TV',
-  BENCH: 'ספסל',
-  OTHER: 'אחר',
-}
-
-const CATEGORIES = [
-  'TABLE',
-  'SHELF',
-  'CONSOLE',
-  'SHOE_RACK',
-  'NIGHTSTAND',
-  'ARMCHAIR',
-  'TV_STAND',
-  'BENCH',
-  'OTHER',
-]
 
 interface ProductsResponse {
   products: ProductDTO[]
@@ -46,6 +22,7 @@ export function ProductsListPage() {
   const router = useRouter()
 
   const [products, setProducts] = useState<ProductDTO[]>([])
+  const [categories, setCategories] = useState<CategoryDTO[]>([])
   const [total, setTotal] = useState(0)
   const [pages, setPages] = useState(1)
   const [loading, setLoading] = useState(true)
@@ -86,6 +63,14 @@ export function ProductsListPage() {
   useEffect(() => {
     fetchProducts()
   }, [fetchProducts])
+
+  useEffect(() => {
+    if (!token) return
+    api
+      .get<{ categories: CategoryDTO[] }>('/api/admin/categories', token)
+      .then(({ categories }) => setCategories(categories))
+      .catch(() => {})
+  }, [token])
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -149,7 +134,7 @@ export function ProductsListPage() {
           aria-label="סינון לפי קטגוריה"
           options={[
             { value: '', label: 'כל הקטגוריות' },
-            ...CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] })),
+            ...categories.map((c) => ({ value: c.id, label: c.name_he })),
           ]}
         />
 
@@ -242,9 +227,7 @@ export function ProductsListPage() {
                       </p>
                       <p className="text-xs text-text-muted truncate max-w-48">{product.name_en}</p>
                     </td>
-                    <td className="px-4 py-3 text-text-muted">
-                      {CATEGORY_LABELS[product.category] ?? product.category}
-                    </td>
+                    <td className="px-4 py-3 text-text-muted">{product.category.name_he}</td>
                     <td className="px-4 py-3 text-text-main tabular-nums">
                       ₪{product.basePrice.toLocaleString()}
                     </td>

@@ -2,7 +2,6 @@
 // Same schema validates on both sides: if it diverges, user sees one result and server sees another.
 
 import { z } from 'zod'
-import { CATEGORY_VALUES } from '../constants'
 
 // ── Primitives ────────────────────────────────────────────────────────────────
 
@@ -145,7 +144,7 @@ export const createProductSchema = z.object({
   name_en: z.string().min(2).max(200),
   description_he: z.string().min(10).max(5000),
   description_en: z.string().min(10).max(5000),
-  category: z.enum(CATEGORY_VALUES as [string, ...string[]]),
+  categoryId: z.string().min(1),
   basePrice: positiveDecimal,
   customizable: z.boolean().default(false),
   isActive: z.boolean().default(true),

@@ -1,14 +1,7 @@
 // Framework-free shared DTO types — used by both UI and API route handlers
 // No React, Next.js, or Prisma imports allowed in this file.
 
-import type {
-  Category,
-  ShippingMethod,
-  PaymentStatus,
-  OrderStatus,
-  DiscountType,
-  Locale,
-} from './constants'
+import type { ShippingMethod, PaymentStatus, OrderStatus, DiscountType, Locale } from './constants'
 
 // ── Bilingual helpers ────────────────────────────────────────────────────────
 
@@ -64,6 +57,12 @@ export interface ColorOptionDTO {
   imageUrl?: string
 }
 
+export interface CategoryDTO {
+  id: string
+  name_he: string
+  name_en: string
+}
+
 export interface ProductDTO {
   id: string
   slug: string
@@ -71,7 +70,7 @@ export interface ProductDTO {
   name_en: string
   description_he: string
   description_en: string
-  category: Category
+  category: CategoryDTO
   basePrice: number // decimal (₪)
   customizable: boolean
   isActive: boolean

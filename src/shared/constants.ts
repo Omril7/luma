@@ -4,20 +4,6 @@ export const LOCALES = ['he', 'en'] as const
 export type Locale = (typeof LOCALES)[number]
 export const LOCALE_DEFAULT: Locale = 'he'
 
-export const CATEGORY = {
-  TABLE: 'TABLE',
-  SHELF: 'SHELF',
-  CONSOLE: 'CONSOLE',
-  SHOE_RACK: 'SHOE_RACK',
-  NIGHTSTAND: 'NIGHTSTAND',
-  ARMCHAIR: 'ARMCHAIR',
-  TV_STAND: 'TV_STAND',
-  BENCH: 'BENCH',
-  OTHER: 'OTHER',
-} as const
-export type Category = keyof typeof CATEGORY
-export const CATEGORY_VALUES = Object.values(CATEGORY) as Category[]
-
 export const SHIPPING_METHOD = {
   NATIONAL_SHIPPING: 'NATIONAL_SHIPPING',
   PICKUP: 'PICKUP',

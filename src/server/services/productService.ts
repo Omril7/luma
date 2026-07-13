@@ -10,6 +10,7 @@ const productInclude = {
   variants: { where: { isActive: true }, orderBy: { price: 'asc' as const } },
   customPricingRule: true,
   colorOptions: { where: { isActive: true } },
+  category: { select: { id: true, name_he: true, name_en: true } },
 } satisfies Prisma.ProductInclude
 
 type ProductWithRelations = Prisma.ProductGetPayload<{ include: typeof productInclude }>
@@ -22,7 +23,7 @@ function toProductDTO(p: ProductWithRelations): ProductDTO {
     name_en: p.name_en,
     description_he: p.description_he,
     description_en: p.description_en,
-    category: p.category,
+    category: { id: p.category.id, name_he: p.category.name_he, name_en: p.category.name_en },
     basePrice: Number(p.basePrice),
     customizable: p.customizable,
     isActive: p.isActive,
@@ -119,7 +120,7 @@ const SORT_MAP: Record<ProductSortKey, Prisma.ProductOrderByWithRelationInput> =
 }
 
 export interface GetProductsOptions {
-  category?: string
+  categoryId?: string
   featured?: boolean
   sort?: ProductSortKey
   page?: number
@@ -142,7 +143,7 @@ export async function getProducts(opts: GetProductsOptions = {}): Promise<Produc
 
   const where: Prisma.ProductWhereInput = {
     isActive: true,
-    ...(opts.category ? { category: opts.category as Prisma.EnumCategoryFilter } : {}),
+    ...(opts.categoryId ? { categoryId: opts.categoryId } : {}),
     ...(opts.featured !== undefined ? { isFeatured: opts.featured } : {}),
   }
 

@@ -18,24 +18,11 @@ import {
 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
-import type { ProductDTO, ColorOptionDTO } from '@/shared/types'
+import type { ProductDTO, ColorOptionDTO, CategoryDTO } from '@/shared/types'
 import { Select } from '@/components/ui/Select'
 import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-
-const CATEGORY_LABELS: Record<string, string> = {
-  TABLE: 'שולחן',
-  SHELF: 'מדף',
-  CONSOLE: 'קונסולה',
-  SHOE_RACK: 'מדף נעליים',
-  NIGHTSTAND: 'שידת לילה',
-  ARMCHAIR: 'כורסא',
-  TV_STAND: 'מזנון TV',
-  BENCH: 'ספסל',
-  OTHER: 'אחר',
-}
-const CATEGORIES = Object.keys(CATEGORY_LABELS)
 
 type Tab = 'basic' | 'variants' | 'pricing' | 'colors' | 'images'
 
@@ -81,7 +68,7 @@ interface FormState {
   name_en: string
   description_he: string
   description_en: string
-  category: string
+  categoryId: string
   basePrice: string
   customizable: boolean
   isActive: boolean
@@ -125,7 +112,7 @@ const emptyForm = (): FormState => ({
   name_en: '',
   description_he: '',
   description_en: '',
-  category: 'TABLE',
+  categoryId: '',
   basePrice: '',
   customizable: false,
   isActive: true,
@@ -144,7 +131,7 @@ function productToForm(p: ProductDTO): FormState {
     name_en: p.name_en,
     description_he: p.description_he,
     description_en: p.description_en,
-    category: p.category,
+    categoryId: p.category.id,
     basePrice: String(p.basePrice),
     customizable: p.customizable,
     isActive: p.isActive,
@@ -240,6 +227,9 @@ export function ProductFormPage({ mode, productId }: Props) {
     open: false,
   })
 
+  const [allCategories, setAllCategories] = useState<CategoryDTO[]>([])
+  const [newCategory, setNewCategory] = useState({ name_he: '', name_en: '', open: false })
+
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Load existing product
@@ -264,6 +254,27 @@ export function ProductFormPage({ mode, productId }: Props) {
   useEffect(() => {
     loadColors()
   }, [loadColors])
+
+  // Load all categories
+  const loadCategories = useCallback(() => {
+    if (!token) return
+    api
+      .get<{ categories: CategoryDTO[] }>('/api/admin/categories', token)
+      .then(({ categories }) => setAllCategories(categories))
+      .catch(() => {})
+  }, [token])
+
+  useEffect(() => {
+    loadCategories()
+  }, [loadCategories])
+
+  // Default new products to the first category once the list has loaded
+  useEffect(() => {
+    if (mode === 'create' && !form.categoryId && allCategories.length > 0) {
+      set('categoryId', allCategories[0].id)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, allCategories])
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -392,6 +403,24 @@ export function ProductFormPage({ mode, productId }: Props) {
     }
   }
 
+  // ── Category actions ─────────────────────────────────────────────────────────
+
+  async function handleCreateCategory() {
+    if (!token || !newCategory.name_he || !newCategory.name_en) return
+    try {
+      const { category } = await api.post<{ category: CategoryDTO }>(
+        '/api/admin/categories',
+        { name_he: newCategory.name_he, name_en: newCategory.name_en },
+        token
+      )
+      setAllCategories((cs) => [...cs, category])
+      set('categoryId', category.id)
+      setNewCategory({ name_he: '', name_en: '', open: false })
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'שגיאה ביצירת הקטגוריה')
+    }
+  }
+
   // ── Submit ───────────────────────────────────────────────────────────────────
 
   function validate(): boolean {
@@ -401,6 +430,7 @@ export function ProductFormPage({ mode, productId }: Props) {
     if (!form.name_en) e.name_en = 'שדה חובה'
     if (!form.description_he) e.description_he = 'שדה חובה'
     if (!form.description_en) e.description_en = 'שדה חובה'
+    if (!form.categoryId) e.categoryId = 'שדה חובה'
     if (!form.basePrice || isNaN(Number(form.basePrice))) e.basePrice = 'מחיר לא תקין'
     if (form.variants.length === 0) e.variants = 'יש להוסיף לפחות גרסה אחת'
     form.variants.forEach((v, i) => {
@@ -424,7 +454,7 @@ export function ProductFormPage({ mode, productId }: Props) {
         name_en: form.name_en,
         description_he: form.description_he,
         description_en: form.description_en,
-        category: form.category,
+        categoryId: form.categoryId,
         basePrice: Number(form.basePrice),
         customizable: form.customizable,
         isActive: form.isActive,
@@ -668,13 +698,24 @@ export function ProductFormPage({ mode, productId }: Props) {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <FieldRow label="קטגוריה" required>
-              <Select
-                value={form.category}
-                onChange={(v) => set('category', v)}
-                className="w-full"
-                options={CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] }))}
-              />
+            <FieldRow label="קטגוריה" error={errors.categoryId} required>
+              <div className="flex items-center gap-2">
+                <Select
+                  value={form.categoryId}
+                  onChange={(v) => set('categoryId', v)}
+                  className="w-full"
+                  options={allCategories.map((c) => ({ value: c.id, label: c.name_he }))}
+                />
+                <button
+                  type="button"
+                  onClick={() => setNewCategory((n) => ({ ...n, open: !n.open }))}
+                  title="קטגוריה חדשה"
+                  aria-label="קטגוריה חדשה"
+                  className="flex items-center justify-center w-10 h-10 shrink-0 rounded-lg border border-border text-text-muted hover:bg-secondary hover:text-text-main transition-colors cursor-pointer"
+                >
+                  <Plus size={16} aria-hidden="true" />
+                </button>
+              </div>
             </FieldRow>
             <FieldRow label="מחיר בסיס (₪)" error={errors.basePrice} required>
               <input
@@ -698,6 +739,64 @@ export function ProductFormPage({ mode, productId }: Props) {
               />
             </FieldRow>
           </div>
+
+          {newCategory.open && (
+            <div className="bg-surface border border-border rounded-lg p-4 space-y-4 max-w-lg">
+              <h4 className="text-sm font-semibold text-text-main">קטגוריה חדשה</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <FieldRow
+                  label={
+                    <>
+                      שם{' '}
+                      <IsraelFlag className="inline-block w-[18px] h-[12px] rounded-[2px] ms-1.5 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+                    </>
+                  }
+                  required
+                >
+                  <input
+                    type="text"
+                    value={newCategory.name_he}
+                    onChange={(e) => setNewCategory((n) => ({ ...n, name_he: e.target.value }))}
+                    className={inputCls(false)}
+                  />
+                </FieldRow>
+                <FieldRow
+                  label={
+                    <>
+                      Name{' '}
+                      <USAFlag className="inline-block w-[18px] h-[12px] rounded-[2px] ms-1.5 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+                    </>
+                  }
+                  required
+                  labelDir="ltr"
+                >
+                  <input
+                    type="text"
+                    value={newCategory.name_en}
+                    dir="ltr"
+                    onChange={(e) => setNewCategory((n) => ({ ...n, name_en: e.target.value }))}
+                    className={inputCls(false)}
+                  />
+                </FieldRow>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleCreateCategory}
+                  className="flex items-center gap-2 px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors cursor-pointer"
+                >
+                  <Plus size={14} aria-hidden="true" /> יצירה
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewCategory({ name_he: '', name_en: '', open: false })}
+                  className="px-4 py-2 text-sm border border-border rounded-lg text-text-muted hover:bg-bg transition-colors cursor-pointer"
+                >
+                  ביטול
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-wrap gap-6">
             <Toggle
