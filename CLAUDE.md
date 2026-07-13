@@ -125,6 +125,7 @@ npm run build           # next build
 | [09-payments](.claude/docs/09-payments.md)               | Stubbed payment interface, IL processors           |
 | [10-devops](.claude/docs/10-devops.md)                   | Vercel deploy, env vars, scripts, storage, tooling |
 | [11-testing-quality](.claude/docs/11-testing-quality.md) | Tests, lint/format, CI, perf/a11y gates            |
+| [12-showcase-mode](.claude/docs/12-showcase-mode.md)     | Browse-only catalog while `FEATURES.shop` is off   |
 
 **Build sequence:** [`.claude/ROADMAP.md`](.claude/ROADMAP.md) (planned work + checkboxes).
 **Progress log:** [`.claude/PROGRESS.md`](.claude/PROGRESS.md) (chronological journal — append an
