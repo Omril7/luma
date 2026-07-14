@@ -18,7 +18,12 @@ export function HeroSection({ locale, whatsappNumber }: HeroSectionProps) {
   const t = useTranslations('home.hero')
   const { a11y } = useUiStore()
   const shouldAnimate = !a11y.noMotion
-  const isRTL = locale === 'he'
+  // Charcoal is fixed (never swapped by dark/contrast/etc.) and reads well against the
+  // photo's tan wall in every visual mode, since the photo itself is unaffected by them.
+  // But with the image hidden, the section falls back to the theme's --color-bg, which
+  // *does* swap dark in dark/contrast mode — fixed charcoal-on-charcoal would then be
+  // unreadable. So fall back to the normal adaptive theme tokens once there's no photo.
+  const onPhoto = !a11y.hideImages
 
   const whatsappUrl = `https://wa.me/${whatsappNumber || DEFAULT_WHATSAPP_NUMBER}`
 
@@ -39,20 +44,54 @@ export function HeroSection({ locale, whatsappNumber }: HeroSectionProps) {
     : { initial: false as const }
 
   return (
-    <section className="relative flex flex-col overflow-hidden md:min-h-dvh md:flex-row">
-      {/* Wall-color panel — matches the cream wall in the photo */}
-      <div className="relative flex flex-1 items-center bg-bg px-4 py-16 md:px-12 md:py-24 lg:px-16">
-        <motion.div {...entranceProps} className="max-w-xl">
+    <section className="relative w-full min-h-[560px] aspect-[4/5] overflow-hidden bg-bg sm:aspect-[4/3] sm:min-h-[600px] md:aspect-auto md:min-h-dvh">
+      {/* Full-bleed photo. Mirrored in English so the empty wall (where the
+          text sits) stays on the same physical side as the text panel. */}
+      <motion.div {...imageEntranceProps} className="absolute inset-0">
+        <Image
+          src="/hero2.jpg"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className={cn('object-cover', locale === 'en' && '-scale-x-100')}
+        />
+      </motion.div>
+
+      {/* Text content, overlaid on the logical start side (right in Hebrew, left in English).
+          No scrim — colors read directly against the photo (see `onPhoto` above for why). */}
+      <div className="absolute inset-0 flex items-center px-5 pb-20 pt-8 sm:px-10 sm:pb-34 sm:pt-0 md:px-12 md:pb-48 md:pt-0 lg:px-16">
+        <motion.div {...entranceProps} className="max-w-[230px] sm:max-w-xs md:max-w-xl">
           <div className="mb-4 flex items-center gap-2.5">
-            <span className="h-px w-8 bg-accent" aria-hidden="true" />
-            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-accent">
+            <span
+              className={cn('h-px w-8', onPhoto ? 'bg-charcoal/60' : 'bg-accent')}
+              aria-hidden="true"
+            />
+            <span
+              className={cn(
+                'text-xs font-semibold uppercase tracking-[0.15em]',
+                onPhoto ? 'text-charcoal' : 'text-accent'
+              )}
+            >
               {t('eyebrow')}
             </span>
           </div>
-          <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-semibold text-text-main leading-tight">
+          <h1
+            className={cn(
+              'font-heading text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight',
+              onPhoto ? 'text-charcoal' : 'text-text-main'
+            )}
+          >
             {t('heading')}
           </h1>
-          <p className="mb-8 mt-4 max-w-md text-lg text-text-muted md:text-xl">{t('subheading')}</p>
+          <p
+            className={cn(
+              'mb-8 mt-4 max-w-md text-lg md:text-xl',
+              onPhoto ? 'text-charcoal' : 'text-text-muted'
+            )}
+          >
+            {t('subheading')}
+          </p>
           <div className="flex flex-wrap gap-3">
             <Link
               href="/contact"
@@ -64,47 +103,17 @@ export function HeroSection({ locale, whatsappNumber }: HeroSectionProps) {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block cursor-pointer rounded-lg border border-border px-6 py-3 font-medium text-text-main transition-all duration-150 hover:-translate-y-0.5 hover:bg-secondary"
+              className={cn(
+                'inline-block cursor-pointer rounded-lg border px-6 py-3 font-medium transition-all duration-150 hover:-translate-y-0.5',
+                onPhoto
+                  ? 'border-charcoal text-charcoal hover:bg-charcoal/5'
+                  : 'border-border text-text-main hover:bg-secondary'
+              )}
             >
               {t('whatsappCta')}
             </a>
           </div>
         </motion.div>
-
-        {/* Decorative scroll indicator — desktop only, section is full-height there */}
-        <div className="absolute bottom-8 start-1/2 hidden -translate-x-1/2 flex-col items-center gap-1 md:flex">
-          <motion.div
-            animate={shouldAnimate ? { y: [0, 6, 0] } : undefined}
-            transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
-            className="w-5 h-8 rounded-full border-2 border-border flex items-start justify-center pt-1"
-          >
-            <div className="w-1 h-2 rounded-full bg-text-muted" />
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Image panel — half width on desktop, framed like an inset photo */}
-      <div className="relative aspect-[4/5] md:aspect-auto md:flex-1 overflow-hidden">
-        <motion.div {...imageEntranceProps} className="absolute inset-0">
-          <Image
-            src="/hero.jpeg"
-            alt=""
-            fill
-            priority
-            sizes="(min-width: 768px) 50vw, 100vw"
-            className={cn('object-cover', locale === 'en' && '-scale-x-100')}
-          />
-        </motion.div>
-        {/* Soft blend into the wall-color panel on desktop (gradient direction must
-            follow the physical side the text panel sits on, since Tailwind's
-            gradient utilities aren't logical/RTL-aware like start/end spacing) */}
-        <div
-          aria-hidden="true"
-          className={[
-            'pointer-events-none absolute inset-y-0 start-0 hidden w-24 from-bg to-transparent md:block',
-            isRTL ? 'bg-gradient-to-l' : 'bg-gradient-to-r',
-          ].join(' ')}
-        />
       </div>
     </section>
   )
