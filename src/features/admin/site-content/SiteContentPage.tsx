@@ -10,24 +10,6 @@ import { StarRating } from '@/components/ui/StarRating'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-interface HomeHero {
-  title_he: string
-  title_en: string
-  subtitle_he: string
-  subtitle_en: string
-  cta_he: string
-  cta_en: string
-  imageUrl: string
-}
-
-interface HomeStory {
-  title_he: string
-  title_en: string
-  body_he: string
-  body_en: string
-  imageUrl: string
-}
-
 interface AboutPage {
   title_he: string
   title_en: string
@@ -47,13 +29,6 @@ interface FaqItems {
   items: FaqItem[]
 }
 
-interface GalleryIntro {
-  title_he: string
-  title_en: string
-  subtitle_he: string
-  subtitle_en: string
-}
-
 interface TestimonialItem {
   quote_he: string
   quote_en: string
@@ -69,40 +44,20 @@ interface TestimonialsData {
 }
 
 type SiteContentMap = {
-  'home.hero': HomeHero
-  'home.story': HomeStory
   'home.testimonials': TestimonialsData
   'about.page': AboutPage
   'faq.items': FaqItems
-  'gallery.intro': GalleryIntro
 }
 
 type ContentKey = keyof SiteContentMap
 
 // ── Defaults ───────────────────────────────────────────────────────────────────
 
-function defaultHero(): HomeHero {
-  return {
-    title_he: '',
-    title_en: '',
-    subtitle_he: '',
-    subtitle_en: '',
-    cta_he: '',
-    cta_en: '',
-    imageUrl: '',
-  }
-}
-function defaultStory(): HomeStory {
-  return { title_he: '', title_en: '', body_he: '', body_en: '', imageUrl: '' }
-}
 function defaultAbout(): AboutPage {
   return { title_he: '', title_en: '', body_he: '', body_en: '', imageUrl: '' }
 }
 function defaultFaq(): FaqItems {
   return { items: [] }
-}
-function defaultGallery(): GalleryIntro {
-  return { title_he: '', title_en: '', subtitle_he: '', subtitle_en: '' }
 }
 function defaultTestimonials(): TestimonialsData {
   return { items: [] }
@@ -194,210 +149,12 @@ function useSaveSection(key: ContentKey, token: string | null) {
 // ── Tab definitions ───────────────────────────────────────────────────────────
 
 const TABS: { key: ContentKey; label: string }[] = [
-  { key: 'home.hero', label: 'דף הבית — Hero' },
-  { key: 'home.story', label: 'דף הבית — הסיפור שלנו' },
   { key: 'home.testimonials', label: 'דף הבית — המלצות לקוחות' },
   { key: 'about.page', label: 'אודות' },
   { key: 'faq.items', label: 'שאלות נפוצות' },
-  { key: 'gallery.intro', label: 'גלריה' },
 ]
 
 // ── Tab content panels ─────────────────────────────────────────────────────────
-
-interface HeroTabProps {
-  data: HomeHero
-  onChange: (d: HomeHero) => void
-  onSave: () => void
-  saving: boolean
-  success: boolean
-  error: string | null
-  token: string
-}
-
-function HeroTab({ data, onChange, onSave, saving, success, error, token }: HeroTabProps) {
-  function set<K extends keyof HomeHero>(k: K, v: HomeHero[K]) {
-    onChange({ ...data, [k]: v })
-  }
-  return (
-    <div className="space-y-4">
-      <h3 className="text-base font-semibold text-text-main mb-4">דף הבית — Hero</h3>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className={labelCls}>כותרת ראשית {badgeHe}</label>
-          <input
-            type="text"
-            value={data.title_he}
-            onChange={(e) => set('title_he', e.target.value)}
-            dir="rtl"
-            placeholder="כותרת ראשית בעברית"
-            className={inputCls}
-          />
-        </div>
-        <div dir="ltr">
-          <label className={labelCls}>Main title {badgeEn}</label>
-          <input
-            type="text"
-            value={data.title_en}
-            onChange={(e) => set('title_en', e.target.value)}
-            dir="ltr"
-            placeholder="Main title in English"
-            className={inputCls}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className={labelCls}>תת-כותרת {badgeHe}</label>
-          <textarea
-            rows={3}
-            value={data.subtitle_he}
-            onChange={(e) => set('subtitle_he', e.target.value)}
-            dir="rtl"
-            placeholder="תת-כותרת בעברית"
-            className={`${textareaCls} min-h-[80px]`}
-          />
-        </div>
-        <div dir="ltr">
-          <label className={labelCls}>Subtitle {badgeEn}</label>
-          <textarea
-            rows={3}
-            value={data.subtitle_en}
-            onChange={(e) => set('subtitle_en', e.target.value)}
-            dir="ltr"
-            placeholder="Subtitle in English"
-            className={`${textareaCls} min-h-[80px]`}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className={labelCls}>טקסט כפתור CTA {badgeHe}</label>
-          <input
-            type="text"
-            value={data.cta_he}
-            onChange={(e) => set('cta_he', e.target.value)}
-            dir="rtl"
-            placeholder="לחנות"
-            className={inputCls}
-          />
-        </div>
-        <div dir="ltr">
-          <label className={labelCls}>CTA button text {badgeEn}</label>
-          <input
-            type="text"
-            value={data.cta_en}
-            onChange={(e) => set('cta_en', e.target.value)}
-            dir="ltr"
-            placeholder="Shop Now"
-            className={inputCls}
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className={labelCls}>תמונה ראשית</label>
-        <ImageUpload
-          value={data.imageUrl || null}
-          onChange={(url) => set('imageUrl', url ?? '')}
-          token={token}
-        />
-      </div>
-
-      <div className="flex items-center justify-between pt-2">
-        <SaveStatus success={success} error={error} />
-        <SaveButton saving={saving} onClick={onSave} />
-      </div>
-    </div>
-  )
-}
-
-interface StoryTabProps {
-  data: HomeStory
-  onChange: (d: HomeStory) => void
-  onSave: () => void
-  saving: boolean
-  success: boolean
-  error: string | null
-  token: string
-}
-
-function StoryTab({ data, onChange, onSave, saving, success, error, token }: StoryTabProps) {
-  function set<K extends keyof HomeStory>(k: K, v: HomeStory[K]) {
-    onChange({ ...data, [k]: v })
-  }
-  return (
-    <div className="space-y-4">
-      <h3 className="text-base font-semibold text-text-main mb-4">דף הבית — הסיפור שלנו</h3>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className={labelCls}>כותרת {badgeHe}</label>
-          <input
-            type="text"
-            value={data.title_he}
-            onChange={(e) => set('title_he', e.target.value)}
-            dir="rtl"
-            placeholder="הסיפור שלנו"
-            className={inputCls}
-          />
-        </div>
-        <div dir="ltr">
-          <label className={labelCls}>Title {badgeEn}</label>
-          <input
-            type="text"
-            value={data.title_en}
-            onChange={(e) => set('title_en', e.target.value)}
-            dir="ltr"
-            placeholder="Our Story"
-            className={inputCls}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className={labelCls}>גוף טקסט {badgeHe}</label>
-          <textarea
-            rows={5}
-            value={data.body_he}
-            onChange={(e) => set('body_he', e.target.value)}
-            dir="rtl"
-            placeholder="תוכן הסיפור בעברית..."
-            className={`${textareaCls} min-h-[120px]`}
-          />
-        </div>
-        <div dir="ltr">
-          <label className={labelCls}>Body text {badgeEn}</label>
-          <textarea
-            rows={5}
-            value={data.body_en}
-            onChange={(e) => set('body_en', e.target.value)}
-            dir="ltr"
-            placeholder="Story content in English..."
-            className={`${textareaCls} min-h-[120px]`}
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className={labelCls}>תמונה</label>
-        <ImageUpload
-          value={data.imageUrl || null}
-          onChange={(url) => set('imageUrl', url ?? '')}
-          token={token}
-        />
-      </div>
-
-      <div className="flex items-center justify-between pt-2">
-        <SaveStatus success={success} error={error} />
-        <SaveButton saving={saving} onClick={onSave} />
-      </div>
-    </div>
-  )
-}
 
 interface AboutTabProps {
   data: AboutPage
@@ -836,103 +593,22 @@ function TestimonialsTab({ data, onChange, onSave, saving, success, error }: Tes
   )
 }
 
-interface GalleryTabProps {
-  data: GalleryIntro
-  onChange: (d: GalleryIntro) => void
-  onSave: () => void
-  saving: boolean
-  success: boolean
-  error: string | null
-}
-
-function GalleryTab({ data, onChange, onSave, saving, success, error }: GalleryTabProps) {
-  function set<K extends keyof GalleryIntro>(k: K, v: GalleryIntro[K]) {
-    onChange({ ...data, [k]: v })
-  }
-  return (
-    <div className="space-y-4">
-      <h3 className="text-base font-semibold text-text-main mb-4">גלריה</h3>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className={labelCls}>כותרת {badgeHe}</label>
-          <input
-            type="text"
-            value={data.title_he}
-            onChange={(e) => set('title_he', e.target.value)}
-            dir="rtl"
-            placeholder="הגלריה שלנו"
-            className={inputCls}
-          />
-        </div>
-        <div dir="ltr">
-          <label className={labelCls}>Title {badgeEn}</label>
-          <input
-            type="text"
-            value={data.title_en}
-            onChange={(e) => set('title_en', e.target.value)}
-            dir="ltr"
-            placeholder="Our Gallery"
-            className={inputCls}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className={labelCls}>תת-כותרת {badgeHe}</label>
-          <textarea
-            rows={3}
-            value={data.subtitle_he}
-            onChange={(e) => set('subtitle_he', e.target.value)}
-            dir="rtl"
-            placeholder="תת-כותרת הגלריה בעברית"
-            className={`${textareaCls} min-h-[80px]`}
-          />
-        </div>
-        <div dir="ltr">
-          <label className={labelCls}>Subtitle {badgeEn}</label>
-          <textarea
-            rows={3}
-            value={data.subtitle_en}
-            onChange={(e) => set('subtitle_en', e.target.value)}
-            dir="ltr"
-            placeholder="Gallery subtitle in English"
-            className={`${textareaCls} min-h-[80px]`}
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between pt-2">
-        <SaveStatus success={success} error={error} />
-        <SaveButton saving={saving} onClick={onSave} />
-      </div>
-    </div>
-  )
-}
-
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export function SiteContentPage() {
   const { token } = useAdminStore()
-  const [activeTab, setActiveTab] = useState<ContentKey>('home.hero')
+  const [activeTab, setActiveTab] = useState<ContentKey>('home.testimonials')
 
-  const [hero, setHero] = useState<HomeHero>(defaultHero())
-  const [story, setStory] = useState<HomeStory>(defaultStory())
   const [testimonials, setTestimonials] = useState<TestimonialsData>(defaultTestimonials())
   const [about, setAbout] = useState<AboutPage>(defaultAbout())
   const [faq, setFaq] = useState<FaqItems>(defaultFaq())
-  const [gallery, setGallery] = useState<GalleryIntro>(defaultGallery())
 
   const [loadError, setLoadError] = useState<string | null>(null)
   const [pageLoading, setPageLoading] = useState(true)
 
-  const heroSave = useSaveSection('home.hero', token)
-  const storySave = useSaveSection('home.story', token)
   const testimonialsSave = useSaveSection('home.testimonials', token)
   const aboutSave = useSaveSection('about.page', token)
   const faqSave = useSaveSection('faq.items', token)
-  const gallerySave = useSaveSection('gallery.intro', token)
 
   const loadContent = useCallback(async () => {
     if (!token) return
@@ -940,12 +616,9 @@ export function SiteContentPage() {
     setLoadError(null)
     try {
       const data = await api.get<Partial<SiteContentMap>>('/api/admin/site-content', token)
-      if (data['home.hero']) setHero(data['home.hero'] as HomeHero)
-      if (data['home.story']) setStory(data['home.story'] as HomeStory)
       if (data['home.testimonials']) setTestimonials(data['home.testimonials'] as TestimonialsData)
       if (data['about.page']) setAbout(data['about.page'] as AboutPage)
       if (data['faq.items']) setFaq(data['faq.items'] as FaqItems)
-      if (data['gallery.intro']) setGallery(data['gallery.intro'] as GalleryIntro)
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : 'שגיאה בטעינת תוכן האתר')
     } finally {
@@ -1012,28 +685,6 @@ export function SiteContentPage() {
         {/* Content panel */}
         <div className="flex-1 min-w-0">
           <div className="bg-surface border border-border rounded-lg p-5">
-            {activeTab === 'home.hero' && (
-              <HeroTab
-                data={hero}
-                onChange={setHero}
-                onSave={() => heroSave.save(hero)}
-                saving={heroSave.saving}
-                success={heroSave.success}
-                error={heroSave.error}
-                token={token ?? ''}
-              />
-            )}
-            {activeTab === 'home.story' && (
-              <StoryTab
-                data={story}
-                onChange={setStory}
-                onSave={() => storySave.save(story)}
-                saving={storySave.saving}
-                success={storySave.success}
-                error={storySave.error}
-                token={token ?? ''}
-              />
-            )}
             {activeTab === 'home.testimonials' && (
               <TestimonialsTab
                 data={testimonials}
@@ -1063,16 +714,6 @@ export function SiteContentPage() {
                 saving={faqSave.saving}
                 success={faqSave.success}
                 error={faqSave.error}
-              />
-            )}
-            {activeTab === 'gallery.intro' && (
-              <GalleryTab
-                data={gallery}
-                onChange={setGallery}
-                onSave={() => gallerySave.save(gallery)}
-                saving={gallerySave.saving}
-                success={gallerySave.success}
-                error={gallerySave.error}
               />
             )}
           </div>

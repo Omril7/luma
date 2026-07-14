@@ -5,6 +5,8 @@ export interface EmailMessage {
   subject: string
   html: string
   text?: string
+  from?: { address: string; name?: string }
+  replyTo?: string
 }
 
 export interface EmailProvider {

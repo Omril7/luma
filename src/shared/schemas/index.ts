@@ -96,6 +96,7 @@ export const contactSchema = z.object({
   subject: z.string().min(2).max(200),
   message: z.string().min(10).max(2000),
   language: z.enum(['he', 'en']).default('he'),
+  subscribeToNewsletter: z.boolean().optional(),
 })
 
 export type ContactInput = z.infer<typeof contactSchema>
@@ -198,6 +199,35 @@ export type ApplyCouponInput = z.infer<typeof applyCouponSchema>
 
 export const updateCouponSchema = createCouponSchema.partial()
 export type UpdateCouponInput = z.infer<typeof updateCouponSchema>
+
+// ── Category admin ────────────────────────────────────────────────────────────
+
+export const createCategorySchema = z.object({
+  name_he: z.string().min(1).max(100),
+  name_en: z.string().min(1).max(100),
+  sortOrder: z.number().int().min(0).optional(),
+  isActive: z.boolean().optional(),
+})
+
+export type CreateCategoryInput = z.infer<typeof createCategorySchema>
+
+export const updateCategorySchema = createCategorySchema.partial()
+export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>
+
+// ── Color admin ───────────────────────────────────────────────────────────────
+
+export const createColorSchema = z.object({
+  name_he: z.string().min(1).max(100),
+  name_en: z.string().min(1).max(100),
+  hexCode: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  imageUrl: z.string().url().optional(),
+  isActive: z.boolean().optional(),
+})
+
+export type CreateColorInput = z.infer<typeof createColorSchema>
+
+export const updateColorSchema = createColorSchema.partial()
+export type UpdateColorInput = z.infer<typeof updateColorSchema>
 
 // ── Email settings ────────────────────────────────────────────────────────────
 
@@ -302,7 +332,9 @@ export const createReviewSchema = z.object({
 export type CreateReviewInput = z.infer<typeof createReviewSchema>
 
 export const updateReviewSchema = z.object({
-  isApproved: z.boolean(),
+  isApproved: z.boolean().optional(),
+  comment_he: z.string().max(2000).nullable().optional(),
+  comment_en: z.string().max(2000).nullable().optional(),
 })
 
 export type UpdateReviewInput = z.infer<typeof updateReviewSchema>

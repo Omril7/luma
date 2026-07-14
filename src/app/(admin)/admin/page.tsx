@@ -1,84 +1,12 @@
 import { type Metadata } from 'next'
 import Link from 'next/link'
-import {
-  Package,
-  Tag,
-  FileText,
-  Mail,
-  Send,
-  ImageIcon,
-  Settings,
-  ArrowLeft,
-  ShoppingBag,
-  PackageOpen,
-  Star,
-} from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
+import { ADMIN_NAV_ITEMS } from '@/features/admin/adminNav'
 
 export const metadata: Metadata = { title: 'לוח בקרה — Luma ניהול' }
 
-const QUICK_LINKS = [
-  {
-    href: '/admin/products',
-    icon: Package,
-    title: 'מוצרים',
-    desc: 'ניהול קטלוג המוצרים, גרסאות ומחירים',
-  },
-  {
-    href: '/admin/coupons',
-    icon: Tag,
-    title: 'קופונים',
-    desc: 'יצירה וניהול קודי הנחה',
-  },
-  {
-    href: '/admin/content',
-    icon: FileText,
-    title: 'תוכן האתר',
-    desc: 'עריכת הטקסטים והתוכן הסטטי',
-  },
-  {
-    href: '/admin/email-services',
-    icon: Mail,
-    title: 'שירותי דואר',
-    desc: 'הגדרות שליחת מיילים',
-  },
-  {
-    href: '/admin/newsletter',
-    icon: Send,
-    title: 'ניוזלטר',
-    desc: 'רשימת מנויים ושליחת עדכונים',
-  },
-  {
-    href: '/admin/gallery',
-    icon: ImageIcon,
-    title: 'גלריה',
-    desc: 'ניהול תמונות הגלריה',
-  },
-  {
-    href: '/admin/bundles',
-    icon: PackageOpen,
-    title: 'חבילות',
-    desc: 'ניהול חבילות מוצרים במחיר מיוחד',
-  },
-  {
-    href: '/admin/reviews',
-    icon: Star,
-    title: 'ביקורות',
-    desc: 'אישור ופרסום ביקורות לקוחות',
-  },
-  {
-    href: '/admin/settings',
-    icon: Settings,
-    title: 'הגדרות',
-    desc: 'פרטי העסק, משלוח ו-WhatsApp',
-  },
-  {
-    href: 'https://luma-manager.vercel.app/orders',
-    icon: ShoppingBag,
-    title: 'ניהול הזמנות',
-    desc: 'צפייה וטיפול בהזמנות הלקוחות',
-    external: true,
-  },
-]
+// Every admin section except the dashboard itself (no point linking to the page you're on).
+const QUICK_LINKS = ADMIN_NAV_ITEMS.filter((item) => item.href !== '/admin')
 
 export default function AdminDashboardPage() {
   return (
@@ -95,7 +23,7 @@ export default function AdminDashboardPage() {
         role="list"
         aria-label="קישורים מהירים"
       >
-        {QUICK_LINKS.map(({ href, icon: Icon, title, desc, external }) => (
+        {QUICK_LINKS.map(({ href, icon: Icon, label: title, desc, external }) => (
           <li key={href}>
             {external ? (
               <a

@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAdmin } from '@/server/http'
 import { prisma } from '@/server/prisma'
-import { z } from 'zod'
 import { parseBody } from '@/server/http'
-
-const createCategorySchema = z.object({
-  name_he: z.string().min(1).max(100),
-  name_en: z.string().min(1).max(100),
-  sortOrder: z.number().int().min(0).optional(),
-})
+import { createCategorySchema } from '@/shared/schemas'
 
 export const GET = withAdmin(async () => {
   const categories = await prisma.category.findMany({

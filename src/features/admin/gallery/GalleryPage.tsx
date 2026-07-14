@@ -17,12 +17,31 @@ interface GalleryImageDTO {
   sortOrder: number
 }
 
+interface GalleryIntro {
+  title_he: string
+  title_en: string
+  subtitle_he: string
+  subtitle_en: string
+}
+
+function defaultIntro(): GalleryIntro {
+  return { title_he: '', title_en: '', subtitle_he: '', subtitle_en: '' }
+}
+
 // ── Shared styles ─────────────────────────────────────────────────────────────
 
 const inputCls =
   'w-full h-10 px-3 text-sm bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
 
+const textareaCls =
+  'w-full px-3 py-2 text-sm bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none'
+
 const labelCls = 'block text-xs font-medium text-text-muted mb-1'
+
+const flagCls =
+  'inline-block w-[18px] h-[12px] rounded-[2px] ms-1.5 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]'
+const badgeHe = <IsraelFlag className={flagCls} />
+const badgeEn = <USAFlag className={flagCls} />
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
@@ -32,6 +51,12 @@ export function GalleryPage() {
   const [images, setImages] = useState<GalleryImageDTO[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Intro text (title/subtitle shown above the gallery on the public /gallery page)
+  const [intro, setIntro] = useState<GalleryIntro>(defaultIntro())
+  const [introSaving, setIntroSaving] = useState(false)
+  const [introSuccess, setIntroSuccess] = useState(false)
+  const [introError, setIntroError] = useState<string | null>(null)
 
   // New image form state
   const [newUrl, setNewUrl] = useState<string | null>(null)
@@ -59,9 +84,43 @@ export function GalleryPage() {
     }
   }, [token])
 
+  const fetchIntro = useCallback(async () => {
+    if (!token) return
+    try {
+      const data = await api.get<{ item: { value: GalleryIntro } }>(
+        '/api/admin/site-content/gallery.intro',
+        token
+      )
+      setIntro(data.item.value)
+    } catch {
+      // No row yet (first time this section is used) — keep defaults, not an error.
+    }
+  }, [token])
+
   useEffect(() => {
     fetchImages()
-  }, [fetchImages])
+    fetchIntro()
+  }, [fetchImages, fetchIntro])
+
+  async function handleSaveIntro() {
+    if (!token) return
+    setIntroSaving(true)
+    setIntroSuccess(false)
+    setIntroError(null)
+    try {
+      await api.put(`/api/admin/site-content/gallery.intro`, { value: intro }, token)
+      setIntroSuccess(true)
+      setTimeout(() => setIntroSuccess(false), 3000)
+    } catch (e) {
+      setIntroError(e instanceof Error ? e.message : 'שגיאה בשמירה')
+    } finally {
+      setIntroSaving(false)
+    }
+  }
+
+  function setIntroField<K extends keyof GalleryIntro>(k: K, v: GalleryIntro[K]) {
+    setIntro((prev) => ({ ...prev, [k]: v }))
+  }
 
   // ── Reorder ───────────────────────────────────────────────────────────────
 
@@ -182,6 +241,90 @@ export function GalleryPage() {
           {images.length} תמונות · גרור לשינוי סדר או השתמש בחצים
         </p>
       </div>
+
+      {/* ── Intro text (shown above the gallery on the public /gallery page) ──── */}
+      <section className="bg-surface border border-border rounded-lg p-5 space-y-4">
+        <h3 className="text-base font-semibold text-text-main">כותרת העמוד</h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>כותרת {badgeHe}</label>
+            <input
+              type="text"
+              value={intro.title_he}
+              onChange={(e) => setIntroField('title_he', e.target.value)}
+              dir="rtl"
+              placeholder="הגלריה שלנו"
+              className={inputCls}
+            />
+          </div>
+          <div dir="ltr">
+            <label className={labelCls}>Title {badgeEn}</label>
+            <input
+              type="text"
+              value={intro.title_en}
+              onChange={(e) => setIntroField('title_en', e.target.value)}
+              dir="ltr"
+              placeholder="Our Gallery"
+              className={inputCls}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>תת-כותרת {badgeHe}</label>
+            <textarea
+              rows={3}
+              value={intro.subtitle_he}
+              onChange={(e) => setIntroField('subtitle_he', e.target.value)}
+              dir="rtl"
+              placeholder="תת-כותרת הגלריה בעברית"
+              className={`${textareaCls} min-h-[80px]`}
+            />
+          </div>
+          <div dir="ltr">
+            <label className={labelCls}>Subtitle {badgeEn}</label>
+            <textarea
+              rows={3}
+              value={intro.subtitle_en}
+              onChange={(e) => setIntroField('subtitle_en', e.target.value)}
+              dir="ltr"
+              placeholder="Gallery subtitle in English"
+              className={`${textareaCls} min-h-[80px]`}
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between pt-1">
+          <div>
+            {introSuccess && (
+              <p className="text-xs text-green-600 flex items-center gap-1">
+                <Check size={12} aria-hidden="true" /> נשמר בהצלחה
+              </p>
+            )}
+            {introError && <p className="text-xs text-red-600">{introError}</p>}
+          </div>
+          <button
+            type="button"
+            onClick={handleSaveIntro}
+            disabled={introSaving}
+            className="flex items-center gap-2 bg-primary text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors min-h-[44px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          >
+            {introSaving ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                שומר...
+              </>
+            ) : (
+              <>
+                <Check size={14} aria-hidden="true" />
+                שמור
+              </>
+            )}
+          </button>
+        </div>
+      </section>
 
       {/* ── Existing images ──────────────────────────────────────────────────── */}
       {images.length === 0 ? (

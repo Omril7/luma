@@ -2,6 +2,7 @@ import 'server-only'
 import { type Language, Prisma } from '@prisma/client'
 import { prisma } from '@/server/prisma'
 import { getEmailProvider } from '@/server/providers/email'
+import { getEmailSettings } from '@/server/services/adminEmailSettingsService'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -128,15 +129,23 @@ export async function sendNewsletter(input: SendNewsletterInput): Promise<{ sent
   const subscribers = await prisma.newsletterSubscriber.findMany({ where })
 
   const emailProvider = await getEmailProvider()
+  const settings = await getEmailSettings()
 
   let sent = 0
   for (const subscriber of subscribers) {
     const lang = subscriber.language
     const subject = lang === 'he' ? input.subject_he : input.subject_en
     const html = lang === 'he' ? input.body_he : input.body_en
+    const fromName = lang === 'he' ? settings.fromName_he : settings.fromName_en
 
     try {
-      await emailProvider.send({ to: subscriber.email, subject, html })
+      await emailProvider.send({
+        to: subscriber.email,
+        subject,
+        html,
+        from: { address: settings.fromAddress, name: fromName },
+        ...(settings.replyTo ? { replyTo: settings.replyTo } : {}),
+      })
       sent++
     } catch (err) {
       console.error(`[newsletter] failed to send to ${subscriber.email}:`, err)

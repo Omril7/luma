@@ -184,7 +184,8 @@
     "shopLinks": "קישורי חנות",
     "infoLinks": "מידע",
     "instagramLabel": "עקבו אחרינו באינסטגרם",
-    "facebookLabel": "עקבו אחרינו בפייסבוק"
+    "facebookLabel": "עקבו אחרינו בפייסבוק",
+    "newsletterHeading": "הצטרפו לניוזלטר שלנו"
   },
   "shop": {
     "title": "החנות",
@@ -237,7 +238,20 @@
     "infoHeading": "פרטי התקשרות",
     "whatsapp": "שוחחו איתנו בוואטסאפ",
     "hoursHeading": "שעות פעילות",
-    "addressHeading": "כתובת"
+    "addressHeading": "כתובת",
+    "newsletterOptIn": "הרשמה לניוזלטר"
+  },
+  "newsletter": {
+    "signup": {
+      "heading": "עדכונים על מוצרים חדשים והנחות מיוחדות",
+      "namePlaceholder": "שם (אופציונלי)",
+      "emailPlaceholder": "כתובת אימייל",
+      "submit": "הרשמה",
+      "success": "נרשמתם בהצלחה לניוזלטר!",
+      "error": "אירעה שגיאה בהרשמה, נסו שוב",
+      "alreadySubscribed": "כתובת האימייל כבר רשומה לניוזלטר",
+      "invalidEmail": "כתובת אימייל לא תקינה"
+    }
   },
   "faq": {
     "title": "שאלות נפוצות",

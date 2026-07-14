@@ -825,7 +825,7 @@ export function ProductFormPage({ mode, productId }: Props) {
 
           <div className="bg-surface border border-border rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[700px]">
+              <table className="w-full text-sm min-w-[800px]">
                 <thead>
                   <tr className="bg-bg border-b border-border text-xs font-semibold text-text-muted uppercase tracking-wide">
                     <th className="px-3 py-2.5 text-start whitespace-nowrap">
@@ -838,7 +838,7 @@ export function ProductFormPage({ mode, productId }: Props) {
                         <USAFlag className="inline-block w-[18px] h-[12px] rounded-[2px] ms-1.5 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
                       </span>
                     </th>
-                    {['רוחב', 'גובה', 'עומק', 'מחיר ₪', 'SKU', 'פעיל', ''].map((h) => (
+                    {['רוחב', 'גובה', 'עומק', 'קוטר', 'מחיר ₪', 'SKU', 'פעיל', ''].map((h) => (
                       <th key={h} className="px-3 py-2.5 text-start whitespace-nowrap">
                         {h}
                       </th>
@@ -867,7 +867,7 @@ export function ProductFormPage({ mode, productId }: Props) {
                           className={`${inputCls(false)} text-xs`}
                         />
                       </td>
-                      {(['width', 'height', 'depth'] as const).map((dim) => (
+                      {(['width', 'height', 'depth', 'diameter'] as const).map((dim) => (
                         <td key={dim} className="px-3 py-2">
                           <input
                             type="number"

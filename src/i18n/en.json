@@ -184,7 +184,8 @@
     "shopLinks": "Shop",
     "infoLinks": "Info",
     "instagramLabel": "Follow us on Instagram",
-    "facebookLabel": "Follow us on Facebook"
+    "facebookLabel": "Follow us on Facebook",
+    "newsletterHeading": "Sign up for our newsletter"
   },
   "shop": {
     "title": "Shop",
@@ -237,7 +238,20 @@
     "infoHeading": "Contact Details",
     "whatsapp": "Chat with us on WhatsApp",
     "hoursHeading": "Opening Hours",
-    "addressHeading": "Address"
+    "addressHeading": "Address",
+    "newsletterOptIn": "Sign up for our newsletter"
+  },
+  "newsletter": {
+    "signup": {
+      "heading": "Get updates on new products and special offers",
+      "namePlaceholder": "Name (optional)",
+      "emailPlaceholder": "Email address",
+      "submit": "Sign up",
+      "success": "You've successfully subscribed to our newsletter!",
+      "error": "Something went wrong, please try again",
+      "alreadySubscribed": "This email is already subscribed to the newsletter",
+      "invalidEmail": "Invalid email address"
+    }
   },
   "faq": {
     "title": "Frequently Asked Questions",

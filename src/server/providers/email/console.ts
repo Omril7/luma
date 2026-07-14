@@ -7,12 +7,16 @@ export class ConsoleEmailProvider implements EmailProvider {
     console.log('[ConsoleEmailProvider] send:', {
       to: message.to,
       subject: message.subject,
+      from: message.from,
+      replyTo: message.replyTo,
     })
   }
 
   async sendNewsletter(message: EmailMessage, recipients: string[]): Promise<void> {
     console.log('[ConsoleEmailProvider] newsletter to', recipients.length, 'recipients:', {
       subject: message.subject,
+      from: message.from,
+      replyTo: message.replyTo,
     })
   }
 }

@@ -28,9 +28,17 @@ interface FormState {
   phone: string
   subject: string
   message: string
+  subscribeToNewsletter: boolean
 }
 
-const EMPTY_FORM: FormState = { name: '', email: '', phone: '', subject: '', message: '' }
+const EMPTY_FORM: FormState = {
+  name: '',
+  email: '',
+  phone: '',
+  subject: '',
+  message: '',
+  subscribeToNewsletter: false,
+}
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -84,6 +92,7 @@ export function ContactClient({ locale, info }: ContactClientProps) {
         subject: form.subject.trim(),
         message: form.message.trim(),
         language: locale,
+        subscribeToNewsletter: form.subscribeToNewsletter,
       })
       setSubmitted(true)
       setForm(EMPTY_FORM)
@@ -246,6 +255,18 @@ export function ContactClient({ locale, info }: ContactClientProps) {
                 </p>
               )}
             </div>
+
+            <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm text-text-main">
+              <input
+                type="checkbox"
+                checked={form.subscribeToNewsletter}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, subscribeToNewsletter: e.target.checked }))
+                }
+                className="h-4 w-4 shrink-0 rounded accent-primary cursor-pointer"
+              />
+              {t('newsletterOptIn')}
+            </label>
 
             <button
               type="submit"

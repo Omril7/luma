@@ -19,6 +19,8 @@ export const POST = withAdmin(async (req: NextRequest, admin: AdminPayload, _ctx
       <p>If you received this, your email configuration is working correctly.</p>
       <p>Sent by: ${admin.email}</p>
     `,
+    from: { address: settings.fromAddress, name: settings.fromName_en },
+    ...(settings.replyTo ? { replyTo: settings.replyTo } : {}),
   })
 
   return NextResponse.json({ success: true, sentTo: body.to })

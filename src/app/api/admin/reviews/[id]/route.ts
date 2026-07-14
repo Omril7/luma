@@ -16,7 +16,11 @@ export const PATCH = withAdmin<Ctx>(async (req: NextRequest, _admin: AdminPayloa
 
   const review = await prisma.review.update({
     where: { id },
-    data: { isApproved: body.isApproved },
+    data: {
+      ...(body.isApproved !== undefined && { isApproved: body.isApproved }),
+      ...(body.comment_he !== undefined && { comment_he: body.comment_he }),
+      ...(body.comment_en !== undefined && { comment_en: body.comment_en }),
+    },
     include: { product: { select: { id: true, name_he: true, name_en: true, slug: true } } },
   })
 

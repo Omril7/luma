@@ -523,13 +523,23 @@ export function ProductDetail({
                             aria-label={colorName}
                             aria-pressed={isSelected}
                             title={colorName}
-                            className={`w-9 h-9 rounded-full cursor-pointer transition-all duration-150 ring-offset-2 ${
+                            className={`w-9 h-9 rounded-full cursor-pointer overflow-hidden transition-all duration-150 ring-offset-2 ${
                               isSelected
                                 ? 'ring-2 ring-primary scale-110'
                                 : 'ring-1 ring-border hover:ring-primary hover:scale-105'
                             }`}
-                            style={{ backgroundColor: color.hexCode }}
-                          />
+                            style={color.imageUrl ? undefined : { backgroundColor: color.hexCode }}
+                          >
+                            {color.imageUrl && (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={color.imageUrl}
+                                alt=""
+                                aria-hidden="true"
+                                className="h-full w-full object-cover"
+                              />
+                            )}
+                          </button>
                         )
                       })}
                     </div>

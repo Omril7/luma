@@ -4,7 +4,17 @@ import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Plus, Search, Pencil, Trash2, Eye, ChevronRight, ChevronLeft } from 'lucide-react'
+import {
+  Plus,
+  Search,
+  Pencil,
+  Trash2,
+  Eye,
+  ChevronRight,
+  ChevronLeft,
+  Tag,
+  Palette,
+} from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import type { ProductDTO, CategoryDTO } from '@/shared/types'
@@ -102,13 +112,29 @@ export function ProductsListPage() {
           <h2 className="text-xl font-bold text-text-main">מוצרים</h2>
           <p className="text-sm text-text-muted mt-0.5">{total} מוצרים סה&quot;כ</p>
         </div>
-        <Link
-          href="/admin/products/new"
-          className="flex items-center gap-2 bg-primary text-white text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-primary/90 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-        >
-          <Plus size={16} aria-hidden="true" />
-          <span>מוצר חדש</span>
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/admin/products/categories"
+            className="flex items-center gap-2 bg-surface border border-border text-text-main text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-secondary transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          >
+            <Tag size={16} aria-hidden="true" />
+            <span>קטגוריות</span>
+          </Link>
+          <Link
+            href="/admin/products/colors"
+            className="flex items-center gap-2 bg-surface border border-border text-text-main text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-secondary transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          >
+            <Palette size={16} aria-hidden="true" />
+            <span>צבעים</span>
+          </Link>
+          <Link
+            href="/admin/products/new"
+            className="flex items-center gap-2 bg-primary text-white text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-primary/90 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          >
+            <Plus size={16} aria-hidden="true" />
+            <span>מוצר חדש</span>
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}

@@ -4,41 +4,12 @@ import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'motion/react'
-import {
-  LayoutDashboard,
-  Package,
-  Tag,
-  FileText,
-  Mail,
-  Send,
-  ImageIcon,
-  Settings,
-  LogOut,
-  ExternalLink,
-  ShoppingBag,
-  ChevronLeft,
-  ChevronRight,
-  Menu,
-  X,
-  PackageOpen,
-  Star,
-} from 'lucide-react'
+import { LogOut, ExternalLink, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react'
 import { useAdminStore } from '@/stores/adminStore'
-import { InstagramIcon } from '@/components/icons/InstagramIcon'
+import { ADMIN_NAV_ITEMS } from './adminNav'
 
-const NAV_ITEMS = [
-  { href: '/admin', icon: LayoutDashboard, label: 'לוח בקרה', exact: true },
-  { href: '/admin/products', icon: Package, label: 'מוצרים', exact: false },
-  { href: '/admin/coupons', icon: Tag, label: 'קופונים', exact: false },
-  { href: '/admin/content', icon: FileText, label: 'תוכן האתר', exact: false },
-  { href: '/admin/email-services', icon: Mail, label: 'שירותי דואר', exact: false },
-  { href: '/admin/newsletter', icon: Send, label: 'ניוזלטר', exact: false },
-  { href: '/admin/gallery', icon: ImageIcon, label: 'גלריה', exact: false },
-  { href: '/admin/instagram', icon: InstagramIcon, label: 'אינסטגרם', exact: false },
-  { href: '/admin/bundles', icon: PackageOpen, label: 'חבילות', exact: false },
-  { href: '/admin/reviews', icon: Star, label: 'ביקורות', exact: false },
-  { href: '/admin/settings', icon: Settings, label: 'הגדרות', exact: false },
-]
+const SIDEBAR_ITEMS = ADMIN_NAV_ITEMS.filter((item) => !item.external)
+const ORDERS_LINK = ADMIN_NAV_ITEMS.find((item) => item.external)!
 
 const COLLAPSED_KEY = 'luma-admin-collapsed'
 
@@ -102,7 +73,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     router.replace('/admin/login')
   }
 
-  const currentNav = NAV_ITEMS.find((n) =>
+  const currentNav = SIDEBAR_ITEMS.find((n) =>
     n.exact ? pathname === n.href : pathname === n.href || pathname.startsWith(n.href + '/')
   )
 
@@ -189,7 +160,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-3 px-2" aria-label="ניווט ראשי">
           <ul className="space-y-0.5" role="list">
-            {NAV_ITEMS.map((item) => {
+            {SIDEBAR_ITEMS.map((item) => {
               const isActive = item.exact
                 ? pathname === item.href
                 : pathname === item.href || pathname.startsWith(item.href + '/')
@@ -209,7 +180,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                         : 'text-text-muted hover:bg-secondary hover:text-text-main',
                     ].join(' ')}
                   >
-                    <Icon size={18} aria-hidden="true" className="shrink-0" />
+                    <Icon size={18} aria-hidden={true} className="shrink-0" />
                     {!collapsed && (
                       <>
                         <span className="flex-1 truncate">{item.label}</span>
@@ -254,10 +225,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </Link>
 
           <a
-            href="https://luma-manager.vercel.app/orders"
+            href={ORDERS_LINK.href}
             target="_blank"
             rel="noopener noreferrer"
-            title={collapsed ? 'ניהול הזמנות' : undefined}
+            title={collapsed ? ORDERS_LINK.label : undefined}
             className={[
               'flex items-center w-full px-3 py-2 rounded-lg text-sm',
               'text-text-muted hover:bg-secondary hover:text-text-main',
@@ -265,8 +236,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               collapsed ? 'justify-center' : 'gap-3',
             ].join(' ')}
           >
-            <ShoppingBag size={16} aria-hidden="true" className="shrink-0" />
-            {!collapsed && <span>ניהול הזמנות</span>}
+            <ORDERS_LINK.icon size={16} aria-hidden={true} className="shrink-0" />
+            {!collapsed && <span>{ORDERS_LINK.label}</span>}
           </a>
 
           <button

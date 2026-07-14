@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Check, X, Trash2, ChevronRight, ChevronLeft, Star } from 'lucide-react'
+import { Check, X, Trash2, ChevronRight, ChevronLeft, Star, Pencil } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import type { ReviewDTO } from '@/shared/types'
@@ -40,6 +40,10 @@ export function ReviewsListPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+
+  const [editingReview, setEditingReview] = useState<ReviewDTO | null>(null)
+  const [editDraft, setEditDraft] = useState({ comment_he: '', comment_en: '' })
+  const [savingComment, setSavingComment] = useState(false)
 
   const fetchReviews = useCallback(async () => {
     if (!token) return
@@ -85,6 +89,42 @@ export function ReviewsListPage() {
       alert(e instanceof Error ? e.message : 'שגיאה בעדכון הביקורת')
     } finally {
       setUpdatingId(null)
+    }
+  }
+
+  function startEditComment(review: ReviewDTO) {
+    setEditingReview(review)
+    setEditDraft({ comment_he: review.comment_he ?? '', comment_en: review.comment_en ?? '' })
+  }
+
+  async function saveComment() {
+    if (!token || !editingReview) return
+    setSavingComment(true)
+    try {
+      await api.patch(
+        `/api/admin/reviews/${editingReview.id}`,
+        {
+          comment_he: editDraft.comment_he || undefined,
+          comment_en: editDraft.comment_en || undefined,
+        },
+        token
+      )
+      setReviews((prev) =>
+        prev.map((r) =>
+          r.id === editingReview.id
+            ? {
+                ...r,
+                comment_he: editDraft.comment_he || undefined,
+                comment_en: editDraft.comment_en || undefined,
+              }
+            : r
+        )
+      )
+      setEditingReview(null)
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'שגיאה בשמירת התגובה')
+    } finally {
+      setSavingComment(false)
     }
   }
 
@@ -253,6 +293,15 @@ export function ReviewsListPage() {
                         )}
 
                         <button
+                          onClick={() => startEditComment(review)}
+                          title="עריכת תגובה"
+                          aria-label="עריכת תגובה"
+                          className="p-2 rounded-lg text-text-muted hover:bg-secondary hover:text-text-main transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
+                        >
+                          <Pencil size={15} aria-hidden="true" />
+                        </button>
+
+                        <button
                           onClick={() => setDeleteId(review.id)}
                           title="מחיקה"
                           aria-label="מחיקה"
@@ -349,6 +398,70 @@ export function ReviewsListPage() {
                 className="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-60 cursor-pointer"
               >
                 {deleting ? 'מוחק...' : 'מחק ביקורת'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit comment dialog */}
+      {editingReview && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-comment-dialog-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setEditingReview(null)
+          }}
+        >
+          <div className="bg-surface border border-border rounded-xl shadow-xl p-6 max-w-lg w-full">
+            <h3
+              id="edit-comment-dialog-title"
+              className="text-base font-semibold text-text-main mb-4"
+            >
+              עריכת תגובת ביקורת — {editingReview.customerName}
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-text-muted mb-1">
+                  תגובה (עברית)
+                </label>
+                <textarea
+                  rows={3}
+                  value={editDraft.comment_he}
+                  onChange={(e) => setEditDraft((d) => ({ ...d, comment_he: e.target.value }))}
+                  dir="rtl"
+                  className="w-full px-3 py-2 text-sm bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
+                />
+              </div>
+              <div dir="ltr">
+                <label className="block text-xs font-medium text-text-muted mb-1">
+                  Comment (English)
+                </label>
+                <textarea
+                  rows={3}
+                  value={editDraft.comment_en}
+                  onChange={(e) => setEditDraft((d) => ({ ...d, comment_en: e.target.value }))}
+                  dir="ltr"
+                  className="w-full px-3 py-2 text-sm bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end mt-6">
+              <button
+                onClick={() => setEditingReview(null)}
+                disabled={savingComment}
+                className="px-4 py-2 text-sm rounded-lg border border-border text-text-muted hover:bg-bg transition-colors cursor-pointer"
+              >
+                ביטול
+              </button>
+              <button
+                onClick={saveComment}
+                disabled={savingComment}
+                className="px-4 py-2 text-sm rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-60 cursor-pointer"
+              >
+                {savingComment ? 'שומר...' : 'שמירה'}
               </button>
             </div>
           </div>

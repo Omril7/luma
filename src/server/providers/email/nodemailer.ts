@@ -17,11 +17,12 @@ export class NodemailerEmailProvider implements EmailProvider {
   async send(message: EmailMessage): Promise<void> {
     const transporter = await this.createTransport()
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
+      from: formatFrom(message.from),
       to: message.to,
       subject: message.subject,
       html: message.html,
       text: message.text,
+      ...(message.replyTo ? { replyTo: message.replyTo } : {}),
     })
   }
 
@@ -30,13 +31,19 @@ export class NodemailerEmailProvider implements EmailProvider {
     await Promise.all(
       recipients.map((to) =>
         transporter.sendMail({
-          from: process.env.EMAIL_FROM,
+          from: formatFrom(message.from),
           to,
           subject: message.subject,
           html: message.html,
           text: message.text,
+          ...(message.replyTo ? { replyTo: message.replyTo } : {}),
         })
       )
     )
   }
+}
+
+function formatFrom(from: EmailMessage['from']): string | undefined {
+  if (!from) return process.env.EMAIL_FROM
+  return from.name ? `"${from.name}" <${from.address}>` : from.address
 }
