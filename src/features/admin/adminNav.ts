@@ -23,6 +23,8 @@ export interface AdminNavItem {
   exact?: boolean
   /** Opens in a new tab; not a route inside this app (e.g. the luma-manager orders link). */
   external?: boolean
+  /** Not available yet — rendered disabled with a "בקרוב" badge instead of a link. */
+  comingSoon?: boolean
 }
 
 // Single source of truth for both the admin sidebar (AdminShell) and the dashboard
@@ -66,5 +68,6 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     label: 'ניהול הזמנות',
     desc: 'צפייה וטיפול בהזמנות הלקוחות',
     external: true,
+    comingSoon: true,
   },
 ]

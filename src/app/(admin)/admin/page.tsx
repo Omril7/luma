@@ -23,9 +23,27 @@ export default function AdminDashboardPage() {
         role="list"
         aria-label="קישורים מהירים"
       >
-        {QUICK_LINKS.map(({ href, icon: Icon, label: title, desc, external }) => (
+        {QUICK_LINKS.map(({ href, icon: Icon, label: title, desc, external, comingSoon }) => (
           <li key={href}>
-            {external ? (
+            {comingSoon ? (
+              <div
+                aria-disabled="true"
+                className="flex flex-col gap-3 bg-surface border border-dashed border-border rounded-lg p-5 cursor-not-allowed select-none"
+              >
+                <div className="flex items-start justify-between">
+                  <span className="flex items-center justify-center w-10 h-10 rounded-lg bg-secondary text-text-muted">
+                    <Icon size={20} aria-hidden="true" />
+                  </span>
+                  <span className="text-[10px] font-semibold text-text-muted bg-secondary px-2 py-0.5 rounded-full border border-border mt-1">
+                    בקרוב
+                  </span>
+                </div>
+                <div>
+                  <p className="font-semibold text-text-muted text-sm">{title}</p>
+                  <p className="text-xs text-text-muted/70 mt-0.5 leading-relaxed">{desc}</p>
+                </div>
+              </div>
+            ) : external ? (
               <a
                 href={href}
                 target="_blank"

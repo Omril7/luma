@@ -233,21 +233,44 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             {!collapsed && <span>לאתר</span>}
           </Link>
 
-          <a
-            href={ORDERS_LINK.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={collapsed ? ORDERS_LINK.label : undefined}
-            className={[
-              'flex items-center w-full px-3 py-2 rounded-lg text-sm',
-              'text-text-muted hover:bg-secondary hover:text-text-main',
-              'transition-colors duration-150 min-h-[44px]',
-              collapsed ? 'justify-center' : 'gap-3',
-            ].join(' ')}
-          >
-            <ORDERS_LINK.icon size={16} aria-hidden={true} className="shrink-0" />
-            {!collapsed && <span>{ORDERS_LINK.label}</span>}
-          </a>
+          {ORDERS_LINK.comingSoon ? (
+            <div
+              aria-disabled="true"
+              title={collapsed ? `${ORDERS_LINK.label} — בקרוב` : 'בקרוב'}
+              className={[
+                'flex items-center w-full px-3 py-2 rounded-lg text-sm',
+                'text-text-muted/60 cursor-not-allowed select-none',
+                'min-h-[44px]',
+                collapsed ? 'justify-center' : 'gap-3',
+              ].join(' ')}
+            >
+              <ORDERS_LINK.icon size={16} aria-hidden={true} className="shrink-0" />
+              {!collapsed && (
+                <>
+                  <span className="flex-1 truncate">{ORDERS_LINK.label}</span>
+                  <span className="text-[10px] font-semibold text-text-muted bg-secondary px-2 py-0.5 rounded-full border border-border shrink-0">
+                    בקרוב
+                  </span>
+                </>
+              )}
+            </div>
+          ) : (
+            <a
+              href={ORDERS_LINK.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={collapsed ? ORDERS_LINK.label : undefined}
+              className={[
+                'flex items-center w-full px-3 py-2 rounded-lg text-sm',
+                'text-text-muted hover:bg-secondary hover:text-text-main',
+                'transition-colors duration-150 min-h-[44px]',
+                collapsed ? 'justify-center' : 'gap-3',
+              ].join(' ')}
+            >
+              <ORDERS_LINK.icon size={16} aria-hidden={true} className="shrink-0" />
+              {!collapsed && <span>{ORDERS_LINK.label}</span>}
+            </a>
+          )}
 
           <button
             onClick={handleLogout}
