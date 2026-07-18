@@ -1,14 +1,14 @@
 import {
   LayoutDashboard,
   Package,
-  Tag,
+  // Tag,
   FileText,
-  Mail,
+  // Mail,
   Send,
   ImageIcon,
   Settings,
   ShoppingBag,
-  PackageOpen,
+  // PackageOpen,
   Star,
   type LucideIcon,
 } from 'lucide-react'

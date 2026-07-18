@@ -154,11 +154,13 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 
 ### M1.16b Wishlist
 
-- [ ] `wishlistStore` (Zustand, persisted to localStorage); SSR-safe hydration
-- [ ] Heart-icon toggle on product cards + Product Detail page
+- [x] `wishlistStore` (Zustand, persisted to localStorage); SSR-safe hydration
+- [x] Heart-icon toggle on product cards + Product Detail page
 - [ ] `/wishlist` page: saved products list with per-item add-to-cart
 - [ ] Shareable via URL (`?wishlist=<ids>`)
-- **Acceptance:** wishlist survives page refresh; shared URL restores the list.
+- **Acceptance:** wishlist survives page refresh; shared URL restores the list. _(Store + toggle
+  landed as part of M1.15/M1.17; the dedicated `/wishlist` page and shareable-URL restore are
+  still outstanding.)_
 
 ### M1.16c Product comparison
 
@@ -217,8 +219,13 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 
 ### M1.22 SEO + performance
 
-- [ ] Next Metadata API per-page meta (bilingual, correct lang)
-- [ ] Server Components + `next/image` lazy-loading; bundle check
+- [x] Next Metadata API per-page meta (bilingual, correct lang) — every storefront route (home,
+      shop, product, cart, checkout, confirmation, about, gallery, contact, faq) already ships
+      `generateMetadata`/`metadata`
+- [ ] Server Components + `next/image` lazy-loading; bundle check — not yet audited (gallery
+      intentionally uses raw `<img>` for masonry sizing, see M1.21 notes; product images already
+      use `next/image`)
+- [ ] Run Lighthouse and address findings
 - **Acceptance:** Lighthouse pass on Home + Product (perf/a11y/SEO).
 
 ---
@@ -241,13 +248,18 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 
 - [x] CRUD + activate/deactivate; all coupon type fields (singleUsePerCustomer, firstOrderOnly, autoApply, validUntil, maxUses, …)
 - [x] UI makes coupon type combinations clear (e.g. "Deadline code" preset)
-- **Acceptance:** every coupon type created here works correctly at cart.
+- **Acceptance:** every coupon type created here works correctly at cart. _(Route/page still exist
+  but the sidebar nav entry is currently commented out in `src/features/admin/adminNav.ts` while
+  `FEATURES.shop=false` — coupons aren't actionable until checkout is re-enabled; re-link it
+  alongside M1.28e's flag flip.)_
 
 ### M1.26 Site Content + Email Services ✅
 
-- [x] Site Content page: edit all storefront static sections (home hero, About, FAQ, gallery intro, contact) — bilingual
+- [x] Site Content page: edit all storefront static sections (About, FAQ, gallery intro, contact) — bilingual _(home hero/story tabs were removed as dead inputs, see M1.28d)_
 - [x] Email Services page: view/edit from address, display name; send test email; preview templates
-- **Acceptance:** site content changes go live immediately; test email dispatches via ConsoleEmailProvider in dev.
+- **Acceptance:** site content changes go live immediately; test email dispatches via the configured `EmailProvider` (Nodemailer in production, console stub in dev — see M1.28d). _(Nav entry also
+  currently commented out in `adminNav.ts`, same as Coupons — the route still works if visited
+  directly.)_
 
 ### M1.27 Newsletter ✅
 
@@ -260,7 +272,8 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 
 - [x] Gallery management (upload/reorder/delete)
 - [x] Settings page (business info, shipping costs, WhatsApp number)
-- [x] Bundles + Reviews page shells (routes + placeholder)
+- [x] Bundles + Reviews page shells (routes + placeholder) _(Reviews was later upgraded to a real
+      moderation queue — see Phase 2 "Reviews" below; Bundles is still the placeholder shell)_
 - **Acceptance:** nav complete; settings drive storefront (e.g. shipping cost, WhatsApp number).
 
 ### M1.28b Distance-based delivery pricing ✅
@@ -276,6 +289,46 @@ Replace flat-rate national shipping with road-distance-based fee calculated live
 - [x] **i18n** — add `he.json`/`en.json` keys for new checkout + admin strings
 - [x] **Env var** — `OPENROUTESERVICE_API_KEY` documented in `.claude/docs/10-devops.md`
 - **Acceptance:** entering a delivery address in checkout shows a live fee (₪ + km); admin can configure all rate/limit params; order total reflects the distance fee; geocoding error shows an inline "address not found" message and blocks checkout.
+
+### M1.28c Category taxonomy: enum → admin-managed table ✅
+
+- [x] `Category` Prisma model (replacing the fixed enum) + staged migration + backfill; `Product.categoryId` FK
+- [x] `src/shared/` (`constants.ts`, `types.ts`, `schemas/`) updated to the relational shape
+- [x] Public `GET /api/categories` + `getProducts` filter reworked to the table
+- [x] Admin CRUD: full `/admin/products/categories` management view (create/edit/reorder/deactivate), replacing the create-only inline picker
+- [x] Storefront (`ShopClient` filter pills, `ProductDetail` category badge) reads bilingual names from the relation
+- **Acceptance:** categories can be added/renamed/reordered/deactivated without a deploy; storefront filter + product badge reflect changes immediately; deactivating a category doesn't break products still assigned to it. _(`.claude/docs/13-category-taxonomy.md`.)_
+
+### M1.28d Admin ↔ site-data sync fixes ✅
+
+Audit-driven punch list closing gaps between what the admin panel lets you edit and what the storefront/emails actually read — see `.claude/docs/admin-site-data-sync-plan.md`.
+
+- [x] Removed dead `home.hero`/`home.story` SiteContent admin tabs (never read by the storefront, which uses static i18n)
+- [x] Wired `EmailSettings` (`fromAddress`/`fromName_he/en`/`replyTo`) into every outgoing email — newsletter sends, test-send, and the Nodemailer provider all use the configured sender instead of a hardcoded `EMAIL_FROM`
+- [x] Public newsletter signup: `NewsletterSignupForm` in the footer + an opt-in checkbox on the contact form (server-side, best-effort, doesn't block contact submission)
+- [x] `ColorOption` admin: full CRUD (`/admin/products/colors`) + `imageUrl` texture thumbnail wired into the storefront swatch (falls back to `hexCode`)
+- [x] `ProductVariant.diameter` admin input added to the variant row editor (round-product custom pricing)
+- [x] Review bilingual fallback: storefront renders whichever of `comment_he`/`comment_en` exists instead of dropping a review with a missing translation
+- [x] Deleted the duplicate unlinked `/admin/site-content` route (`/admin/content` is canonical)
+- [ ] Deferred (documented, not urgent while `FEATURES.shop=false`): coupon `autoApply` has no reader; `singleUsePerCustomer`/`firstOrderOnly` not enforced in `validateCoupon` — revisit alongside shop re-enablement
+- **Acceptance:** every admin-editable field that's supposed to affect the storefront/emails does; sending a test email shows the configured From/Reply-To; footer + contact-form signup both create subscriber rows.
+
+### M1.28e Showcase mode (browse-only catalog while purchasing is disabled) ✅
+
+- [x] `/shop` and `/product/[slug]` unconditionally reachable (no longer gated by `FEATURES.shop`); `/cart`, `/checkout`, `/order-confirmation` stay redirected while `FEATURES.shop=false`
+- [x] `getStartingPrice` helper in `src/shared/pricing.ts` (single source of truth for "from ₪X")
+- [x] `ProductDetail` shows a reduced showcase box (gallery, name, description, "starting from" price, wishlist, share, related products, reviews) with no buy box/variant/custom-dimension/quantity/add-to-cart controls when purchasing is disabled
+- [x] Header/Footer catalog links unconditional; cart icon stays gated
+- **Acceptance:** with `FEATURES.shop=false`, visitors can browse the full catalog and product pages with a static price and no purchase affordances; flipping the flag back to `true` restores the full buy flow with zero regressions. _(`.claude/docs/12-showcase-mode.md`.)_
+
+### M1.28f Gallery image titles/subtitles
+
+- [ ] Extend the gallery item shape (SiteContent `gallery` blob, `adminGalleryService.ts`) with bilingual `title_he`/`title_en` + `subtitle_he`/`subtitle_en` per image, in addition to (or replacing) the current `altText_he`/`altText_en`
+- [ ] Admin `GalleryPage.tsx`: add title + subtitle fields (bilingual) to both the "add new image" form and each existing image's edit card, alongside the current alt-text inputs
+- [ ] Storefront `GalleryClient.tsx`: render the locale-appropriate title/subtitle as a caption overlay on each masonry tile (and/or under the image in the lightbox) when set; fall back gracefully when empty
+- [ ] Decide alt-text handling: either keep `altText_*` as a separate a11y-only field, or derive the `<img alt>` from `title_*` when no dedicated alt text is set (avoid duplicate bilingual inputs if titles already describe the image)
+- [ ] `GalleryImageDTO` (shared between admin service, public `listGalleryImages`, and `GalleryClient`) updated accordingly; no new Prisma model needed (still a JSON blob under `SiteContent` key `gallery`)
+- **Acceptance:** every gallery image can have a bilingual title + subtitle set in the admin; the public `/gallery` page displays them as a caption on the image (grid and/or lightbox); existing images without a title still render without a broken/empty caption.
 
 ---
 
@@ -311,10 +364,11 @@ Replace flat-rate national shipping with road-distance-based fee calculated live
 - [ ] **Payments:** integrate Meshulam / Tranzila / PayPlus behind the existing `PaymentProvider`
 - [ ] **Bundles:** admin bundle pricing UI + storefront display
 - [x] **Reviews:** public review form (rating + text, per product) so any visitor can leave a review; admin moderation queue (approve/reject) before publishing; storefront carousel via **embla-carousel**
-- [ ] **Instagram feed** integration on Home
-- [ ] **Newsletter system** (Mailchimp/SendGrid) wired to `EmailProvider.sendNewsletter`
+- [x] **Instagram feed** integration on Home — shipped as admin-curated images (`/admin/instagram`, mirrors the Gallery pattern) rather than the live Graph API, per the M1.21.b decision
+- [ ] **Newsletter system** (Mailchimp/SendGrid) wired to `EmailProvider.sendNewsletter` — basic
+      in-house sending (Nodemailer SMTP, correct From/Reply-To) already works end-to-end via M1.27 + M1.28d; this item is specifically about swapping in a dedicated ESP for deliverability/analytics, not a functional gap
 - [ ] **Google Analytics** integration
-- [ ] **Emails:** wire `EmailProvider` (SendGrid/SES) — order confirmation + new order alert on payment success; bilingual templates
+- [ ] **Emails:** wire `EmailProvider` (SendGrid/SES) — order confirmation + new order alert on payment success; bilingual templates _(sender config is correct as of M1.28d; no transactional order-confirmation/alert emails are actually sent yet — that part is still open)_
 - [ ] **Auth hardening:** refresh tokens + rotation, httpOnly-cookie tokens, password reset, login lockout, optional 2FA/RBAC, or delegate to Supabase Auth
 - **Acceptance:** each ships behind its interface/flag without regressing phase-1 flows.
 
