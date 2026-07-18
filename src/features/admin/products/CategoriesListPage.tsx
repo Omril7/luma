@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Plus, Pencil, Power, Check, X as XIcon } from 'lucide-react'
+import { Reorder, useDragControls } from 'motion/react'
+import { ArrowRight, Plus, Pencil, Power, Check, X as XIcon, GripVertical } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
@@ -72,6 +73,43 @@ export function CategoriesListPage() {
   useEffect(() => {
     fetchCategories()
   }, [fetchCategories])
+
+  // Latest list for drag-end persistence (onDragEnd fires outside the React render cycle)
+  const categoriesRef = useRef<AdminCategoryDTO[]>([])
+  useEffect(() => {
+    categoriesRef.current = categories
+  }, [categories])
+
+  const [orderSaving, setOrderSaving] = useState(false)
+
+  function handleDragEnd() {
+    // Defer one tick so the final onReorder state update has committed
+    setTimeout(persistOrder, 0)
+  }
+
+  async function persistOrder() {
+    if (!token) return
+    const list = categoriesRef.current
+    const changed = list
+      .map((category, index) => ({ category, index }))
+      .filter(({ category, index }) => category.sortOrder !== index)
+    if (changed.length === 0) return
+
+    setOrderSaving(true)
+    setCategories(list.map((category, index) => ({ ...category, sortOrder: index })))
+    try {
+      await Promise.all(
+        changed.map(({ category, index }) =>
+          api.patch(`/api/admin/categories/${category.id}`, { sortOrder: index }, token)
+        )
+      )
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'שגיאה בשמירת הסדר')
+      fetchCategories()
+    } finally {
+      setOrderSaving(false)
+    }
+  }
 
   function startEdit(category: AdminCategoryDTO) {
     setEditingId(category.id)
@@ -175,7 +213,10 @@ export function CategoriesListPage() {
           </Link>
           <div>
             <h2 className="text-xl font-bold text-text-main">קטגוריות</h2>
-            <p className="text-sm text-text-muted mt-0.5">{categories.length} קטגוריות סה&quot;כ</p>
+            <p className="text-sm text-text-muted mt-0.5" aria-live="polite">
+              {categories.length} קטגוריות סה&quot;כ
+              {orderSaving && <span className="text-primary"> · שומר סדר...</span>}
+            </p>
           </div>
         </div>
         <button
@@ -263,6 +304,9 @@ export function CategoriesListPage() {
           <table className="w-full text-sm" role="grid" aria-label="רשימת קטגוריות">
             <thead>
               <tr className="border-b border-border bg-bg text-text-muted text-xs font-semibold uppercase tracking-wide">
+                <th className="px-2 py-3 w-12">
+                  <span className="sr-only">שינוי סדר</span>
+                </th>
                 <th className="px-4 py-3 text-start">שם (עברית)</th>
                 <th className="px-4 py-3 text-start">Name (English)</th>
                 <th className="px-4 py-3 text-start w-28">סדר מיון</th>
@@ -270,140 +314,205 @@ export function CategoriesListPage() {
                 <th className="px-4 py-3 text-end w-28">פעולות</th>
               </tr>
             </thead>
-            <tbody>
-              {loading ? (
-                Array.from({ length: 4 }).map((_, i) => (
+            {loading ? (
+              <tbody>
+                {Array.from({ length: 4 }).map((_, i) => (
                   <tr key={i} className="border-b border-border last:border-0">
-                    {Array.from({ length: 5 }).map((_, j) => (
+                    {Array.from({ length: 6 }).map((_, j) => (
                       <td key={j} className="px-4 py-3">
                         <div
                           className="h-4 bg-secondary rounded animate-pulse"
-                          style={{ width: j === 0 ? 100 : 60 }}
+                          style={{ width: j === 0 ? 16 : j === 1 ? 100 : 60 }}
                         />
                       </td>
                     ))}
                   </tr>
-                ))
-              ) : categories.length === 0 ? (
+                ))}
+              </tbody>
+            ) : categories.length === 0 ? (
+              <tbody>
                 <tr>
-                  <td colSpan={5} className="px-4 py-12 text-center text-text-muted">
+                  <td colSpan={6} className="px-4 py-12 text-center text-text-muted">
                     אין קטגוריות עדיין
                   </td>
                 </tr>
-              ) : (
-                categories.map((category) => {
-                  const isEditing = editingId === category.id
-                  return (
-                    <tr
-                      key={category.id}
-                      className="border-b border-border last:border-0 hover:bg-bg/50 transition-colors"
-                    >
-                      <td className="px-4 py-2.5">
-                        {isEditing ? (
-                          <input
-                            type="text"
-                            value={editDraft.name_he}
-                            onChange={(e) =>
-                              setEditDraft((d) => ({ ...d, name_he: e.target.value }))
-                            }
-                            dir="rtl"
-                            className={inputCls}
-                          />
-                        ) : (
-                          <span className="font-medium text-text-main">{category.name_he}</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        {isEditing ? (
-                          <input
-                            type="text"
-                            value={editDraft.name_en}
-                            onChange={(e) =>
-                              setEditDraft((d) => ({ ...d, name_en: e.target.value }))
-                            }
-                            dir="ltr"
-                            className={inputCls}
-                          />
-                        ) : (
-                          <span className="text-text-muted" dir="ltr">
-                            {category.name_en}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        {isEditing ? (
-                          <input
-                            type="number"
-                            min="0"
-                            value={editDraft.sortOrder}
-                            onChange={(e) =>
-                              setEditDraft((d) => ({ ...d, sortOrder: e.target.value }))
-                            }
-                            dir="ltr"
-                            className={`${inputCls} w-20`}
-                          />
-                        ) : (
-                          <span className="tabular-nums text-text-muted">{category.sortOrder}</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-2.5 text-center">
-                        <button
-                          onClick={() => handleToggle(category)}
-                          disabled={togglingId === category.id}
-                          title={category.isActive ? 'השבת קטגוריה' : 'הפעל קטגוריה'}
-                          aria-label={category.isActive ? 'השבת קטגוריה' : 'הפעל קטגוריה'}
-                          className={`p-2 rounded-lg transition-colors min-w-[36px] min-h-[36px] inline-flex items-center justify-center cursor-pointer disabled:opacity-40 ${
-                            category.isActive
-                              ? 'text-green-600 hover:bg-green-50'
-                              : 'text-text-muted hover:bg-secondary hover:text-text-main'
-                          }`}
-                        >
-                          <Power size={14} aria-hidden="true" />
-                        </button>
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <div className="flex items-center justify-end gap-1">
-                          {isEditing ? (
-                            <>
-                              <button
-                                onClick={() => saveEdit(category.id)}
-                                disabled={saving}
-                                title="שמירה"
-                                aria-label="שמירה"
-                                className="p-2 rounded-lg text-green-600 hover:bg-green-50 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer disabled:opacity-40"
-                              >
-                                <Check size={14} aria-hidden="true" />
-                              </button>
-                              <button
-                                onClick={cancelEdit}
-                                disabled={saving}
-                                title="ביטול"
-                                aria-label="ביטול"
-                                className="p-2 rounded-lg text-text-muted hover:bg-red-50 hover:text-red-600 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer disabled:opacity-40"
-                              >
-                                <XIcon size={14} aria-hidden="true" />
-                              </button>
-                            </>
-                          ) : (
-                            <button
-                              onClick={() => startEdit(category)}
-                              title="עריכה"
-                              aria-label="עריכה"
-                              className="p-2 rounded-lg text-text-muted hover:bg-secondary hover:text-text-main transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer"
-                            >
-                              <Pencil size={14} aria-hidden="true" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })
-              )}
-            </tbody>
+              </tbody>
+            ) : (
+              <Reorder.Group as="tbody" axis="y" values={categories} onReorder={setCategories}>
+                {categories.map((category) => (
+                  <CategoryRow
+                    key={category.id}
+                    category={category}
+                    isEditing={editingId === category.id}
+                    editDraft={editDraft}
+                    setEditDraft={setEditDraft}
+                    saving={saving}
+                    toggling={togglingId === category.id}
+                    onStartEdit={() => startEdit(category)}
+                    onCancelEdit={cancelEdit}
+                    onSaveEdit={() => saveEdit(category.id)}
+                    onToggle={() => handleToggle(category)}
+                    onDragEnd={handleDragEnd}
+                  />
+                ))}
+              </Reorder.Group>
+            )}
           </table>
         </div>
       </div>
     </div>
+  )
+}
+
+// ── Draggable row ──────────────────────────────────────────────────────────────
+// Defined outside CategoriesListPage so React preserves the row (and its inputs'
+// focus) across parent re-renders.
+
+interface CategoryRowProps {
+  category: AdminCategoryDTO
+  isEditing: boolean
+  editDraft: EditDraft
+  setEditDraft: React.Dispatch<React.SetStateAction<EditDraft>>
+  saving: boolean
+  toggling: boolean
+  onStartEdit: () => void
+  onCancelEdit: () => void
+  onSaveEdit: () => void
+  onToggle: () => void
+  onDragEnd: () => void
+}
+
+function CategoryRow({
+  category,
+  isEditing,
+  editDraft,
+  setEditDraft,
+  saving,
+  toggling,
+  onStartEdit,
+  onCancelEdit,
+  onSaveEdit,
+  onToggle,
+  onDragEnd,
+}: CategoryRowProps) {
+  const dragControls = useDragControls()
+
+  return (
+    <Reorder.Item
+      as="tr"
+      value={category}
+      dragListener={false}
+      dragControls={dragControls}
+      onDragEnd={onDragEnd}
+      whileDrag={{ scale: 1.005, boxShadow: '0 6px 20px rgba(0,0,0,0.12)' }}
+      className="relative border-b border-border last:border-0 bg-surface hover:bg-bg/50 transition-colors"
+    >
+      <td className="px-2 py-2.5 w-12">
+        <button
+          type="button"
+          onPointerDown={(e) => {
+            e.preventDefault()
+            dragControls.start(e)
+          }}
+          title="גרירה לשינוי סדר"
+          aria-label={`שינוי סדר: ${category.name_he}`}
+          className="p-2 rounded-lg text-text-muted hover:bg-secondary hover:text-text-main transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center cursor-grab active:cursor-grabbing touch-none select-none"
+        >
+          <GripVertical size={14} aria-hidden="true" />
+        </button>
+      </td>
+      <td className="px-4 py-2.5">
+        {isEditing ? (
+          <input
+            type="text"
+            value={editDraft.name_he}
+            onChange={(e) => setEditDraft((d) => ({ ...d, name_he: e.target.value }))}
+            dir="rtl"
+            className={inputCls}
+          />
+        ) : (
+          <span className="font-medium text-text-main">{category.name_he}</span>
+        )}
+      </td>
+      <td className="px-4 py-2.5">
+        {isEditing ? (
+          <input
+            type="text"
+            value={editDraft.name_en}
+            onChange={(e) => setEditDraft((d) => ({ ...d, name_en: e.target.value }))}
+            dir="ltr"
+            className={inputCls}
+          />
+        ) : (
+          <span className="text-text-muted" dir="ltr">
+            {category.name_en}
+          </span>
+        )}
+      </td>
+      <td className="px-4 py-2.5">
+        {isEditing ? (
+          <input
+            type="number"
+            min="0"
+            value={editDraft.sortOrder}
+            onChange={(e) => setEditDraft((d) => ({ ...d, sortOrder: e.target.value }))}
+            dir="ltr"
+            className={`${inputCls} w-20`}
+          />
+        ) : (
+          <span className="tabular-nums text-text-muted">{category.sortOrder}</span>
+        )}
+      </td>
+      <td className="px-4 py-2.5 text-center">
+        <button
+          onClick={onToggle}
+          disabled={toggling}
+          title={category.isActive ? 'השבת קטגוריה' : 'הפעל קטגוריה'}
+          aria-label={category.isActive ? 'השבת קטגוריה' : 'הפעל קטגוריה'}
+          className={`p-2 rounded-lg transition-colors min-w-[36px] min-h-[36px] inline-flex items-center justify-center cursor-pointer disabled:opacity-40 ${
+            category.isActive
+              ? 'text-green-600 hover:bg-green-50'
+              : 'text-text-muted hover:bg-secondary hover:text-text-main'
+          }`}
+        >
+          <Power size={14} aria-hidden="true" />
+        </button>
+      </td>
+      <td className="px-4 py-2.5">
+        <div className="flex items-center justify-end gap-1">
+          {isEditing ? (
+            <>
+              <button
+                onClick={onSaveEdit}
+                disabled={saving}
+                title="שמירה"
+                aria-label="שמירה"
+                className="p-2 rounded-lg text-green-600 hover:bg-green-50 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer disabled:opacity-40"
+              >
+                <Check size={14} aria-hidden="true" />
+              </button>
+              <button
+                onClick={onCancelEdit}
+                disabled={saving}
+                title="ביטול"
+                aria-label="ביטול"
+                className="p-2 rounded-lg text-text-muted hover:bg-red-50 hover:text-red-600 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer disabled:opacity-40"
+              >
+                <XIcon size={14} aria-hidden="true" />
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={onStartEdit}
+              title="עריכה"
+              aria-label="עריכה"
+              className="p-2 rounded-lg text-text-muted hover:bg-secondary hover:text-text-main transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer"
+            >
+              <Pencil size={14} aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      </td>
+    </Reorder.Item>
   )
 }
