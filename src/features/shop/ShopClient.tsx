@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { AnimatePresence, motion } from 'motion/react'
 import { ChevronDown } from 'lucide-react'
 import { useUiStore } from '@/stores/uiStore'
+import { Select } from '@/components/ui/Select'
 import { ProductCard } from '@/features/products/ProductCard'
 import type { ProductDTO, CategoryDTO } from '@/shared/types'
 import type { ProductSortKey } from '@/server/services/productService'
@@ -90,25 +91,22 @@ export function ShopClient({
   // ── Sort select component ────────────────────────────────────────────────────
   function SortSelect({ compact = false }: { compact?: boolean }) {
     return (
-      <label className={compact ? 'flex items-center gap-2' : 'flex flex-col gap-1'}>
+      <div className={compact ? 'flex items-center gap-2' : 'flex flex-col gap-1'}>
         {!compact && (
           <span className="text-xs font-semibold uppercase tracking-wide text-text-muted">
             {t('sortLabel')}
           </span>
         )}
-        <select
+        <Select
           value={currentSort}
-          onChange={(e) => setParam('sort', e.target.value)}
+          onChange={(v) => setParam('sort', v)}
+          options={SORT_KEYS.map((key) => ({ value: key, label: t(`sort.${key}`) }))}
           aria-label={t('sortLabel')}
-          className="rounded border border-border bg-surface ps-3 pe-8 py-2 text-sm text-text-main focus-visible:outline-2 cursor-pointer min-h-[44px]"
-        >
-          {SORT_KEYS.map((key) => (
-            <option key={key} value={key}>
-              {t(`sort.${key}`)}
-            </option>
-          ))}
-        </select>
-      </label>
+          dir={locale === 'he' ? 'rtl' : 'ltr'}
+          className={compact ? 'w-40' : 'w-full'}
+          triggerClassName="min-h-[44px] bg-surface"
+        />
+      </div>
     )
   }
 

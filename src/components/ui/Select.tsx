@@ -15,6 +15,10 @@ interface SelectProps {
   options: SelectOption[]
   'aria-label'?: string
   className?: string
+  /** Explicit text direction — set from the page locale ('rtl' for he, 'ltr' for en). Inherits from the document when omitted. */
+  dir?: 'rtl' | 'ltr'
+  /** Extra classes for the trigger button (e.g. 'min-h-[44px]' for storefront touch targets). */
+  triggerClassName?: string
 }
 
 export function Select({
@@ -23,6 +27,8 @@ export function Select({
   options,
   'aria-label': ariaLabel,
   className,
+  dir,
+  triggerClassName,
 }: SelectProps) {
   const [open, setOpen] = useState(false)
   const [openUpward, setOpenUpward] = useState(false)
@@ -79,7 +85,7 @@ export function Select({
   const popupPosition = openUpward ? 'bottom-full mb-1' : 'top-full mt-1'
 
   return (
-    <div ref={wrapperRef} className={`relative${className ? ` ${className}` : ''}`}>
+    <div ref={wrapperRef} dir={dir} className={`relative${className ? ` ${className}` : ''}`}>
       <button
         ref={triggerRef}
         type="button"
@@ -90,7 +96,7 @@ export function Select({
         aria-label={ariaLabel}
         onClick={toggle}
         onKeyDown={handleKeyDown}
-        className="w-full h-10 ps-3 pe-8 text-sm bg-bg border border-border rounded text-text-main whitespace-nowrap flex items-center focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary cursor-pointer transition-colors hover:border-primary/50 relative"
+        className={`w-full h-10 ps-3 pe-8 text-sm bg-bg border border-border rounded text-text-main whitespace-nowrap flex items-center focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary cursor-pointer transition-colors hover:border-primary/50 relative${triggerClassName ? ` ${triggerClassName}` : ''}`}
       >
         <span className={selected ? 'text-text-main' : 'text-text-muted'}>
           {selected?.label ?? '—'}
