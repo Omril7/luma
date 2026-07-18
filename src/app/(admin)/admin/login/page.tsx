@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'motion/react'
 import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
-import { useAdminStore } from '@/stores/adminStore'
+import { isTokenExpired, useAdminStore } from '@/stores/adminStore'
 import { api } from '@/lib/api'
 
 export default function AdminLoginPage() {
@@ -21,9 +21,9 @@ export default function AdminLoginPage() {
   const emailRef = useRef<HTMLInputElement>(null)
   const errorRef = useRef<HTMLDivElement>(null)
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (with a still-valid token)
   useEffect(() => {
-    if (token) router.replace('/admin')
+    if (token && !isTokenExpired(token)) router.replace('/admin')
   }, [token, router])
 
   // Focus email on mount

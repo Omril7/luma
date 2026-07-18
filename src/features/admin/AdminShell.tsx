@@ -37,6 +37,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }, [pathname])
 
   const isLoginPage = pathname === '/admin/login'
+  const authed = !!token && !isTokenExpired(token)
 
   // Drop expired tokens on load and on every navigation, so the shell never
   // renders with a token the API will reject with 401.
@@ -47,14 +48,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }, [hydrated, pathname, token, clearAuth])
 
   useEffect(() => {
-    if (hydrated && !isLoginPage && !token) {
+    if (hydrated && !isLoginPage && !authed) {
       router.replace('/admin/login')
     }
-  }, [hydrated, isLoginPage, token, router])
+  }, [hydrated, isLoginPage, authed, router])
 
   if (isLoginPage) return <>{children}</>
 
-  if (!hydrated || !token) {
+  if (!hydrated || !authed) {
     return (
       <div className="min-h-dvh bg-bg flex items-center justify-center">
         <div
