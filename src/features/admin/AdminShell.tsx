@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'motion/react'
 import { LogOut, ExternalLink, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react'
-import { useAdminStore } from '@/stores/adminStore'
+import { isTokenExpired, useAdminStore } from '@/stores/adminStore'
 import { ADMIN_NAV_ITEMS } from './adminNav'
 
 const SIDEBAR_ITEMS = ADMIN_NAV_ITEMS.filter((item) => !item.external)
@@ -37,6 +37,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }, [pathname])
 
   const isLoginPage = pathname === '/admin/login'
+
+  // Drop expired tokens on load and on every navigation, so the shell never
+  // renders with a token the API will reject with 401.
+  useEffect(() => {
+    if (hydrated && token && isTokenExpired(token)) {
+      clearAuth()
+    }
+  }, [hydrated, pathname, token, clearAuth])
 
   useEffect(() => {
     if (hydrated && !isLoginPage && !token) {

@@ -13,6 +13,6 @@ export async function verifyPassword(plain: string, hashed: string): Promise<boo
 export function signAdminToken(payload: { adminId: string; email: string }): string {
   const secret = process.env.JWT_SECRET
   if (!secret) throw new Error('JWT_SECRET not configured')
-  const expiresIn = process.env.JWT_EXPIRES_IN ?? '2h'
+  const expiresIn = process.env.JWT_EXPIRES_IN ?? '30d'
   return sign(payload, secret, { expiresIn } as Parameters<typeof sign>[2])
 }

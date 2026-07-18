@@ -52,7 +52,7 @@ Check items off as you complete them and I'll update future plans accordingly.
   - `DATABASE_URL` — pooled connection (port 6543, `?pgbouncer=true`)
   - `DIRECT_URL` — direct connection (port 5432, for migrations)
   - `CLOUDINARY_URL`, `STORAGE_DRIVER=cloudinary`
-  - `JWT_SECRET`, `JWT_EXPIRES_IN=2h`
+  - `JWT_SECRET`, `JWT_EXPIRES_IN=30d`
   - `ADMIN_EMAIL`, `ADMIN_PASSWORD`
   - `NEXT_PUBLIC_WHATSAPP_NUMBER`
 - [ ] Add **Build Command** override: `prisma migrate deploy && next build`

@@ -25,6 +25,14 @@ async function request<T>(
   })
 
   if (!res.ok) {
+    // Admin token rejected (expired/invalid) — clear it and send back to login.
+    if (res.status === 401 && adminToken && typeof window !== 'undefined') {
+      const { useAdminStore } = await import('@/stores/adminStore')
+      useAdminStore.getState().clearAuth()
+      if (window.location.pathname.startsWith('/admin')) {
+        window.location.assign('/admin/login')
+      }
+    }
     const err: ApiError = await res.json().catch(() => ({ error: 'Network error' }))
     throw new Error(err.error ?? `HTTP ${res.status}`)
   }

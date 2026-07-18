@@ -55,7 +55,7 @@ DIRECT_URL=postgresql://postgres.<ref>:<password>@<region>.pooler.supabase.com:5
 # --- app ---
 NODE_ENV=development
 JWT_SECRET=change-me
-JWT_EXPIRES_IN=2h
+JWT_EXPIRES_IN=30d
 RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX=100
 

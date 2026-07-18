@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { compare } from 'bcryptjs'
-import { sign } from 'jsonwebtoken'
 import { z } from 'zod'
 import { parseBody, errorResponse } from '@/server/http'
+import { verifyPassword, signAdminToken } from '@/server/auth'
 import { prisma } from '@/server/prisma'
 
 const loginSchema = z.object({
@@ -21,13 +20,10 @@ export async function POST(req: NextRequest) {
 
     if (!admin) return errorResponse('Invalid credentials', 401)
 
-    const valid = await compare(body.password, admin.passwordHash)
+    const valid = await verifyPassword(body.password, admin.passwordHash)
     if (!valid) return errorResponse('Invalid credentials', 401)
 
-    const secret = process.env.JWT_SECRET
-    if (!secret) return errorResponse('Server misconfiguration', 500)
-
-    const token = sign({ adminId: admin.id, email: admin.email }, secret, { expiresIn: '7d' })
+    const token = signAdminToken({ adminId: admin.id, email: admin.email })
 
     return NextResponse.json({ token, email: admin.email })
   } catch (err) {
