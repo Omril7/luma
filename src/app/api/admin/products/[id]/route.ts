@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { withAdmin, parseBody, errorResponse, type AdminPayload } from '@/server/http'
 import { createProductSchema, createVariantSchema, customPricingRuleSchema } from '@/shared/schemas'
 import { z } from 'zod'
