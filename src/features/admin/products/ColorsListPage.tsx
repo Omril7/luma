@@ -7,6 +7,7 @@ import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
 import { ImageUpload } from '@/components/ui/ImageUpload'
+import { ColorInput } from '@/components/ui/ColorInput'
 
 // Local admin-only DTO — the storefront-facing ColorOptionDTO in `@/shared/types` intentionally
 // omits isActive (public product responses don't need it), but the admin list/edit endpoints
@@ -242,22 +243,10 @@ export function ColorsListPage() {
             </div>
             <div>
               <label className="block text-xs font-medium text-text-muted mb-1">גוון (Hex)</label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={createDraft.hexCode}
-                  onChange={(e) => setCreateDraft((d) => ({ ...d, hexCode: e.target.value }))}
-                  className="w-9 h-9 rounded-lg border border-border cursor-pointer shrink-0"
-                  aria-label="בחירת גוון"
-                />
-                <input
-                  type="text"
-                  value={createDraft.hexCode}
-                  onChange={(e) => setCreateDraft((d) => ({ ...d, hexCode: e.target.value }))}
-                  dir="ltr"
-                  className={inputCls}
-                />
-              </div>
+              <ColorInput
+                value={createDraft.hexCode}
+                onChange={(hex) => setCreateDraft((d) => ({ ...d, hexCode: hex }))}
+              />
             </div>
           </div>
           <div className="max-w-xs">
@@ -378,26 +367,10 @@ export function ColorsListPage() {
                       <td className="px-4 py-2.5">
                         {isEditing ? (
                           <div className="space-y-2 max-w-[180px]">
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="color"
-                                value={editDraft.hexCode}
-                                onChange={(e) =>
-                                  setEditDraft((d) => ({ ...d, hexCode: e.target.value }))
-                                }
-                                className="w-9 h-9 rounded-lg border border-border cursor-pointer shrink-0"
-                                aria-label="בחירת גוון"
-                              />
-                              <input
-                                type="text"
-                                value={editDraft.hexCode}
-                                onChange={(e) =>
-                                  setEditDraft((d) => ({ ...d, hexCode: e.target.value }))
-                                }
-                                dir="ltr"
-                                className={inputCls}
-                              />
-                            </div>
+                            <ColorInput
+                              value={editDraft.hexCode}
+                              onChange={(hex) => setEditDraft((d) => ({ ...d, hexCode: hex }))}
+                            />
                             <ImageUpload
                               value={editDraft.imageUrl}
                               onChange={(url) => setEditDraft((d) => ({ ...d, imageUrl: url }))}

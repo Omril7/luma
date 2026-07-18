@@ -20,6 +20,7 @@ import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import type { ProductDTO, ColorOptionDTO, CategoryDTO } from '@/shared/types'
 import { Select } from '@/components/ui/Select'
+import { ColorInput } from '@/components/ui/ColorInput'
 import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -1093,23 +1094,11 @@ export function ProductFormPage({ mode, productId }: Props) {
                 </FieldRow>
               </div>
               <FieldRow label="קוד צבע HEX" required>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="color"
-                    value={newColor.hexCode}
-                    onChange={(e) => setNewColor((n) => ({ ...n, hexCode: e.target.value }))}
-                    className="w-12 h-10 p-1 rounded border border-border cursor-pointer"
-                    aria-label="בוחר צבע"
-                  />
-                  <input
-                    type="text"
-                    value={newColor.hexCode}
-                    dir="ltr"
-                    onChange={(e) => setNewColor((n) => ({ ...n, hexCode: e.target.value }))}
-                    className={`${inputCls(false)} flex-1`}
-                    maxLength={7}
-                  />
-                </div>
+                <ColorInput
+                  value={newColor.hexCode}
+                  onChange={(hex) => setNewColor((n) => ({ ...n, hexCode: hex }))}
+                  aria-label="בוחר צבע"
+                />
               </FieldRow>
               <div className="flex gap-3">
                 <button
