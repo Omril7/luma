@@ -269,8 +269,33 @@ export async function updateAdminProduct(
   return toProductDTO(await fetchWithRelations(id))
 }
 
-// ── Delete (soft) ─────────────────────────────────────────────────────────────
+// ── Delete (hard) ─────────────────────────────────────────────────────────────
 
-export async function deleteAdminProduct(id: string): Promise<void> {
-  await prisma.product.update({ where: { id }, data: { isActive: false } })
+export type DeleteProductResult = { deleted: true } | { deleted: false; reason: 'has_orders' }
+
+export async function deleteAdminProduct(id: string): Promise<DeleteProductResult> {
+  // Order history is shared with luma-manager and must never be destroyed —
+  // a product that appears in any order can only be deactivated, not deleted.
+  const orderCount = await prisma.orderItem.count({ where: { productId: id } })
+  if (orderCount > 0) return { deleted: false, reason: 'has_orders' }
+
+  const images = await prisma.productImage.findMany({
+    where: { productId: id },
+    select: { url: true },
+  })
+
+  await prisma.$transaction([
+    prisma.review.deleteMany({ where: { productId: id } }),
+    prisma.customPricingRule.deleteMany({ where: { productId: id } }),
+    prisma.productImage.deleteMany({ where: { productId: id } }),
+    prisma.productVariant.deleteMany({ where: { productId: id } }),
+    prisma.product.delete({ where: { id } }),
+  ])
+
+  // Fire-and-forget storage cleanup, same as the update path
+  for (const { url } of images) {
+    deleteIfOrphaned(url).catch(console.error)
+  }
+
+  return { deleted: true }
 }

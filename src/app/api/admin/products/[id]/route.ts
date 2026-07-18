@@ -53,6 +53,9 @@ export const DELETE = withAdmin<Ctx>(async (_req, _admin: AdminPayload, { params
   const existing = await getAdminProductById(id)
   if (!existing) return errorResponse('Product not found', 404)
 
-  await deleteAdminProduct(id)
+  const result = await deleteAdminProduct(id)
+  if (!result.deleted) {
+    return errorResponse('Product has existing orders and cannot be deleted', 409)
+  }
   return NextResponse.json({ success: true })
 })

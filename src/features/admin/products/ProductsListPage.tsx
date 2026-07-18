@@ -95,7 +95,12 @@ export function ProductsListPage() {
       setDeleteId(null)
       fetchProducts()
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'שגיאה במחיקה')
+      const msg = e instanceof Error ? e.message : ''
+      alert(
+        msg.includes('existing orders')
+          ? 'לא ניתן למחוק מוצר שקיימות עבורו הזמנות. ניתן לסמן אותו כלא פעיל במקום.'
+          : msg || 'שגיאה במחיקה'
+      )
     } finally {
       setDeleting(false)
     }
@@ -369,7 +374,8 @@ export function ProductsListPage() {
               מחיקת מוצר
             </h3>
             <p className="text-sm text-text-muted mb-6">
-              המוצר יסומן כלא פעיל ולא יופיע בחנות. ניתן לשחזר מאוחר יותר דרך עריכה.
+              המוצר יימחק לצמיתות מהמסד — כולל הווריאציות, התמונות והביקורות שלו. לא ניתן לשחזר
+              פעולה זו.
             </p>
             <div className="flex gap-3 justify-end">
               <button
