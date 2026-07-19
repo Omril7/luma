@@ -285,6 +285,7 @@ export async function deleteAdminProduct(id: string): Promise<DeleteProductResul
   })
 
   await prisma.$transaction([
+    prisma.priceOfferRequest.deleteMany({ where: { productId: id } }),
     prisma.review.deleteMany({ where: { productId: id } }),
     prisma.customPricingRule.deleteMany({ where: { productId: id } }),
     prisma.productImage.deleteMany({ where: { productId: id } }),

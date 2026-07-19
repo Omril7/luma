@@ -10,6 +10,7 @@ import {
   ShoppingBag,
   // PackageOpen,
   Star,
+  MessageSquareQuote,
   type LucideIcon,
 } from 'lucide-react'
 import { InstagramIcon } from '@/components/icons/InstagramIcon'
@@ -61,6 +62,12 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   },
   // { href: '/admin/bundles', icon: PackageOpen, label: 'חבילות', desc: 'ניהול חבילות מוצרים במחיר מיוחד' },
   { href: '/admin/reviews', icon: Star, label: 'ביקורות', desc: 'אישור ופרסום ביקורות לקוחות' },
+  {
+    href: '/admin/price-offers',
+    icon: MessageSquareQuote,
+    label: 'הצעות מחיר',
+    desc: 'בקשות להצעת מחיר מלקוחות מתעניינים',
+  },
   { href: '/admin/settings', icon: Settings, label: 'הגדרות', desc: 'פרטי העסק, משלוח ו-WhatsApp' },
   {
     href: 'https://luma-manager.vercel.app/orders',

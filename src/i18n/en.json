@@ -94,7 +94,31 @@
     "increaseQuantity": "Increase quantity",
     "share": "Share",
     "shareCopied": "Link copied to clipboard",
-    "shareCopyFailed": "Couldn't copy the link"
+    "shareCopyFailed": "Couldn't copy the link",
+    "priceOffer": {
+      "button": "Request a Price Offer",
+      "title": "Request a Price Offer",
+      "subtitle": "Leave your details and we'll get back to you with a personal quote",
+      "yourSelection": "Your selection",
+      "customDims": "Custom dimensions",
+      "quantityLabel": "Quantity",
+      "estimatedLabel": "Estimated price",
+      "name": "Full name",
+      "phone": "Phone",
+      "email": "Email",
+      "message": "Message",
+      "optional": "optional",
+      "messagePlaceholder": "Tell us what matters to you — dimensions, materials, budget...",
+      "send": "Send request",
+      "sending": "Sending...",
+      "successTitle": "Request sent!",
+      "successBody": "We received your request and will get back to you soon with a quote.",
+      "close": "Close",
+      "errorName": "Please enter your name (at least 2 characters)",
+      "errorPhone": "Please enter a valid phone number",
+      "errorEmail": "Invalid email address",
+      "errorGeneral": "Something went wrong — please try again"
+    }
   },
   "cart": {
     "title": "Shopping Cart",

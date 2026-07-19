@@ -45,6 +45,11 @@ enum Language {
   en
 }
 
+enum PriceOfferStatus {
+  NEW
+  HANDLED
+}
+
 // ── Models ────────────────────────────────────────────────────────────────────
 
 model Product {
@@ -71,6 +76,7 @@ model Product {
   reviews           Review[]
   bundles           Bundle[]
   orderItems        OrderItem[]
+  priceOfferRequests PriceOfferRequest[]
 }
 
 model ProductVariant {
@@ -245,6 +251,34 @@ model Review {
   comment_en   String?
   isApproved   Boolean  @default(false)
   createdAt    DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+}
+
+// Customer "request a price offer" inquiries from the product page.
+// Selection fields are snapshots (labels, not FKs) so the request stays readable
+// even if the variant/color is later renamed or removed.
+model PriceOfferRequest {
+  id           String   @id @default(cuid())
+  productId    String
+  customerName String
+  phone        String
+  email        String?
+  message      String?
+
+  variantName  String?
+  isCustom     Boolean  @default(false)
+  customWidth  Decimal? @db.Decimal(8, 2)
+  customHeight Decimal? @db.Decimal(8, 2)
+  customDepth  Decimal? @db.Decimal(8, 2)
+  colorName    String?
+  quantity     Int      @default(1)
+  quotedPrice  Decimal? @db.Decimal(10, 2)
+
+  language  Language         @default(he)
+  status    PriceOfferStatus @default(NEW)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
 
   product Product @relation(fields: [productId], references: [id])
 }

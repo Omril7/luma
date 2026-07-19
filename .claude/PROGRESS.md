@@ -19,6 +19,34 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-07-19 — Price-offer requests (product page → admin notification)
+
+- **Done:** Customers can request a price offer for any product. New `PriceOfferRequest`
+  Prisma model (+ `PriceOfferStatus` enum, migration `20260719120000_price_offer_requests`)
+  storing customer contact + a snapshot of the selection (variant/custom dims/color/qty) and
+  the engine's price estimate when priceable. Public `POST /api/price-offers` (rate-limited
+  5/10min) via `priceOfferService.createPriceOfferRequest`, which also emails the admin
+  (business email from site settings, fallback reply-to/from-address; best-effort, Hebrew
+  HTML, customer as reply-to). Storefront: `PriceOfferModal.tsx` + "בקשת הצעת מחיר" button in
+  `ProductDetail` (outline button in shop mode, primary CTA in showcase mode) with the current
+  selection summarized; i18n keys under `product.priceOffer` (he+en). Admin: `/admin/price-offers`
+  page (`PriceOffersListPage`, mirrors reviews-list pattern) with NEW/HANDLED filter, status
+  toggle, delete, tel:/wa.me/mailto links per request; new sidebar entry; new shared
+  `WhatsAppIcon` component. Product deletion now also removes its offer requests.
+- **Decisions:** Selection stored as label snapshots (`variantName`, `colorName`), not FKs, so
+  requests survive renames/deletions. Pricing errors (out-of-bounds dims) are non-fatal — an
+  unpriceable selection is a prime reason to request an offer, so `quotedPrice` is optional.
+  Migration applied via `migrate diff` + `db execute` + `migrate resolve` because `migrate dev`
+  demanded a destructive reset (pre-existing drift: `20260713120000_category_table` was edited
+  after being applied — its checksum no longer matches; see Notes).
+- **Notes/blockers:** typecheck/lint/tests clean. Verified end-to-end: POST created the row
+  (₪4,200 estimate for a 240cm custom console) and ConsoleEmailProvider logged the Hebrew
+  notification email; test row deleted afterwards. **Follow-up:** the `category_table`
+  migration checksum drift will make every future `prisma migrate dev` demand a reset —
+  should be fixed (update the checksum in `_prisma_migrations` or restore the original file).
+
+---
+
 ## 2026-07-12 — Admin-managed homepage testimonials
 
 - **Done:** Added a "דף הבית — המלצות לקוחות" tab to `SiteContentPage.tsx` (`TestimonialsTab`,

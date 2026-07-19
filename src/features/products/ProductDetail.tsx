@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'motion/react'
-import { ShoppingBag, Heart, Minus, Plus, Check } from 'lucide-react'
+import { ShoppingBag, Heart, Minus, Plus, Check, MessageSquareQuote } from 'lucide-react'
 import { calculatePrice, PricingError, getStartingPrice } from '@/shared/pricing'
 import type { VariantTier, PricingRule, PriceResult } from '@/shared/pricing'
 import { useCartStore } from '@/stores/cartStore'
@@ -12,6 +12,7 @@ import { useUiStore } from '@/stores/uiStore'
 import { ShareButton } from '@/components/ShareButton'
 import { ImageGallery } from './ImageGallery'
 import { ProductCard } from './ProductCard'
+import { PriceOfferModal } from './PriceOfferModal'
 import { ReviewsSection } from '@/features/reviews/ReviewsSection'
 import type { ProductDTO, ProductVariantDTO, PublicReviewDTO } from '@/shared/types'
 
@@ -58,6 +59,7 @@ export function ProductDetail({
   )
   const [quantity, setQuantity] = useState(1)
   const [addedFeedback, setAddedFeedback] = useState(false)
+  const [offerOpen, setOfferOpen] = useState(false)
   const [stickyVisible, setStickyVisible] = useState(false)
   const ctaRef = useRef<HTMLButtonElement>(null)
 
@@ -615,6 +617,16 @@ export function ProductDetail({
 
                   <ShareButton title={productName} text={productDesc || undefined} />
                 </div>
+
+                {/* Request a price offer */}
+                <button
+                  type="button"
+                  onClick={() => setOfferOpen(true)}
+                  className="flex items-center justify-center gap-2 min-h-[48px] rounded-full border border-primary text-primary font-semibold text-sm hover:bg-primary/5 transition-colors duration-150 cursor-pointer"
+                >
+                  <MessageSquareQuote size={18} aria-hidden="true" />
+                  {t('priceOffer.button')}
+                </button>
               </>
             ) : (
               <>
@@ -644,6 +656,16 @@ export function ProductDetail({
 
                   <ShareButton title={productName} text={productDesc || undefined} />
                 </div>
+
+                {/* Request a price offer — the main action while purchasing is off */}
+                <button
+                  type="button"
+                  onClick={() => setOfferOpen(true)}
+                  className="flex items-center justify-center gap-2 min-h-[52px] rounded-full bg-primary text-surface font-semibold text-base hover:opacity-90 transition-opacity duration-150 cursor-pointer"
+                >
+                  <MessageSquareQuote size={20} aria-hidden="true" />
+                  {t('priceOffer.button')}
+                </button>
               </>
             )}
 
@@ -671,6 +693,26 @@ export function ProductDetail({
         {/* Reviews */}
         <ReviewsSection reviews={reviews} productId={product.id} locale={locale} />
       </div>
+
+      {/* Price offer request dialog */}
+      <PriceOfferModal
+        open={offerOpen}
+        onClose={() => setOfferOpen(false)}
+        product={product}
+        locale={locale}
+        selection={{
+          variantId: selectedVariantId,
+          isCustom,
+          customWidth: isCustom && customWidth !== '' ? parseFloat(customWidth) : undefined,
+          customHeight: isCustom && customHeight !== '' ? parseFloat(customHeight) : undefined,
+          customDepth: isCustom && customDepth !== '' ? parseFloat(customDepth) : undefined,
+          colorId: selectedColorId,
+          quantity,
+        }}
+        estimatedPrice={
+          purchasingEnabled && priceResult ? formatPrice(priceResult.totalPrice, locale) : undefined
+        }
+      />
 
       {/* Sticky mobile add-to-cart bar */}
       <AnimatePresence>

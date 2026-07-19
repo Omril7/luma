@@ -339,6 +339,36 @@ export const updateReviewSchema = z.object({
 
 export type UpdateReviewInput = z.infer<typeof updateReviewSchema>
 
+// ── Price offer request ───────────────────────────────────────────────────────
+
+export const createPriceOfferSchema = z.object({
+  productId: z.string().min(1),
+  customerName: z.string().min(2).max(200),
+  phone: z
+    .string()
+    .min(7)
+    .max(20)
+    .regex(/^[0-9+\-() ]+$/, 'Invalid phone number'),
+  email: z.string().email().optional(),
+  message: z.string().max(2000).optional(),
+  variantId: z.string().optional(),
+  isCustom: z.boolean().optional(),
+  customWidth: z.number().positive().max(10000).optional(),
+  customHeight: z.number().positive().max(10000).optional(),
+  customDepth: z.number().positive().max(10000).optional(),
+  colorId: z.string().optional(),
+  quantity: z.number().int().min(1).max(99).optional(),
+  language: z.enum(['he', 'en']).optional(),
+})
+
+export type CreatePriceOfferInput = z.infer<typeof createPriceOfferSchema>
+
+export const updatePriceOfferSchema = z.object({
+  status: z.enum(['NEW', 'HANDLED']),
+})
+
+export type UpdatePriceOfferInput = z.infer<typeof updatePriceOfferSchema>
+
 // ── Site content value ────────────────────────────────────────────────────────
 
 export const siteContentValueSchema = z.object({

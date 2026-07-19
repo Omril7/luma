@@ -94,7 +94,31 @@
     "increaseQuantity": "הגדל כמות",
     "share": "שיתוף",
     "shareCopied": "הקישור הועתק",
-    "shareCopyFailed": "לא ניתן להעתיק את הקישור"
+    "shareCopyFailed": "לא ניתן להעתיק את הקישור",
+    "priceOffer": {
+      "button": "בקשת הצעת מחיר",
+      "title": "בקשת הצעת מחיר",
+      "subtitle": "השאירו פרטים ונחזור אליכם עם הצעת מחיר אישית",
+      "yourSelection": "הבחירה שלכם",
+      "customDims": "מידות מותאמות",
+      "quantityLabel": "כמות",
+      "estimatedLabel": "מחיר משוער",
+      "name": "שם מלא",
+      "phone": "טלפון",
+      "email": "אימייל",
+      "message": "הודעה",
+      "optional": "לא חובה",
+      "messagePlaceholder": "ספרו לנו מה חשוב לכם — מידות, חומרים, תקציב...",
+      "send": "שליחת בקשה",
+      "sending": "שולח...",
+      "successTitle": "הבקשה נשלחה!",
+      "successBody": "קיבלנו את הפנייה ונחזור אליכם בהקדם עם הצעת מחיר.",
+      "close": "סגירה",
+      "errorName": "נא להזין שם (לפחות 2 תווים)",
+      "errorPhone": "נא להזין מספר טלפון תקין",
+      "errorEmail": "כתובת האימייל אינה תקינה",
+      "errorGeneral": "השליחה נכשלה, נסו שוב"
+    }
   },
   "cart": {
     "title": "עגלת הקניות",

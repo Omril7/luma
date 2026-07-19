@@ -167,6 +167,30 @@ export interface ReviewDTO {
   createdAt: string
 }
 
+export interface PriceOfferRequestDTO {
+  id: string
+  productId: string
+  productName_he: string
+  productName_en: string
+  productSlug: string
+  customerName: string
+  phone: string
+  email?: string
+  message?: string
+  variantName?: string
+  isCustom: boolean
+  customWidth?: number
+  customHeight?: number
+  customDepth?: number
+  colorName?: string
+  quantity: number
+  /** Engine estimate in ₪ at request time, when the selection was priceable. */
+  quotedPrice?: number
+  language: string
+  status: 'NEW' | 'HANDLED'
+  createdAt: string
+}
+
 export interface PublicReviewDTO {
   id: string
   customerName: string
