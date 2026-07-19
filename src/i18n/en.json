@@ -248,6 +248,31 @@
     "error": "We couldn't load your wishlist",
     "retry": "Try again"
   },
+  "compare": {
+    "title": "Product Comparison",
+    "toggleAdd": "Add to comparison",
+    "toggleRemove": "Remove from comparison",
+    "maxReached": "You can compare up to {max} products",
+    "bar": {
+      "count": "{count, plural, one {# product selected} other {# products selected}}",
+      "cta": "Compare",
+      "clear": "Clear comparison"
+    },
+    "priceRow": "Price",
+    "categoryRow": "Category",
+    "sizesRow": "Available sizes",
+    "customRow": "Custom dimensions",
+    "colorsRow": "Colors",
+    "removeProduct": "Remove {name} from comparison",
+    "addSlot": "Add a product",
+    "empty": {
+      "heading": "No products to compare",
+      "body": "Pick up to {max} products from the shop to compare side by side",
+      "cta": "View All Products"
+    },
+    "error": "We couldn't load the comparison",
+    "retry": "Try again"
+  },
   "about": {
     "title": "About Luma",
     "imageAlt": "Luma — woodworking studio"

@@ -1,11 +1,12 @@
 'use client'
 
 import Image from 'next/image'
-import { Heart } from 'lucide-react'
+import { ArrowLeftRight, Heart } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { useWishlistStore } from '@/stores/wishlistStore'
+import { useCompareStore, MAX_COMPARE_ITEMS } from '@/stores/compareStore'
 import { useUiStore } from '@/stores/uiStore'
 import { getStartingPrice } from '@/shared/pricing'
 import type { ProductDTO } from '@/shared/types'
@@ -26,10 +27,13 @@ function formatPrice(price: number, locale: string): string {
 export function ProductCard({ product, locale }: ProductCardProps) {
   const t = useTranslations()
   const { toggle, has } = useWishlistStore()
-  const { a11y } = useUiStore()
+  const compareIds = useCompareStore((s) => s.ids)
+  const { toggle: toggleCompare, has: hasCompare } = useCompareStore()
+  const { a11y, addToast } = useUiStore()
   const shouldAnimate = !a11y.noMotion
 
   const isWishlisted = has(product.id)
+  const isCompared = hasCompare(product.id)
   const productName = locale === 'he' ? product.name_he : product.name_en
   const primaryImage = product.images.find((img) => img.isPrimary) ?? product.images[0]
   const price = getStartingPrice(product)
@@ -39,6 +43,16 @@ export function ProductCard({ product, locale }: ProductCardProps) {
     e.preventDefault()
     e.stopPropagation()
     toggle(product.id)
+  }
+
+  function handleCompareClick(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!isCompared && compareIds.length >= MAX_COMPARE_ITEMS) {
+      addToast({ type: 'info', message: t('compare.maxReached', { max: MAX_COMPARE_ITEMS }) })
+      return
+    }
+    toggleCompare(product.id)
   }
 
   return (
@@ -101,6 +115,22 @@ export function ProductCard({ product, locale }: ProductCardProps) {
           aria-hidden="true"
           className={isWishlisted ? 'fill-current text-accent' : 'text-text-muted'}
         />
+      </button>
+
+      {/* Compare button */}
+      <button
+        type="button"
+        onClick={handleCompareClick}
+        aria-label={isCompared ? t('compare.toggleRemove') : t('compare.toggleAdd')}
+        aria-pressed={isCompared}
+        className={[
+          'absolute top-[52px] end-2 flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-sm border cursor-pointer transition-colors duration-150',
+          isCompared
+            ? 'bg-primary border-primary text-surface'
+            : 'bg-surface/80 border-border text-text-muted hover:bg-surface',
+        ].join(' ')}
+      >
+        <ArrowLeftRight size={18} aria-hidden="true" />
       </button>
     </motion.article>
   )

@@ -162,12 +162,14 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
   add-to-cart is gated behind `FEATURES.shop` like the rest of the buy flow; a heart icon +
   count badge in the header links to the page.)_
 
-### M1.16c Product comparison
+### M1.16c Product comparison ✅
 
-- [ ] `compareStore` (Zustand, session-only, max 3 items)
-- [ ] Compare toggle on product cards; floating "Compare (N)" bar when ≥1 selected
-- [ ] `/compare` page: side-by-side table
-- **Acceptance:** comparing 3 products shows a correct side-by-side table.
+- [x] `compareStore` (Zustand, session-only, max 3 items)
+- [x] Compare toggle on product cards; floating "Compare (N)" bar when ≥1 selected
+- [x] `/compare` page: side-by-side table
+- **Acceptance:** comparing 3 products shows a correct side-by-side table. _(Rows: from-price,
+  category, available sizes, custom-dimensions availability, colors; a dashed "add a product"
+  slot links back to `/shop` while fewer than 3 are selected.)_
 
 ### M1.17 ⭐ Product Detail (CORE)
 

@@ -5,6 +5,7 @@ import { InfoBar } from './InfoBar'
 import { WhatsAppButton } from '@/components/WhatsAppButton'
 import { A11yWidget } from '@/components/A11yWidget'
 import { ToastContainer } from '@/components/ToastContainer'
+import { CompareBar } from '@/features/compare/CompareBar'
 import { getSiteSettings } from '@/server/services/adminSettingsService'
 
 export async function StorefrontLayout({
@@ -35,6 +36,7 @@ export async function StorefrontLayout({
         instagramUrl={business.instagramUrl || undefined}
         facebookUrl={business.facebookUrl || undefined}
       />
+      <CompareBar />
       <WhatsAppButton whatsappNumber={business.whatsappNumber} />
       <A11yWidget />
       <ToastContainer />

@@ -19,6 +19,29 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-07-19 — M1.16c: Product comparison ✅
+
+- **Done:** `src/stores/compareStore.ts` (Zustand, **sessionStorage** persist, max 3 via
+  `MAX_COMPARE_ITEMS`, toggle/remove/clear). `ProductCard`: compare toggle button (ArrowLeftRight
+  icon, stacked under the wishlist heart; filled/primary when selected; toast when trying to add
+  a 4th). `src/features/compare/CompareBar.tsx`: floating bottom pill (count + "Compare" CTA +
+  clear), mounted in `StorefrontLayout`, hidden on `/compare` itself, raised above the WhatsApp
+  button on mobile (`bottom-24 md:bottom-6`), hydration-safe (renders after mount).
+  `src/features/compare/CompareClient.tsx` + `/compare` page: side-by-side `<table>` with sticky
+  row-label column (`sticky start-0`), horizontal scroll on mobile; rows: from-price
+  (`getStartingPrice`), category, available sizes (variant dims incl. diameter), custom-dimensions
+  yes/no, color swatches (texture image or hex); per-column remove; dashed "add a product" slot
+  linking to `/shop` when <3; skeleton/empty/error states. Reuses `GET /api/products?ids=` from
+  M1.16b (same cache + stale-id pruning pattern). New `compare` i18n namespace (he+en).
+- **Roadmap:** M1.16c ✅.
+- **Decisions:** Comparison is session-only by design (a momentary task, not a saved list) —
+  `createJSONStorage(() => sessionStorage)`. Store silently caps at 3; the card handler owns the
+  user-facing "max reached" toast so the store stays UI-free.
+- **Notes/blockers:** typecheck + lint + tests clean; smoke-tested `/he/compare`, `/en/compare`,
+  `/he/shop` (all 200). Killed an orphaned `next dev` process that was holding port 3000.
+
+---
+
 ## 2026-07-19 — M1.16b: Wishlist page + shareable URL ✅
 
 - **Done:** Dedicated `/wishlist` storefront page (`src/features/wishlist/WishlistClient.tsx` +
