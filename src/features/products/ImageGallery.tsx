@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
@@ -39,6 +39,13 @@ export function ImageGallery({ images, productName, locale }: ImageGalleryProps)
   const shouldAnimate = !a11y.noMotion
   const [selectedIndex, setSelectedIndex] = useState(0)
 
+  // Fade only on image *changes* — fading the initial image ships opacity:0 in
+  // the SSR HTML and delays the page's LCP until hydration.
+  const didMountRef = useRef(false)
+  useEffect(() => {
+    didMountRef.current = true
+  }, [])
+
   const currentImage = images[selectedIndex]
 
   function prev() {
@@ -63,7 +70,7 @@ export function ImageGallery({ images, productName, locale }: ImageGalleryProps)
           <motion.div
             key={selectedIndex}
             className="absolute inset-0"
-            initial={shouldAnimate ? { opacity: 0 } : false}
+            initial={shouldAnimate && didMountRef.current ? { opacity: 0 } : false}
             animate={{ opacity: 1 }}
             exit={shouldAnimate ? { opacity: 0 } : undefined}
             transition={{ duration: 0.2, ease: 'easeInOut' }}
@@ -76,6 +83,7 @@ export function ImageGallery({ images, productName, locale }: ImageGalleryProps)
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover"
                 priority={selectedIndex === 0}
+                fetchPriority={selectedIndex === 0 ? 'high' : undefined}
               />
             ) : (
               <FurniturePlaceholder />
@@ -152,10 +160,15 @@ export function ImageGallery({ images, productName, locale }: ImageGalleryProps)
               aria-selected={i === selectedIndex}
               onClick={() => setSelectedIndex(i)}
               aria-label={t('imageN', { n: i + 1 })}
-              className={`w-2 h-2 rounded-full transition-colors duration-150 cursor-pointer ${
-                i === selectedIndex ? 'bg-primary' : 'bg-border hover:bg-text-muted'
-              }`}
-            />
+              className="group flex h-6 w-6 items-center justify-center rounded-full cursor-pointer"
+            >
+              <span
+                aria-hidden="true"
+                className={`h-2 w-2 rounded-full transition-colors duration-150 ${
+                  i === selectedIndex ? 'bg-primary' : 'bg-border group-hover:bg-text-muted'
+                }`}
+              />
+            </button>
           ))}
         </div>
       )}

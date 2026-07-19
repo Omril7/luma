@@ -219,16 +219,19 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
       Instagram account (decide: Graph API feed vs. manual admin-curated images — went with
       admin-curated images via a new `/admin/instagram` panel, mirroring the Gallery pattern)
 
-### M1.22 SEO + performance
+### M1.22 SEO + performance ✅
 
 - [x] Next Metadata API per-page meta (bilingual, correct lang) — every storefront route (home,
       shop, product, cart, checkout, confirmation, about, gallery, contact, faq) already ships
       `generateMetadata`/`metadata`
-- [ ] Server Components + `next/image` lazy-loading; bundle check — not yet audited (gallery
-      intentionally uses raw `<img>` for masonry sizing, see M1.21 notes; product images already
-      use `next/image`)
-- [ ] Run Lighthouse and address findings
-- **Acceptance:** Lighthouse pass on Home + Product (perf/a11y/SEO).
+- [x] Server Components + `next/image` lazy-loading; bundle check — audited: shared JS 102 kB,
+      heaviest route (product) 193 kB first-load; storefront pages now truly static/ISR
+      (`setRequestLocale` + `revalidate=300`); home below-fold sections code-split; LCP images
+      get `priority` + `fetchPriority="high"` (gallery keeps raw `<img>` by design)
+- [x] Run Lighthouse and address findings
+- **Acceptance:** Lighthouse pass on Home + Product (perf/a11y/SEO). _(DevTools-throttled:
+  Home 94/100/100/100, Product 95/100/100/100. Lantern-simulated product perf reads low (82) as
+  a localhost artifact — observed LCP equals FCP at ~220 ms; see PROGRESS 2026-07-19.)_
 
 ---
 

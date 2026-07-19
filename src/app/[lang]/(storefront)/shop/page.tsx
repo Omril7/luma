@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { getProducts } from '@/server/services/productService'
 import { getActiveCategories } from '@/server/services/categoryService'
 import type { ProductSortKey } from '@/server/services/productService'
@@ -26,6 +26,7 @@ export default async function ShopPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const { lang } = await params
+  setRequestLocale(lang)
   const sp = await searchParams
 
   const categoryId = typeof sp.category === 'string' ? sp.category : undefined

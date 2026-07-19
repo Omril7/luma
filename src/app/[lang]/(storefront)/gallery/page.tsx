@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { getSiteContentByKey } from '@/server/services/adminSiteContentService'
 import { listGalleryImages } from '@/server/services/adminGalleryService'
 import { GalleryClient } from '@/features/gallery/GalleryClient'
+
+export const revalidate = 300
 
 interface GalleryIntro {
   title_he: string
@@ -30,6 +32,7 @@ export async function generateMetadata({
 
 export default async function GalleryPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params
+  setRequestLocale(lang)
   const [row, images] = await Promise.all([
     getSiteContentByKey('gallery.intro'),
     listGalleryImages(),

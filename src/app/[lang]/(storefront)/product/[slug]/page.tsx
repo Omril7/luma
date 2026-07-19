@@ -4,6 +4,15 @@ import { getProductBySlug, getProducts } from '@/server/services/productService'
 import { getApprovedReviewsForProduct } from '@/server/services/reviewService'
 import { ProductDetail } from '@/features/products/ProductDetail'
 import { FEATURES } from '@/lib/featureFlags'
+import { setRequestLocale } from 'next-intl/server'
+
+export const revalidate = 300
+
+// Empty list = no slugs prebuilt, but marks the route static-capable so each
+// product page is cached on first request (on-demand ISR, revalidated above).
+export function generateStaticParams(): { slug: string }[] {
+  return []
+}
 
 export async function generateMetadata({
   params,
@@ -31,17 +40,16 @@ export default async function ProductPage({
   params: Promise<{ lang: string; slug: string }>
 }) {
   const { lang, slug } = await params
+  setRequestLocale(lang)
   const product = await getProductBySlug(slug)
   if (!product) notFound()
 
-  // Fetch up to 4 related products (same category, exclude self)
-  const { products: allRelated } = await getProducts({
-    categoryId: product.category.id,
-    limit: 5,
-  })
+  // Related products (same category, exclude self) + reviews, in parallel
+  const [{ products: allRelated }, { reviews }] = await Promise.all([
+    getProducts({ categoryId: product.category.id, limit: 5 }),
+    getApprovedReviewsForProduct(product.id, { limit: 10 }),
+  ])
   const relatedProducts = allRelated.filter((p) => p.id !== product.id).slice(0, 4)
-
-  const { reviews } = await getApprovedReviewsForProduct(product.id, { limit: 10 })
 
   return (
     <ProductDetail

@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider } from 'next-intl'
+import { setRequestLocale } from 'next-intl/server'
 import { routing } from '@/i18n/routing'
 import { LangUpdater } from './_components/LangUpdater'
 
@@ -21,6 +22,10 @@ export default async function LocaleLayout({
   if (!routing.locales.includes(lang as Locale)) {
     notFound()
   }
+
+  // Enable static rendering / ISR — without this, next-intl reads the locale from
+  // request headers and silently opts every page into per-request rendering.
+  setRequestLocale(lang)
 
   // Load messages directly from the URL segment — avoids middleware locale lag
   const messages =

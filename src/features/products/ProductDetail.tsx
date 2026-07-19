@@ -272,7 +272,7 @@ export function ProductDetail({
           <div className="flex flex-col gap-6">
             {/* Category badge + name */}
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wide text-accent bg-accent/10 rounded-full px-3 py-1">
+              <span className="text-xs font-semibold uppercase tracking-wide text-primary bg-primary/10 rounded-full px-3 py-1">
                 {locale === 'he' ? product.category.name_he : product.category.name_en}
               </span>
               <h1 className="mt-3 text-3xl font-bold text-text-main leading-snug">{productName}</h1>

@@ -19,6 +19,46 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-07-19 — M1.22: SEO + performance ✅
+
+- **Done:**
+  - **Static rendering was silently broken:** every storefront page rendered per-request
+    (home TTFB ~950 ms, product ~2.5 s — each Supabase roundtrip ≈ 350 ms) because next-intl
+    reads the locale from headers; the build's ● markers were misleading (prerender-manifest
+    held only admin routes). Fixed with `setRequestLocale(lang)` in `[lang]/layout`,
+    `(storefront)/layout`, and every storefront page; `export const revalidate = 300` on
+    home/about/cart/checkout/compare/contact/faq/gallery/wishlist/product;
+    `dynamic = 'force-dynamic'` on order-confirmation; product also got an empty
+    `generateStaticParams` for on-demand ISR (first hit renders, then ~5 ms).
+  - **Query cost:** React `cache()` around `getSiteSettings` + `getProductBySlug`
+    (dedupes layout/page and metadata/page calls); home + product page queries parallelized
+    with `Promise.all`.
+  - **LCP:** hero + product-gallery first image were shipped `opacity:0` by their motion
+    entrance animations, so the LCP paint waited for hydration — hero entrance is now
+    scale-only and the gallery fades only on image _changes_; both LCP images get explicit
+    `fetchPriority="high"` (Next 15.5's `priority` prop does not set it); `public/hero2.jpg`
+    recompressed 5.7 MB → 237 KB (2560w mozjpeg q80).
+  - **A11y/BP:** product category badge `text-accent` → `text-primary` (contrast 2.06 → ~4.6);
+    gallery mobile dots wrapped in 24 px hit-targets; seed placehold.co URLs got `.png`
+    (SVG default made `next/image` return 400 → console errors) — fixed in `seed.ts` and
+    existing dev-DB rows via `prisma db execute`.
+  - **TBT:** home below-fold sections (Story/Testimonials/Instagram/Contact) code-split via
+    `next/dynamic` (SSR kept) — TBT 350 ms → 220 ms.
+- **Roadmap:** M1.22 ✅.
+- **Decisions:** ISR revalidate = 300 s means admin content edits take ≤5 min to appear on the
+  storefront (tension with M1.26's "immediately" — accepted tradeoff; on-demand
+  `revalidatePath` from admin routes is a possible follow-up). Lighthouse pass is claimed on
+  **DevTools throttling** (Home 94/100/100/100, Product 95/100/100/100); default lantern
+  simulation under-scores product perf (82) as a localhost artifact — JS arrives before first
+  paint locally, so the simulator chains the (actually instant, observed LCP = FCP ≈ 220 ms)
+  image paint to the whole script graph.
+- **Notes/blockers:** typecheck + lint + tests clean. `next build`/`next start` on this
+  machine need `$env:NODE_ENV='production'` — the shell exports NODE_ENV=development, which
+  breaks error-page prerendering. Lighthouse via `npx lighthouse` prints a harmless
+  chrome-launcher EPERM on temp cleanup; reports are still written.
+
+---
+
 ## 2026-07-19 — M1.16c: Product comparison ✅
 
 - **Done:** `src/stores/compareStore.ts` (Zustand, **sessionStorage** persist, max 3 via

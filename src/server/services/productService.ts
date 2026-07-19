@@ -1,4 +1,5 @@
 import 'server-only'
+import { cache } from 'react'
 import { Prisma } from '@prisma/client'
 import { prisma } from '@/server/prisma'
 import type { ProductDTO } from '@/shared/types'
@@ -161,13 +162,15 @@ export async function getProducts(opts: GetProductsOptions = {}): Promise<Produc
   }
 }
 
-export async function getProductBySlug(slug: string): Promise<ProductDTO | null> {
+// React cache(): deduped per request — generateMetadata and the product page
+// both fetch the same slug, so this halves the DB roundtrips per page view.
+export const getProductBySlug = cache(async (slug: string): Promise<ProductDTO | null> => {
   const product = await prisma.product.findUnique({
     where: { slug, isActive: true },
     include: productInclude,
   })
   return product ? toProductDTO(product) : null
-}
+})
 
 /** Fetch active products by id, preserving the input order (wishlist / compare lists). */
 export async function getProductsByIds(ids: string[]): Promise<ProductDTO[]> {

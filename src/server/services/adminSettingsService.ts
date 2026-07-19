@@ -1,4 +1,5 @@
 import 'server-only'
+import { cache } from 'react'
 import { Prisma } from '@prisma/client'
 import { prisma } from '@/server/prisma'
 import { geocodeIsraeliAddress } from '@/server/services/deliveryDistanceService'
@@ -72,7 +73,9 @@ const DEFAULT_SETTINGS: SiteSettingsDTO = {
 
 // ── Get ───────────────────────────────────────────────────────────────────────
 
-export async function getSiteSettings(): Promise<SiteSettingsDTO> {
+// React cache(): deduped per request — the storefront layout and pages both call
+// this, so without it every page render costs an extra DB roundtrip.
+export const getSiteSettings = cache(async (): Promise<SiteSettingsDTO> => {
   const row = await prisma.siteContent.findUnique({ where: { key: SETTINGS_KEY } })
   if (!row) return DEFAULT_SETTINGS
   const value = row.value as Partial<SiteSettingsDTO>
@@ -81,7 +84,7 @@ export async function getSiteSettings(): Promise<SiteSettingsDTO> {
     shipping: { ...DEFAULT_SETTINGS.shipping, ...(value.shipping ?? {}) },
     delivery: { ...DEFAULT_SETTINGS.delivery, ...(value.delivery ?? {}) },
   }
-}
+})
 
 // ── Upsert ────────────────────────────────────────────────────────────────────
 

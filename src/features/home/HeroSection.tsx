@@ -35,10 +35,12 @@ export function HeroSection({ locale, whatsappNumber }: HeroSectionProps) {
       }
     : { initial: false as const }
 
+  // Scale-only entrance (no opacity fade): a fade-from-0 ships opacity:0 in the
+  // SSR HTML, so the hero — the page's LCP element — can't paint until hydration.
   const imageEntranceProps = shouldAnimate
     ? {
-        initial: { opacity: 0, scale: 1.06 },
-        animate: { opacity: 1, scale: 1 },
+        initial: { scale: 1.06 },
+        animate: { scale: 1 },
         transition: { duration: 0.8, ease: 'easeOut' },
       }
     : { initial: false as const }
@@ -53,6 +55,7 @@ export function HeroSection({ locale, whatsappNumber }: HeroSectionProps) {
           alt=""
           fill
           priority
+          fetchPriority="high"
           sizes="100vw"
           className={cn('object-cover', locale === 'en' && '-scale-x-100')}
         />

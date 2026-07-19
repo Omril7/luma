@@ -107,21 +107,21 @@ async function main() {
       images: {
         create: [
           {
-            url: 'https://placehold.co/800x600/C8A96E/white?text=Oak+Table',
+            url: 'https://placehold.co/800x600/C8A96E/white.png?text=Oak+Table',
             altText_he: 'שולחן אוכל עץ אלון - תמונה ראשית',
             altText_en: 'Oak dining table - main image',
             sortOrder: 0,
             isPrimary: true,
           },
           {
-            url: 'https://placehold.co/800x600/B89A5E/white?text=Oak+Table+2',
+            url: 'https://placehold.co/800x600/B89A5E/white.png?text=Oak+Table+2',
             altText_he: 'שולחן אוכל עץ אלון - פרטי עץ',
             altText_en: 'Oak dining table - wood detail',
             sortOrder: 1,
             isPrimary: false,
           },
           {
-            url: 'https://placehold.co/800x600/A88A4E/white?text=Oak+Table+3',
+            url: 'https://placehold.co/800x600/A88A4E/white.png?text=Oak+Table+3',
             altText_he: 'שולחן אוכל עץ אלון - זווית צד',
             altText_en: 'Oak dining table - side angle',
             sortOrder: 2,
@@ -206,14 +206,14 @@ async function main() {
       images: {
         create: [
           {
-            url: 'https://placehold.co/800x600/C8A96E/white?text=Wall+Shelf',
+            url: 'https://placehold.co/800x600/C8A96E/white.png?text=Wall+Shelf',
             altText_he: 'מדף קיר צף - תמונה ראשית',
             altText_en: 'Floating wall shelf - main image',
             sortOrder: 0,
             isPrimary: true,
           },
           {
-            url: 'https://placehold.co/800x600/B89A5E/white?text=Shelf+Detail',
+            url: 'https://placehold.co/800x600/B89A5E/white.png?text=Shelf+Detail',
             altText_he: 'מדף קיר - פרטי עץ',
             altText_en: 'Wall shelf - wood detail',
             sortOrder: 1,
@@ -296,14 +296,14 @@ async function main() {
       images: {
         create: [
           {
-            url: 'https://placehold.co/800x600/C8A96E/white?text=Nightstand',
+            url: 'https://placehold.co/800x600/C8A96E/white.png?text=Nightstand',
             altText_he: 'שידת לילה עץ מלא - תמונה ראשית',
             altText_en: 'Solid wood nightstand - main image',
             sortOrder: 0,
             isPrimary: true,
           },
           {
-            url: 'https://placehold.co/800x600/B89A5E/white?text=Nightstand+Open',
+            url: 'https://placehold.co/800x600/B89A5E/white.png?text=Nightstand+Open',
             altText_he: 'שידת לילה - מגירות פתוחות',
             altText_en: 'Nightstand - drawers open',
             sortOrder: 1,
@@ -375,21 +375,21 @@ async function main() {
       images: {
         create: [
           {
-            url: 'https://placehold.co/800x600/C8A96E/white?text=TV+Console',
+            url: 'https://placehold.co/800x600/C8A96E/white.png?text=TV+Console',
             altText_he: 'מזנון טלוויזיה - תמונה ראשית',
             altText_en: 'TV console - main image',
             sortOrder: 0,
             isPrimary: true,
           },
           {
-            url: 'https://placehold.co/800x600/B89A5E/white?text=Console+Detail',
+            url: 'https://placehold.co/800x600/B89A5E/white.png?text=Console+Detail',
             altText_he: 'מזנון טלוויזיה - פרטי עץ',
             altText_en: 'TV console - wood detail',
             sortOrder: 1,
             isPrimary: false,
           },
           {
-            url: 'https://placehold.co/800x600/A88A4E/white?text=Console+Open',
+            url: 'https://placehold.co/800x600/A88A4E/white.png?text=Console+Open',
             altText_he: 'מזנון טלוויזיה - תאים פתוחים',
             altText_en: 'TV console - open compartments',
             sortOrder: 2,
@@ -620,7 +620,7 @@ async function main() {
         subtitle_en: 'Every piece handmade in Israel from solid wood, exactly to your dimensions',
         cta_he: 'גלה את הקולקציה',
         cta_en: 'Explore the collection',
-        imageUrl: 'https://placehold.co/1600x900/C8A96E/white?text=Luma+Furniture',
+        imageUrl: 'https://placehold.co/1600x900/C8A96E/white.png?text=Luma+Furniture',
       },
     },
     {
@@ -632,7 +632,7 @@ async function main() {
           'לומה נולדה מתוך אהבה לעץ ולמלאכה. כל פריט שאנו יוצרים הוא שילוב של עיצוב מודרני ומסורת אומנותית עתיקה. אנו מאמינים שרהיטים טובים הם השקעה לכל החיים.',
         body_en:
           'Luma was born from a love of wood and craft. Every piece we create blends modern design with ancient artisanal tradition. We believe great furniture is a lifelong investment.',
-        imageUrl: 'https://placehold.co/800x600/5C3D2E/white?text=Our+Workshop',
+        imageUrl: 'https://placehold.co/800x600/5C3D2E/white.png?text=Our+Workshop',
       },
     },
     {
@@ -644,7 +644,7 @@ async function main() {
           'לומה היא סטודיו לרהיטים עשויים ביד, ממוקם בישראל. אנו מתמחים ברהיטי עץ מלא מותאמים אישית לכל לקוח. הסדנה שלנו פעילה משנת 2018, ומאז ייצרנו מאות פריטים ייחודיים לבתים ברחבי הארץ.',
         body_en:
           'Luma is a handcrafted furniture studio based in Israel. We specialize in solid wood furniture custom-made for each client. Our workshop has been active since 2018, and since then we have crafted hundreds of unique pieces for homes across the country.',
-        imageUrl: 'https://placehold.co/1200x800/C8A96E/white?text=About+Luma',
+        imageUrl: 'https://placehold.co/1200x800/C8A96E/white.png?text=About+Luma',
       },
     },
     {

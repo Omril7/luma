@@ -1,13 +1,29 @@
 import type { Metadata } from 'next'
+import dynamicImport from 'next/dynamic'
 import { HeroSection } from '@/features/home/HeroSection'
 // import { FeaturedSection } from '@/features/home/FeaturedSection'
-import { StorySection } from '@/features/home/StorySection'
-import { TestimonialsSection, type TestimonialItem } from '@/features/home/TestimonialsSection'
-import { InstagramSection } from '@/features/home/InstagramSection'
-import { ContactSection } from '@/features/home/ContactSection'
+import type { TestimonialItem } from '@/features/home/TestimonialsSection'
+
+// Below-the-fold sections: still server-rendered, but their client JS is split
+// into separate chunks so above-the-fold hydration isn't one long task.
+const StorySection = dynamicImport(() =>
+  import('@/features/home/StorySection').then((m) => m.StorySection)
+)
+const TestimonialsSection = dynamicImport(() =>
+  import('@/features/home/TestimonialsSection').then((m) => m.TestimonialsSection)
+)
+const InstagramSection = dynamicImport(() =>
+  import('@/features/home/InstagramSection').then((m) => m.InstagramSection)
+)
+const ContactSection = dynamicImport(() =>
+  import('@/features/home/ContactSection').then((m) => m.ContactSection)
+)
 import { getSiteContentByKey } from '@/server/services/adminSiteContentService'
 import { getSiteSettings } from '@/server/services/adminSettingsService'
 import { listActiveInstagramHighlights } from '@/server/services/adminInstagramService'
+import { setRequestLocale } from 'next-intl/server'
+
+export const revalidate = 300
 
 export async function generateMetadata({
   params,
@@ -26,11 +42,14 @@ export async function generateMetadata({
 
 export default async function HomePage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params
+  setRequestLocale(lang)
 
-  const row = await getSiteContentByKey('home.testimonials')
+  const [row, { business }, instagramHighlights] = await Promise.all([
+    getSiteContentByKey('home.testimonials'),
+    getSiteSettings(),
+    listActiveInstagramHighlights(),
+  ])
   const testimonials = (row?.value as { items?: TestimonialItem[] } | undefined)?.items ?? []
-  const { business } = await getSiteSettings()
-  const instagramHighlights = await listActiveInstagramHighlights()
 
   return (
     <>

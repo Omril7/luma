@@ -1,6 +1,8 @@
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
 import { CheckoutClient } from '@/features/checkout/CheckoutClient'
+
+export const revalidate = 300
 
 export async function generateMetadata({
   params,
@@ -14,5 +16,6 @@ export async function generateMetadata({
 
 export default async function CheckoutPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params
+  setRequestLocale(lang)
   return <CheckoutClient locale={lang} />
 }

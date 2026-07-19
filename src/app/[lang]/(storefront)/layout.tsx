@@ -1,3 +1,4 @@
+import { setRequestLocale } from 'next-intl/server'
 import { StorefrontLayout } from '@/components/layouts/StorefrontLayout'
 
 export default async function Layout({
@@ -8,5 +9,6 @@ export default async function Layout({
   params: Promise<{ lang: string }>
 }) {
   const { lang } = await params
+  setRequestLocale(lang)
   return <StorefrontLayout locale={lang}>{children}</StorefrontLayout>
 }

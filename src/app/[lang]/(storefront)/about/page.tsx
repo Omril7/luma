@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { getSiteContentByKey } from '@/server/services/adminSiteContentService'
 import { AboutContent } from '@/features/about/AboutContent'
+
+export const revalidate = 300
 
 interface AboutPageContent {
   title_he: string
@@ -31,6 +33,7 @@ export async function generateMetadata({
 
 export default async function AboutPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params
+  setRequestLocale(lang)
   const row = await getSiteContentByKey('about.page')
   const content: AboutPageContent = {
     ...DEFAULTS,

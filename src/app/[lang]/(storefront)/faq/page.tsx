@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { getSiteContentByKey } from '@/server/services/adminSiteContentService'
 import { FaqClient } from '@/features/faq/FaqClient'
+
+export const revalidate = 300
 
 interface FaqItem {
   q_he: string
@@ -22,6 +24,7 @@ export async function generateMetadata({
 
 export default async function FaqPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params
+  setRequestLocale(lang)
   const row = await getSiteContentByKey('faq.items')
   const value = row?.value as { items?: FaqItem[] } | undefined
   const items = value?.items ?? []
