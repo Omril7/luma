@@ -19,6 +19,34 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-07-19 — M1.28f: Gallery image titles/subtitles ✅
+
+- **Done:** Gallery items (SiteContent `gallery` JSON blob) gained optional bilingual
+  `title_he/en` + `subtitle_he/en`. `createGalleryImageSchema` extended (titles ≤150,
+  subtitles ≤300; `altText_*` relaxed to optional); `adminGalleryService` DTO + create/update
+  inputs updated (older blob items simply lack the keys — handled everywhere). Admin
+  `GalleryPage`: add-form now has title/subtitle/alt bilingual inputs (submit requires a
+  title **or** alt text per language, helper text explains); existing image cards — which
+  previously showed alt text read-only — are now fully editable in place (new `ImageCard`
+  component: title/subtitle/alt drafts, dirty-detection, per-card save with success flash).
+  Storefront `GalleryClient`: caption overlay on masonry tiles (bottom gradient scrim, title +
+  subtitle, `pointer-events-none`, hidden entirely when both empty) and a caption block under
+  the lightbox image; `<img alt>` falls back to the title when no dedicated alt text is set
+  (tile aria-label, lightbox dialog label, and lightbox alt all use the same fallback).
+- **Roadmap:** M1.28f ✅.
+- **Decisions:** Kept `altText_*` as a separate optional a11y-only override rather than
+  replacing it — titles usually describe the photo well enough for `alt`, so the form burden
+  stays low, but a dedicated alt can still be set when the title is stylistic. No new i18n
+  keys needed: captions are admin-entered data; the admin UI itself is Hebrew-literal like the
+  rest of the panel.
+- **Notes/blockers:** typecheck + lint + tests clean. Verified end-to-end against the dev
+  server: PATCH with Hebrew+English captions → both `/he/gallery` and `/en/gallery` render
+  them; reverted captions → overlay disappears cleanly, alt text still served. (Gotcha: Hebrew
+  JSON sent through bash/curl on Windows got mangled to `?` — use a UTF-8-safe client when
+  testing.)
+
+---
+
 ## 2026-07-19 — M1.22: SEO + performance ✅
 
 - **Done:**

@@ -256,8 +256,14 @@ export type SendNewsletterInput = z.infer<typeof sendNewsletterSchema>
 
 export const createGalleryImageSchema = z.object({
   url: z.string().url(),
-  altText_he: z.string().min(1).max(300),
-  altText_en: z.string().min(1).max(300),
+  // Display caption (optional) — shown on the public gallery tile / lightbox
+  title_he: z.string().max(150).optional(),
+  title_en: z.string().max(150).optional(),
+  subtitle_he: z.string().max(300).optional(),
+  subtitle_en: z.string().max(300).optional(),
+  // Dedicated a11y text; when empty the storefront derives <img alt> from the title
+  altText_he: z.string().max(300).optional(),
+  altText_en: z.string().max(300).optional(),
   sortOrder: z.number().int().min(0).optional(),
 })
 

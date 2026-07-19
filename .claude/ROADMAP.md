@@ -326,14 +326,14 @@ Audit-driven punch list closing gaps between what the admin panel lets you edit 
 - [x] Header/Footer catalog links unconditional; cart icon stays gated
 - **Acceptance:** with `FEATURES.shop=false`, visitors can browse the full catalog and product pages with a static price and no purchase affordances; flipping the flag back to `true` restores the full buy flow with zero regressions. _(`.claude/docs/12-showcase-mode.md`.)_
 
-### M1.28f Gallery image titles/subtitles
+### M1.28f Gallery image titles/subtitles ✅
 
-- [ ] Extend the gallery item shape (SiteContent `gallery` blob, `adminGalleryService.ts`) with bilingual `title_he`/`title_en` + `subtitle_he`/`subtitle_en` per image, in addition to (or replacing) the current `altText_he`/`altText_en`
-- [ ] Admin `GalleryPage.tsx`: add title + subtitle fields (bilingual) to both the "add new image" form and each existing image's edit card, alongside the current alt-text inputs
-- [ ] Storefront `GalleryClient.tsx`: render the locale-appropriate title/subtitle as a caption overlay on each masonry tile (and/or under the image in the lightbox) when set; fall back gracefully when empty
-- [ ] Decide alt-text handling: either keep `altText_*` as a separate a11y-only field, or derive the `<img alt>` from `title_*` when no dedicated alt text is set (avoid duplicate bilingual inputs if titles already describe the image)
-- [ ] `GalleryImageDTO` (shared between admin service, public `listGalleryImages`, and `GalleryClient`) updated accordingly; no new Prisma model needed (still a JSON blob under `SiteContent` key `gallery`)
-- **Acceptance:** every gallery image can have a bilingual title + subtitle set in the admin; the public `/gallery` page displays them as a caption on the image (grid and/or lightbox); existing images without a title still render without a broken/empty caption.
+- [x] Extend the gallery item shape (SiteContent `gallery` blob, `adminGalleryService.ts`) with bilingual `title_he`/`title_en` + `subtitle_he`/`subtitle_en` per image, in addition to the current `altText_he`/`altText_en`
+- [x] Admin `GalleryPage.tsx`: add title + subtitle fields (bilingual) to both the "add new image" form and each existing image's edit card, alongside the current alt-text inputs _(cards had no text editing at all before — now every text field is editable in place with a per-card save)_
+- [x] Storefront `GalleryClient.tsx`: render the locale-appropriate title/subtitle as a caption overlay on each masonry tile and under the image in the lightbox when set; fall back gracefully when empty
+- [x] Decide alt-text handling: kept `altText_*` as a dedicated a11y field but made it optional — the storefront derives `<img alt>` from `title_*` when no alt text is set; the add form requires a title **or** alt text per language
+- [x] `GalleryImageDTO` (shared between admin service, public `listGalleryImages`, and `GalleryClient`) updated accordingly; no new Prisma model needed (still a JSON blob under `SiteContent` key `gallery`)
+- **Acceptance:** every gallery image can have a bilingual title + subtitle set in the admin; the public `/gallery` page displays them as a caption on the image (grid and/or lightbox); existing images without a title still render without a broken/empty caption. _(Verified end-to-end via admin API + both locale pages.)_
 
 ---
 

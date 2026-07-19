@@ -54,6 +54,13 @@ export function GalleryClient({ locale, intro, images }: GalleryClientProps) {
   }, [openIndex, close, showPrev, showNext, isRtl])
 
   const current = openIndex !== null ? images[openIndex] : null
+  const currentTitle = current ? (locale === 'he' ? current.title_he : current.title_en) || '' : ''
+  const currentSubtitle = current
+    ? (locale === 'he' ? current.subtitle_he : current.subtitle_en) || ''
+    : ''
+  const currentAlt = current
+    ? (locale === 'he' ? current.altText_he : current.altText_en) || currentTitle
+    : ''
 
   return (
     <section className="py-12 md:py-20">
@@ -85,18 +92,36 @@ export function GalleryClient({ locale, intro, images }: GalleryClientProps) {
         ) : (
           <div className="columns-2 gap-3 sm:gap-4 md:columns-3">
             {images.map((image, index) => {
-              const alt = (locale === 'he' ? image.altText_he : image.altText_en) || ''
+              const title = (locale === 'he' ? image.title_he : image.title_en) || ''
+              const subtitle = (locale === 'he' ? image.subtitle_he : image.subtitle_en) || ''
+              // Dedicated alt text wins; otherwise the caption title describes the image
+              const alt = (locale === 'he' ? image.altText_he : image.altText_en) || title
               return (
                 <motion.button
                   key={image.id}
                   type="button"
                   onClick={() => setOpenIndex(index)}
-                  className="mb-3 block w-full cursor-pointer overflow-hidden rounded-lg border border-border bg-secondary sm:mb-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                  className="relative mb-3 block w-full cursor-pointer overflow-hidden rounded-lg border border-border bg-secondary sm:mb-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                   whileHover={shouldAnimate ? { opacity: 0.9 } : undefined}
                   aria-label={alt || t('imageCount', { current: index + 1, total: images.length })}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element -- natural masonry sizing needs the browser's intrinsic image dimensions; width/height metadata isn't stored for gallery images */}
                   <img src={image.url} alt={alt} loading="lazy" className="block w-full" />
+                  {(title || subtitle) && (
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-0.5 bg-gradient-to-t from-black/70 via-black/35 to-transparent px-3 pb-2.5 pt-8 text-start"
+                    >
+                      {title && (
+                        <span className="text-sm font-semibold leading-snug text-white">
+                          {title}
+                        </span>
+                      )}
+                      {subtitle && (
+                        <span className="text-xs leading-snug text-white/85">{subtitle}</span>
+                      )}
+                    </span>
+                  )}
                 </motion.button>
               )
             })}
@@ -110,7 +135,7 @@ export function GalleryClient({ locale, intro, images }: GalleryClientProps) {
           <motion.div
             role="dialog"
             aria-modal="true"
-            aria-label={current.altText_he || current.altText_en || t('title')}
+            aria-label={currentAlt || t('title')}
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -167,11 +192,23 @@ export function GalleryClient({ locale, intro, images }: GalleryClientProps) {
               {/* eslint-disable-next-line @next/next/no-img-element -- lightbox displays the image at its natural aspect ratio within a max-height/width box */}
               <img
                 src={current.url}
-                alt={(locale === 'he' ? current.altText_he : current.altText_en) || ''}
-                className="max-h-[85vh] max-w-full rounded-lg object-contain"
+                alt={currentAlt}
+                className="max-h-[80vh] max-w-full rounded-lg object-contain"
               />
+              {(currentTitle || currentSubtitle) && (
+                <div className="mt-3 text-center">
+                  {currentTitle && (
+                    <p className="text-base font-semibold leading-snug text-white">
+                      {currentTitle}
+                    </p>
+                  )}
+                  {currentSubtitle && (
+                    <p className="mt-0.5 text-sm leading-snug text-white/80">{currentSubtitle}</p>
+                  )}
+                </div>
+              )}
               {images.length > 1 && (
-                <p className="mt-3 text-center text-sm text-white/70">
+                <p className="mt-2 text-center text-sm text-white/70">
                   {t('imageCount', { current: (openIndex ?? 0) + 1, total: images.length })}
                 </p>
               )}

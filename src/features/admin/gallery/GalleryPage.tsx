@@ -12,10 +12,20 @@ import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
 interface GalleryImageDTO {
   id: string
   url: string
+  title_he?: string
+  title_en?: string
+  subtitle_he?: string
+  subtitle_en?: string
   altText_he: string
   altText_en: string
   sortOrder: number
 }
+
+// The editable text fields of a gallery image (everything except url/id/sortOrder)
+type GalleryImageTexts = Pick<
+  GalleryImageDTO,
+  'title_he' | 'title_en' | 'subtitle_he' | 'subtitle_en' | 'altText_he' | 'altText_en'
+>
 
 interface GalleryIntro {
   title_he: string
@@ -60,6 +70,10 @@ export function GalleryPage() {
 
   // New image form state
   const [newUrl, setNewUrl] = useState<string | null>(null)
+  const [newTitleHe, setNewTitleHe] = useState('')
+  const [newTitleEn, setNewTitleEn] = useState('')
+  const [newSubtitleHe, setNewSubtitleHe] = useState('')
+  const [newSubtitleEn, setNewSubtitleEn] = useState('')
   const [newAltHe, setNewAltHe] = useState('')
   const [newAltEn, setNewAltEn] = useState('')
   const [adding, setAdding] = useState(false)
@@ -180,8 +194,13 @@ export function GalleryPage() {
 
   // ── Add ───────────────────────────────────────────────────────────────────
 
+  const canAdd =
+    !!newUrl &&
+    (newTitleHe.trim().length > 0 || newAltHe.trim().length > 0) &&
+    (newTitleEn.trim().length > 0 || newAltEn.trim().length > 0)
+
   async function handleAdd() {
-    if (!token || !newUrl || !newAltHe.trim() || !newAltEn.trim()) return
+    if (!token || !canAdd || !newUrl) return
     setAdding(true)
     setAddError(null)
     try {
@@ -189,6 +208,10 @@ export function GalleryPage() {
         '/api/admin/gallery',
         {
           url: newUrl,
+          title_he: newTitleHe.trim(),
+          title_en: newTitleEn.trim(),
+          subtitle_he: newSubtitleHe.trim(),
+          subtitle_en: newSubtitleEn.trim(),
           altText_he: newAltHe.trim(),
           altText_en: newAltEn.trim(),
         },
@@ -196,6 +219,10 @@ export function GalleryPage() {
       )
       setImages((prev) => [...prev, data.image].sort((a, b) => a.sortOrder - b.sortOrder))
       setNewUrl(null)
+      setNewTitleHe('')
+      setNewTitleEn('')
+      setNewSubtitleHe('')
+      setNewSubtitleEn('')
       setNewAltHe('')
       setNewAltEn('')
       setAddSuccess(true)
@@ -206,8 +233,6 @@ export function GalleryPage() {
       setAdding(false)
     }
   }
-
-  const canAdd = !!newUrl && newAltHe.trim().length > 0 && newAltEn.trim().length > 0
 
   // ── Loading / error ───────────────────────────────────────────────────────
 
@@ -334,71 +359,18 @@ export function GalleryPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {images.map((img, idx) => (
-            <div
+            <ImageCard
               key={img.id}
-              className="bg-surface border border-border rounded-lg overflow-hidden group"
-            >
-              {/* Image */}
-              <div className="relative aspect-[4/3] bg-bg">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={img.url}
-                  alt={img.altText_he}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-
-                {/* Reorder controls — overlay on hover */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
-                  <button
-                    type="button"
-                    onClick={() => handleMove(idx, -1)}
-                    disabled={idx === 0}
-                    aria-label="הזז למעלה"
-                    className="flex items-center justify-center w-9 h-9 rounded-full bg-white/90 text-text-main hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-sm"
-                  >
-                    <ArrowUp size={16} aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleMove(idx, 1)}
-                    disabled={idx === images.length - 1}
-                    aria-label="הזז למטה"
-                    className="flex items-center justify-center w-9 h-9 rounded-full bg-white/90 text-text-main hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-sm"
-                  >
-                    <ArrowDown size={16} aria-hidden="true" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Meta + actions */}
-              <div className="p-3 space-y-1.5">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0 space-y-0.5">
-                    <p className="text-xs text-text-main truncate flex items-center gap-1.5">
-                      <IsraelFlag className="w-[14px] h-[9px] rounded-[2px] shrink-0 shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
-                      {img.altText_he}
-                    </p>
-                    <p
-                      className="text-xs text-text-muted truncate flex items-center gap-1.5"
-                      dir="ltr"
-                    >
-                      <USAFlag className="w-[14px] h-[9px] rounded-[2px] shrink-0 shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
-                      {img.altText_en}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setDeleteId(img.id)}
-                    aria-label={`מחק תמונה — ${img.altText_he}`}
-                    className="flex items-center justify-center w-8 h-8 min-h-[44px] min-w-[44px] -me-1 rounded-lg text-text-muted hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                  >
-                    <Trash2 size={15} aria-hidden="true" />
-                  </button>
-                </div>
-                <p className="text-[11px] text-text-muted">סדר: {img.sortOrder + 1}</p>
-              </div>
-            </div>
+              img={img}
+              idx={idx}
+              count={images.length}
+              token={token ?? ''}
+              onMove={handleMove}
+              onRequestDelete={setDeleteId}
+              onSaved={(updated) =>
+                setImages((prev) => prev.map((i) => (i.id === updated.id ? updated : i)))
+              }
+            />
           ))}
         </div>
       )}
@@ -414,40 +386,81 @@ export function GalleryPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>
-              טקסט חלופי{' '}
-              <IsraelFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
-              <span className="text-red-500 ms-0.5" aria-hidden="true">
-                *
-              </span>
-            </label>
+            <label className={labelCls}>כותרת {badgeHe}</label>
+            <input
+              type="text"
+              value={newTitleHe}
+              onChange={(e) => setNewTitleHe(e.target.value)}
+              dir="rtl"
+              placeholder="שולחן אלון בהזמנה אישית"
+              className={inputCls}
+            />
+          </div>
+          <div dir="ltr">
+            <label className={labelCls}>Title {badgeEn}</label>
+            <input
+              type="text"
+              value={newTitleEn}
+              onChange={(e) => setNewTitleEn(e.target.value)}
+              dir="ltr"
+              placeholder="Custom oak table"
+              className={inputCls}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>תת-כותרת {badgeHe}</label>
+            <input
+              type="text"
+              value={newSubtitleHe}
+              onChange={(e) => setNewSubtitleHe(e.target.value)}
+              dir="rtl"
+              placeholder="אלון מלא, גימור שמן טבעי"
+              className={inputCls}
+            />
+          </div>
+          <div dir="ltr">
+            <label className={labelCls}>Subtitle {badgeEn}</label>
+            <input
+              type="text"
+              value={newSubtitleEn}
+              onChange={(e) => setNewSubtitleEn(e.target.value)}
+              dir="ltr"
+              placeholder="Solid oak, natural oil finish"
+              className={inputCls}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>טקסט חלופי (נגישות) {badgeHe}</label>
             <input
               type="text"
               value={newAltHe}
               onChange={(e) => setNewAltHe(e.target.value)}
               dir="rtl"
-              placeholder="תיאור התמונה בעברית"
+              placeholder="אם ריק — הכותרת תשמש"
               className={inputCls}
             />
           </div>
           <div dir="ltr">
-            <label className={labelCls}>
-              Alt text{' '}
-              <USAFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
-              <span className="text-red-500 ms-0.5" aria-hidden="true">
-                *
-              </span>
-            </label>
+            <label className={labelCls}>Alt text {badgeEn}</label>
             <input
               type="text"
               value={newAltEn}
               onChange={(e) => setNewAltEn(e.target.value)}
               dir="ltr"
-              placeholder="Image description in English"
+              placeholder="Falls back to title"
               className={inputCls}
             />
           </div>
         </div>
+        <p className="text-[11px] text-text-muted -mt-2">
+          הכותרת והתת-כותרת יוצגו על התמונה בגלריה. נדרשת כותרת או טקסט חלופי בכל שפה.
+        </p>
 
         <div className="flex items-center justify-between pt-1">
           <div>
@@ -526,6 +539,219 @@ export function GalleryPage() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+// ── Editable image card ────────────────────────────────────────────────────────
+
+function textsOf(img: GalleryImageDTO): GalleryImageTexts {
+  return {
+    title_he: img.title_he ?? '',
+    title_en: img.title_en ?? '',
+    subtitle_he: img.subtitle_he ?? '',
+    subtitle_en: img.subtitle_en ?? '',
+    altText_he: img.altText_he ?? '',
+    altText_en: img.altText_en ?? '',
+  }
+}
+
+function ImageCard({
+  img,
+  idx,
+  count,
+  token,
+  onMove,
+  onRequestDelete,
+  onSaved,
+}: {
+  img: GalleryImageDTO
+  idx: number
+  count: number
+  token: string
+  onMove: (idx: number, dir: -1 | 1) => void
+  onRequestDelete: (id: string) => void
+  onSaved: (updated: GalleryImageDTO) => void
+}) {
+  const [draft, setDraft] = useState<GalleryImageTexts>(() => textsOf(img))
+  const [saving, setSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+
+  const dirty = JSON.stringify(draft) !== JSON.stringify(textsOf(img))
+
+  function setField<K extends keyof GalleryImageTexts>(k: K, v: string) {
+    setDraft((prev) => ({ ...prev, [k]: v }))
+  }
+
+  async function handleSave() {
+    if (!token || !dirty) return
+    setSaving(true)
+    setSaveError(null)
+    try {
+      const data = await api.patch<{ image: GalleryImageDTO }>(
+        `/api/admin/gallery/${img.id}`,
+        draft,
+        token
+      )
+      onSaved(data.image)
+      setSaveSuccess(true)
+      setTimeout(() => setSaveSuccess(false), 3000)
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'שגיאה בשמירה')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const cardTitle = draft.title_he || draft.altText_he || `תמונה ${idx + 1}`
+
+  return (
+    <div className="bg-surface border border-border rounded-lg overflow-hidden group">
+      {/* Image */}
+      <div className="relative aspect-[4/3] bg-bg">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={img.url}
+          alt={img.altText_he || img.title_he || ''}
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+
+        {/* Reorder controls — overlay on hover */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+          <button
+            type="button"
+            onClick={() => onMove(idx, -1)}
+            disabled={idx === 0}
+            aria-label="הזז למעלה"
+            className="flex items-center justify-center w-9 h-9 rounded-full bg-white/90 text-text-main hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-sm"
+          >
+            <ArrowUp size={16} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={() => onMove(idx, 1)}
+            disabled={idx === count - 1}
+            aria-label="הזז למטה"
+            className="flex items-center justify-center w-9 h-9 rounded-full bg-white/90 text-text-main hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-sm"
+          >
+            <ArrowDown size={16} aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+
+      {/* Editable texts */}
+      <div className="p-3 space-y-3">
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className={labelCls}>כותרת {badgeHe}</label>
+            <input
+              type="text"
+              value={draft.title_he}
+              onChange={(e) => setField('title_he', e.target.value)}
+              dir="rtl"
+              className={inputCls}
+            />
+          </div>
+          <div dir="ltr">
+            <label className={labelCls}>Title {badgeEn}</label>
+            <input
+              type="text"
+              value={draft.title_en}
+              onChange={(e) => setField('title_en', e.target.value)}
+              dir="ltr"
+              className={inputCls}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className={labelCls}>תת-כותרת {badgeHe}</label>
+            <input
+              type="text"
+              value={draft.subtitle_he}
+              onChange={(e) => setField('subtitle_he', e.target.value)}
+              dir="rtl"
+              className={inputCls}
+            />
+          </div>
+          <div dir="ltr">
+            <label className={labelCls}>Subtitle {badgeEn}</label>
+            <input
+              type="text"
+              value={draft.subtitle_en}
+              onChange={(e) => setField('subtitle_en', e.target.value)}
+              dir="ltr"
+              className={inputCls}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className={labelCls}>טקסט חלופי (נגישות) {badgeHe}</label>
+            <input
+              type="text"
+              value={draft.altText_he}
+              onChange={(e) => setField('altText_he', e.target.value)}
+              dir="rtl"
+              placeholder="אם ריק — הכותרת תשמש"
+              className={inputCls}
+            />
+          </div>
+          <div dir="ltr">
+            <label className={labelCls}>Alt text {badgeEn}</label>
+            <input
+              type="text"
+              value={draft.altText_en}
+              onChange={(e) => setField('altText_en', e.target.value)}
+              dir="ltr"
+              placeholder="Falls back to title"
+              className={inputCls}
+            />
+          </div>
+        </div>
+
+        {/* Footer: order, feedback, actions */}
+        <div className="flex items-center justify-between gap-2 pt-0.5">
+          <div className="flex items-center gap-2 min-w-0">
+            <p className="text-[11px] text-text-muted shrink-0">סדר: {img.sortOrder + 1}</p>
+            {saveSuccess && (
+              <p className="text-xs text-green-600 flex items-center gap-1">
+                <Check size={12} aria-hidden="true" /> נשמר
+              </p>
+            )}
+            {saveError && <p className="text-xs text-red-600 truncate">{saveError}</p>}
+          </div>
+          <div className="flex items-center gap-1">
+            {dirty && (
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-1.5 bg-primary text-white text-xs font-medium px-3 py-2 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors min-h-[36px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                {saving ? (
+                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Check size={13} aria-hidden="true" />
+                )}
+                שמור
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => onRequestDelete(img.id)}
+              aria-label={`מחק תמונה — ${cardTitle}`}
+              className="flex items-center justify-center min-h-[36px] min-w-[36px] rounded-lg text-text-muted hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+            >
+              <Trash2 size={15} aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

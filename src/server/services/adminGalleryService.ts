@@ -6,11 +6,18 @@ import { deleteIfOrphaned } from '@/server/services/cloudinaryCleanupService'
 // ── Note ──────────────────────────────────────────────────────────────────────
 // The Prisma schema has no dedicated GalleryImage model.
 // Gallery is stored as a SiteContent blob under key "gallery".
-// Shape: array of { id, url, altText_he, altText_en, sortOrder }
+// Shape: array of { id, url, title_*, subtitle_*, altText_*, sortOrder }
+// (title/subtitle were added later — older items simply lack the keys)
 
 export interface GalleryImageDTO {
   id: string
   url: string
+  /** Display caption shown on the public gallery tile / lightbox (optional). */
+  title_he?: string
+  title_en?: string
+  subtitle_he?: string
+  subtitle_en?: string
+  /** Dedicated a11y text; storefront falls back to the title when empty. */
   altText_he: string
   altText_en: string
   sortOrder: number
@@ -48,8 +55,12 @@ export async function listGalleryImages(): Promise<GalleryImageDTO[]> {
 
 export interface CreateGalleryImageInput {
   url: string
-  altText_he: string
-  altText_en: string
+  title_he?: string
+  title_en?: string
+  subtitle_he?: string
+  subtitle_en?: string
+  altText_he?: string
+  altText_en?: string
   sortOrder?: number
 }
 
@@ -59,8 +70,12 @@ export async function createGalleryImage(data: CreateGalleryImageInput): Promise
   const newItem: GalleryImageDTO = {
     id: generateId(),
     url: data.url,
-    altText_he: data.altText_he,
-    altText_en: data.altText_en,
+    title_he: data.title_he ?? '',
+    title_en: data.title_en ?? '',
+    subtitle_he: data.subtitle_he ?? '',
+    subtitle_en: data.subtitle_en ?? '',
+    altText_he: data.altText_he ?? '',
+    altText_en: data.altText_en ?? '',
     sortOrder: data.sortOrder ?? maxSort + 1,
   }
   items.push(newItem)
@@ -72,6 +87,10 @@ export async function createGalleryImage(data: CreateGalleryImageInput): Promise
 
 export interface UpdateGalleryImageInput {
   url?: string
+  title_he?: string
+  title_en?: string
+  subtitle_he?: string
+  subtitle_en?: string
   altText_he?: string
   altText_en?: string
   sortOrder?: number
