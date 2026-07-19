@@ -21,6 +21,7 @@
     "gallery": "Gallery",
     "contact": "Contact",
     "cart": "Cart",
+    "wishlist": "Wishlist",
     "admin": "Admin"
   },
   "header": {
@@ -231,6 +232,21 @@
     "page": "Page {page} of {total}",
     "prevPage": "Previous page",
     "nextPage": "Next page"
+  },
+  "wishlist": {
+    "title": "My Wishlist",
+    "count": "{count, plural, one {# saved item} other {# saved items}}",
+    "share": "Share list",
+    "restored": "Shared list added to your wishlist",
+    "addToCart": "Add to Cart",
+    "addedToCart": "{name} added to cart",
+    "empty": {
+      "heading": "Your wishlist is empty",
+      "body": "Tap the heart on any product to save it here",
+      "cta": "View All Products"
+    },
+    "error": "We couldn't load your wishlist",
+    "retry": "Try again"
   },
   "about": {
     "title": "About Luma",

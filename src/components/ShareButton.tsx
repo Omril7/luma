@@ -7,18 +7,21 @@ import { useUiStore } from '@/stores/uiStore'
 interface ShareButtonProps {
   title: string
   text?: string
+  /** Explicit URL to share; defaults to the current page URL. */
+  url?: string
   className?: string
+  children?: React.ReactNode
 }
 
 const defaultCls =
   'flex min-h-[52px] min-w-[52px] items-center justify-center rounded-full border border-border bg-surface hover:bg-secondary transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
 
-export function ShareButton({ title, text, className }: ShareButtonProps) {
+export function ShareButton({ title, text, url: urlProp, className, children }: ShareButtonProps) {
   const t = useTranslations('product')
   const { addToast } = useUiStore()
 
   async function handleShare() {
-    const url = window.location.href
+    const url = urlProp ?? window.location.href
 
     if (navigator.share) {
       try {
@@ -47,7 +50,7 @@ export function ShareButton({ title, text, className }: ShareButtonProps) {
       aria-label={t('share')}
       className={className ?? defaultCls}
     >
-      <Share2 size={22} aria-hidden="true" className="text-text-muted" />
+      {children ?? <Share2 size={22} aria-hidden="true" className="text-text-muted" />}
     </button>
   )
 }

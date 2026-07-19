@@ -152,15 +152,15 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 - [x] Category filter, sort (price/newest/name), responsive cards ("from ₪X")
 - **Acceptance:** filtering/sorting hit the API and update the grid.
 
-### M1.16b Wishlist
+### M1.16b Wishlist ✅
 
 - [x] `wishlistStore` (Zustand, persisted to localStorage); SSR-safe hydration
 - [x] Heart-icon toggle on product cards + Product Detail page
-- [ ] `/wishlist` page: saved products list with per-item add-to-cart
-- [ ] Shareable via URL (`?wishlist=<ids>`)
-- **Acceptance:** wishlist survives page refresh; shared URL restores the list. _(Store + toggle
-  landed as part of M1.15/M1.17; the dedicated `/wishlist` page and shareable-URL restore are
-  still outstanding.)_
+- [x] `/wishlist` page: saved products list with per-item add-to-cart
+- [x] Shareable via URL (`?wishlist=<ids>`)
+- **Acceptance:** wishlist survives page refresh; shared URL restores the list. _(Per-item
+  add-to-cart is gated behind `FEATURES.shop` like the rest of the buy flow; a heart icon +
+  count badge in the header links to the page.)_
 
 ### M1.16c Product comparison
 

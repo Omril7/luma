@@ -19,6 +19,32 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-07-19 — M1.16b: Wishlist page + shareable URL ✅
+
+- **Done:** Dedicated `/wishlist` storefront page (`src/features/wishlist/WishlistClient.tsx` +
+  `[lang]/(storefront)/wishlist/page.tsx`): saved products rendered via the existing
+  `ProductCard` (heart toggle doubles as remove, animated exit), per-item add-to-cart button
+  (cheapest variant / base price — matches the card's "from ₪X"; hidden while
+  `FEATURES.shop=false`), skeleton loading, empty state with CTA to `/shop`, error state with
+  retry. Shareable URL: "Share list" button (extended `ShareButton` with `url` + `children`
+  props) copies `/wishlist?wishlist=<ids>`; visiting a shared link merges the ids into the
+  visitor's persisted list (toast on new additions) and cleans the query param.
+  `wishlistStore` gained `merge`/`remove` actions. `GET /api/products?ids=a,b,c` (new
+  `getProductsByIds` service, capped at 50, preserves order, drops inactive/deleted — client
+  prunes stale ids after fetch). Header: heart icon link with hydration-safe count badge
+  (cart badge count also made hydration-safe). New `wishlist` i18n namespace + `nav.wishlist`
+  (he+en, ICU plural for the count).
+- **Roadmap:** M1.16b ✅.
+- **Decisions:** Shared-link visit **merges** into (rather than replaces) the visitor's own
+  list — non-destructive restore. Add-to-cart from the wishlist uses the cheapest variant
+  snapshot since no variant/color/dims are chosen on a card; full configuration stays on the
+  product page.
+- **Notes/blockers:** typecheck + lint + tests clean. Smoke-tested against the dev server:
+  `?ids=` returns products in order and silently drops unknown ids; `/he/wishlist` and
+  `/en/wishlist?wishlist=<ids>` both 200.
+
+---
+
 ## 2026-07-19 — Price-offer requests (product page → admin notification)
 
 - **Done:** Customers can request a price offer for any product. New `PriceOfferRequest`

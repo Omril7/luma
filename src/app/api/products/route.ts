@@ -1,9 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withApi } from '@/server/http'
-import { getProducts, type ProductSortKey } from '@/server/services/productService'
+import {
+  getProducts,
+  getProductsByIds,
+  type ProductSortKey,
+} from '@/server/services/productService'
+
+const MAX_IDS = 50
 
 export const GET = withApi(async (req: NextRequest) => {
   const { searchParams } = req.nextUrl
+
+  // Explicit id list (wishlist / compare) — bypasses filtering and pagination
+  const idsParam = searchParams.get('ids')
+  if (idsParam !== null) {
+    const ids = idsParam
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean)
+      .slice(0, MAX_IDS)
+    const products = await getProductsByIds(ids)
+    return NextResponse.json({
+      products,
+      total: products.length,
+      page: 1,
+      limit: products.length,
+      totalPages: 1,
+    })
+  }
 
   const categoryId = searchParams.get('category') ?? undefined
   const featured = searchParams.has('featured')

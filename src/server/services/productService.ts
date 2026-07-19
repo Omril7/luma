@@ -169,6 +169,20 @@ export async function getProductBySlug(slug: string): Promise<ProductDTO | null>
   return product ? toProductDTO(product) : null
 }
 
+/** Fetch active products by id, preserving the input order (wishlist / compare lists). */
+export async function getProductsByIds(ids: string[]): Promise<ProductDTO[]> {
+  if (ids.length === 0) return []
+  const products = await prisma.product.findMany({
+    where: { id: { in: ids }, isActive: true },
+    include: productInclude,
+  })
+  const byId = new Map(products.map((p) => [p.id, p]))
+  return ids.flatMap((id) => {
+    const p = byId.get(id)
+    return p ? [toProductDTO(p)] : []
+  })
+}
+
 export async function getProductById(id: string): Promise<ProductDTO | null> {
   const product = await prisma.product.findUnique({
     where: { id, isActive: true },

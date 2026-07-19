@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link, usePathname } from '@/i18n/navigation'
 import { AnimatePresence, motion } from 'motion/react'
-import { ShoppingBag, Menu, X, Phone } from 'lucide-react'
+import { ShoppingBag, Menu, X, Phone, Heart } from 'lucide-react'
 import { useLanguageSwitch } from '@/hooks/useLanguageSwitch'
 import { useCartStore } from '@/stores/cartStore'
+import { useWishlistStore } from '@/stores/wishlistStore'
 import { useUiStore } from '@/stores/uiStore'
 import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
 import { Logo } from '@/components/ui/Logo'
@@ -25,16 +26,25 @@ export function Header({ phone }: { phone?: string }) {
   const tHeader = useTranslations('header')
   const { switchTo, isHebrew } = useLanguageSwitch()
   const cartItems = useCartStore((s) => s.items)
+  const wishlistIds = useWishlistStore((s) => s.ids)
   const { a11y } = useUiStore()
   const pathname = usePathname()
 
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   const shouldAnimate = !a11y.noMotion
   const telHref = phone ? `tel:${phone.replace(/[^0-9+]/g, '')}` : undefined
 
-  const itemCount = cartItems.reduce((sum, i) => sum + i.quantity, 0)
+  // Badge counts come from persisted stores — render them only after mount so the
+  // server HTML (always 0) matches the first client render.
+  const itemCount = mounted ? cartItems.reduce((sum, i) => sum + i.quantity, 0) : 0
+  const wishlistCount = mounted ? wishlistIds.length : 0
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10)
@@ -143,6 +153,23 @@ export function Header({ phone }: { phone?: string }) {
               <USAFlag className="h-[13px] w-[20px] rounded-[2px] shadow-[0_0_0_0.5px_rgba(0,0,0,0.12)]" />
             </button>
           </div>
+
+          {/* Wishlist */}
+          <Link
+            href="/wishlist"
+            className="relative flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-text-main transition-colors hover:text-primary focus-visible:outline-2"
+            aria-label={`${t('wishlist')}${wishlistCount > 0 ? ` (${wishlistCount})` : ''}`}
+          >
+            <Heart size={22} />
+            {wishlistCount > 0 && (
+              <span
+                aria-hidden="true"
+                className="absolute end-0 top-0 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-surface"
+              >
+                {wishlistCount > 99 ? '99+' : wishlistCount}
+              </span>
+            )}
+          </Link>
 
           {/* Cart */}
           {FEATURES.shop && (
