@@ -41,9 +41,10 @@ Keep entries short and factual. One entry per working session (or per merged cha
   after being applied — its checksum no longer matches; see Notes).
 - **Notes/blockers:** typecheck/lint/tests clean. Verified end-to-end: POST created the row
   (₪4,200 estimate for a 240cm custom console) and ConsoleEmailProvider logged the Hebrew
-  notification email; test row deleted afterwards. **Follow-up:** the `category_table`
-  migration checksum drift will make every future `prisma migrate dev` demand a reset —
-  should be fixed (update the checksum in `_prisma_migrations` or restore the original file).
+  notification email; test row deleted afterwards. **Follow-up (resolved same day):** the
+  "drift" was a leftover _failed + rolled-back_ `category_table` record in `_prisma_migrations`
+  (its checksum matched the pre-fix file). Deleted that stale row; `prisma migrate status` is
+  clean and `migrate dev` no longer demands a reset.
 
 ---
 
