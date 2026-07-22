@@ -27,6 +27,18 @@ interface HomeHero {
   subheading_en: string
 }
 
+interface HomeStory {
+  heading_he: string
+  heading_en: string
+  body1_he: string
+  body1_en: string
+  body2_he: string
+  body2_en: string
+  cta_he: string
+  cta_en: string
+  imageUrl: string
+}
+
 interface FaqItem {
   q_he: string
   q_en: string
@@ -54,6 +66,7 @@ interface TestimonialsData {
 
 type SiteContentMap = {
   'home.hero': HomeHero
+  'home.story': HomeStory
   'home.testimonials': TestimonialsData
   'about.page': AboutPage
   'faq.items': FaqItems
@@ -74,6 +87,19 @@ function defaultHomeHero(): HomeHero {
     heading_en: '',
     subheading_he: '',
     subheading_en: '',
+  }
+}
+function defaultHomeStory(): HomeStory {
+  return {
+    heading_he: '',
+    heading_en: '',
+    body1_he: '',
+    body1_en: '',
+    body2_he: '',
+    body2_en: '',
+    cta_he: '',
+    cta_en: '',
+    imageUrl: '',
   }
 }
 function defaultFaq(): FaqItems {
@@ -170,6 +196,7 @@ function useSaveSection(key: ContentKey, token: string | null) {
 
 const TABS: { key: ContentKey; label: string }[] = [
   { key: 'home.hero', label: 'דף הבית — הירו' },
+  { key: 'home.story', label: 'דף הבית — הסיפור שלנו' },
   { key: 'home.testimonials', label: 'דף הבית — המלצות לקוחות' },
   { key: 'about.page', label: 'אודות' },
   { key: 'faq.items', label: 'שאלות נפוצות' },
@@ -270,6 +297,152 @@ function HomeHeroTab({ data, onChange, onSave, saving, success, error }: HomeHer
             className={textareaCls}
           />
         </div>
+      </div>
+
+      <div className="flex items-center justify-between pt-2">
+        <SaveStatus success={success} error={error} />
+        <SaveButton saving={saving} onClick={onSave} />
+      </div>
+    </div>
+  )
+}
+
+interface HomeStoryTabProps {
+  data: HomeStory
+  onChange: (d: HomeStory) => void
+  onSave: () => void
+  saving: boolean
+  success: boolean
+  error: string | null
+  token: string
+}
+
+function HomeStoryTab({
+  data,
+  onChange,
+  onSave,
+  saving,
+  success,
+  error,
+  token,
+}: HomeStoryTabProps) {
+  function set<K extends keyof HomeStory>(k: K, v: HomeStory[K]) {
+    onChange({ ...data, [k]: v })
+  }
+  return (
+    <div className="space-y-4">
+      <h3 className="text-base font-semibold text-text-main mb-4">דף הבית — הסיפור שלנו</h3>
+      <p className="text-xs text-text-muted -mt-2 mb-2">
+        השאירו שדה טקסט ריק כדי להציג את ברירת המחדל הקיימת באתר.
+      </p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelCls}>כותרת {badgeHe}</label>
+          <input
+            type="text"
+            value={data.heading_he}
+            onChange={(e) => set('heading_he', e.target.value)}
+            dir="rtl"
+            placeholder="הסיפור שלנו"
+            className={inputCls}
+          />
+        </div>
+        <div dir="ltr">
+          <label className={labelCls}>Heading {badgeEn}</label>
+          <input
+            type="text"
+            value={data.heading_en}
+            onChange={(e) => set('heading_en', e.target.value)}
+            dir="ltr"
+            placeholder="Our Story"
+            className={inputCls}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelCls}>פסקה ראשונה {badgeHe}</label>
+          <textarea
+            rows={3}
+            value={data.body1_he}
+            onChange={(e) => set('body1_he', e.target.value)}
+            dir="rtl"
+            placeholder="לומה נולדה מאהבה לעץ ולמלאכת יד..."
+            className={`${textareaCls} min-h-[90px]`}
+          />
+        </div>
+        <div dir="ltr">
+          <label className={labelCls}>Paragraph 1 {badgeEn}</label>
+          <textarea
+            rows={3}
+            value={data.body1_en}
+            onChange={(e) => set('body1_en', e.target.value)}
+            dir="ltr"
+            placeholder="Luma was born from a love of wood and craftsmanship..."
+            className={`${textareaCls} min-h-[90px]`}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelCls}>פסקה שנייה {badgeHe}</label>
+          <textarea
+            rows={3}
+            value={data.body2_he}
+            onChange={(e) => set('body2_he', e.target.value)}
+            dir="rtl"
+            placeholder="אנו מאמינים שהבית שלך ראוי לריהוט שמספר סיפור..."
+            className={`${textareaCls} min-h-[90px]`}
+          />
+        </div>
+        <div dir="ltr">
+          <label className={labelCls}>Paragraph 2 {badgeEn}</label>
+          <textarea
+            rows={3}
+            value={data.body2_en}
+            onChange={(e) => set('body2_en', e.target.value)}
+            dir="ltr"
+            placeholder="We believe your home deserves furniture that tells a story..."
+            className={`${textareaCls} min-h-[90px]`}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelCls}>טקסט קישור {badgeHe}</label>
+          <input
+            type="text"
+            value={data.cta_he}
+            onChange={(e) => set('cta_he', e.target.value)}
+            dir="rtl"
+            placeholder="הכירו אותנו"
+            className={inputCls}
+          />
+        </div>
+        <div dir="ltr">
+          <label className={labelCls}>Link text {badgeEn}</label>
+          <input
+            type="text"
+            value={data.cta_en}
+            onChange={(e) => set('cta_en', e.target.value)}
+            dir="ltr"
+            placeholder="Meet Us"
+            className={inputCls}
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className={labelCls}>תמונה</label>
+        <ImageUpload
+          value={data.imageUrl || null}
+          onChange={(url) => set('imageUrl', url ?? '')}
+          token={token}
+        />
       </div>
 
       <div className="flex items-center justify-between pt-2">
@@ -724,6 +897,7 @@ export function SiteContentPage() {
   const [activeTab, setActiveTab] = useState<ContentKey>('home.hero')
 
   const [homeHero, setHomeHero] = useState<HomeHero>(defaultHomeHero())
+  const [homeStory, setHomeStory] = useState<HomeStory>(defaultHomeStory())
   const [testimonials, setTestimonials] = useState<TestimonialsData>(defaultTestimonials())
   const [about, setAbout] = useState<AboutPage>(defaultAbout())
   const [faq, setFaq] = useState<FaqItems>(defaultFaq())
@@ -732,6 +906,7 @@ export function SiteContentPage() {
   const [pageLoading, setPageLoading] = useState(true)
 
   const homeHeroSave = useSaveSection('home.hero', token)
+  const homeStorySave = useSaveSection('home.story', token)
   const testimonialsSave = useSaveSection('home.testimonials', token)
   const aboutSave = useSaveSection('about.page', token)
   const faqSave = useSaveSection('faq.items', token)
@@ -746,6 +921,7 @@ export function SiteContentPage() {
         token
       )
       if (content['home.hero']) setHomeHero(content['home.hero'] as HomeHero)
+      if (content['home.story']) setHomeStory(content['home.story'] as HomeStory)
       if (content['home.testimonials'])
         setTestimonials(content['home.testimonials'] as TestimonialsData)
       if (content['about.page']) setAbout(content['about.page'] as AboutPage)
@@ -824,6 +1000,17 @@ export function SiteContentPage() {
                 saving={homeHeroSave.saving}
                 success={homeHeroSave.success}
                 error={homeHeroSave.error}
+              />
+            )}
+            {activeTab === 'home.story' && (
+              <HomeStoryTab
+                data={homeStory}
+                onChange={setHomeStory}
+                onSave={() => homeStorySave.save(homeStory)}
+                saving={homeStorySave.saving}
+                success={homeStorySave.success}
+                error={homeStorySave.error}
+                token={token ?? ''}
               />
             )}
             {activeTab === 'home.testimonials' && (
