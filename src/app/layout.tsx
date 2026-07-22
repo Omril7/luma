@@ -39,17 +39,14 @@ export const metadata: Metadata = {
   description: 'Handmade custom furniture',
 }
 
-// Applies the custom dark palette before first paint when the OS prefers dark and the
-// user hasn't explicitly picked a visual mode yet — avoids a light-then-dark flash and
-// keeps this in sync with the fallback logic in components/A11yWidget.tsx.
+// Applies the custom dark palette before first paint if the user has explicitly
+// enabled it via the accessibility widget — the site defaults to light mode
+// regardless of the OS/browser `prefers-color-scheme`.
 const THEME_INIT_SCRIPT = `
 try {
   var stored = JSON.parse(localStorage.getItem('luma-ui') || 'null');
   var a11y = stored && stored.state && stored.state.a11y;
-  var dark = a11y && a11y.systemThemeDismissed
-    ? !!a11y.dark
-    : window.matchMedia('(prefers-color-scheme: dark)').matches;
-  if (dark) document.documentElement.setAttribute('data-dark', 'true');
+  if (a11y && a11y.dark) document.documentElement.setAttribute('data-dark', 'true');
 } catch (e) {}
 `
 
