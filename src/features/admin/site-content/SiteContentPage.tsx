@@ -39,6 +39,22 @@ interface HomeStory {
   imageUrl: string
 }
 
+interface HomeContact {
+  heading_he: string
+  heading_en: string
+  body_he: string
+  body_en: string
+  whatsapp_he: string
+  whatsapp_en: string
+  email_he: string
+  email_en: string
+}
+
+interface FooterContent {
+  tagline_he: string
+  tagline_en: string
+}
+
 interface FaqItem {
   q_he: string
   q_en: string
@@ -67,9 +83,11 @@ interface TestimonialsData {
 type SiteContentMap = {
   'home.hero': HomeHero
   'home.story': HomeStory
+  'home.contact': HomeContact
   'home.testimonials': TestimonialsData
   'about.page': AboutPage
   'faq.items': FaqItems
+  footer: FooterContent
 }
 
 type ContentKey = keyof SiteContentMap
@@ -101,6 +119,21 @@ function defaultHomeStory(): HomeStory {
     cta_en: '',
     imageUrl: '',
   }
+}
+function defaultHomeContact(): HomeContact {
+  return {
+    heading_he: '',
+    heading_en: '',
+    body_he: '',
+    body_en: '',
+    whatsapp_he: '',
+    whatsapp_en: '',
+    email_he: '',
+    email_en: '',
+  }
+}
+function defaultFooter(): FooterContent {
+  return { tagline_he: '', tagline_en: '' }
 }
 function defaultFaq(): FaqItems {
   return { items: [] }
@@ -198,8 +231,10 @@ const TABS: { key: ContentKey; label: string }[] = [
   { key: 'home.hero', label: 'דף הבית — הירו' },
   { key: 'home.story', label: 'דף הבית — הסיפור שלנו' },
   { key: 'home.testimonials', label: 'דף הבית — המלצות לקוחות' },
+  { key: 'home.contact', label: 'דף הבית — יצירת קשר' },
   { key: 'about.page', label: 'אודות' },
   { key: 'faq.items', label: 'שאלות נפוצות' },
+  { key: 'footer', label: 'פוטר' },
 ]
 
 // ── Tab content panels ─────────────────────────────────────────────────────────
@@ -453,6 +488,134 @@ function HomeStoryTab({
   )
 }
 
+interface HomeContactTabProps {
+  data: HomeContact
+  onChange: (d: HomeContact) => void
+  onSave: () => void
+  saving: boolean
+  success: boolean
+  error: string | null
+}
+
+function HomeContactTab({ data, onChange, onSave, saving, success, error }: HomeContactTabProps) {
+  function set<K extends keyof HomeContact>(k: K, v: HomeContact[K]) {
+    onChange({ ...data, [k]: v })
+  }
+  return (
+    <div className="space-y-4">
+      <h3 className="text-base font-semibold text-text-main mb-4">דף הבית — יצירת קשר</h3>
+      <p className="text-xs text-text-muted -mt-2 mb-2">
+        השאירו שדה ריק כדי להציג את ברירת המחדל הקיימת באתר.
+      </p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelCls}>כותרת {badgeHe}</label>
+          <input
+            type="text"
+            value={data.heading_he}
+            onChange={(e) => set('heading_he', e.target.value)}
+            dir="rtl"
+            placeholder="לא מצאתם בדיוק מה שחיפשתם?"
+            className={inputCls}
+          />
+        </div>
+        <div dir="ltr">
+          <label className={labelCls}>Heading {badgeEn}</label>
+          <input
+            type="text"
+            value={data.heading_en}
+            onChange={(e) => set('heading_en', e.target.value)}
+            dir="ltr"
+            placeholder="Can't find exactly what you're looking for?"
+            className={inputCls}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelCls}>טקסט גוף {badgeHe}</label>
+          <textarea
+            rows={3}
+            value={data.body_he}
+            onChange={(e) => set('body_he', e.target.value)}
+            dir="rtl"
+            placeholder="אוהבים את הסגנון אבל לא מצאתם את הפריט המדויק?..."
+            className={`${textareaCls} min-h-[90px]`}
+          />
+        </div>
+        <div dir="ltr">
+          <label className={labelCls}>Body text {badgeEn}</label>
+          <textarea
+            rows={3}
+            value={data.body_en}
+            onChange={(e) => set('body_en', e.target.value)}
+            dir="ltr"
+            placeholder="Love the style but can't find the perfect piece?..."
+            className={`${textareaCls} min-h-[90px]`}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelCls}>טקסט כפתור וואטסאפ {badgeHe}</label>
+          <input
+            type="text"
+            value={data.whatsapp_he}
+            onChange={(e) => set('whatsapp_he', e.target.value)}
+            dir="rtl"
+            placeholder="שוחחו איתנו בוואטסאפ"
+            className={inputCls}
+          />
+        </div>
+        <div dir="ltr">
+          <label className={labelCls}>WhatsApp button text {badgeEn}</label>
+          <input
+            type="text"
+            value={data.whatsapp_en}
+            onChange={(e) => set('whatsapp_en', e.target.value)}
+            dir="ltr"
+            placeholder="Chat with us on WhatsApp"
+            className={inputCls}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelCls}>טקסט קישור מייל {badgeHe}</label>
+          <input
+            type="text"
+            value={data.email_he}
+            onChange={(e) => set('email_he', e.target.value)}
+            dir="rtl"
+            placeholder="שלחו לנו מייל"
+            className={inputCls}
+          />
+        </div>
+        <div dir="ltr">
+          <label className={labelCls}>Email link text {badgeEn}</label>
+          <input
+            type="text"
+            value={data.email_en}
+            onChange={(e) => set('email_en', e.target.value)}
+            dir="ltr"
+            placeholder="Send us an email"
+            className={inputCls}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between pt-2">
+        <SaveStatus success={success} error={error} />
+        <SaveButton saving={saving} onClick={onSave} />
+      </div>
+    </div>
+  )
+}
+
 interface AboutTabProps {
   data: AboutPage
   onChange: (d: AboutPage) => void
@@ -691,6 +854,59 @@ function FaqTab({ data, onChange, onSave, saving, success, error }: FaqTabProps)
   )
 }
 
+interface FooterTabProps {
+  data: FooterContent
+  onChange: (d: FooterContent) => void
+  onSave: () => void
+  saving: boolean
+  success: boolean
+  error: string | null
+}
+
+function FooterTab({ data, onChange, onSave, saving, success, error }: FooterTabProps) {
+  function set<K extends keyof FooterContent>(k: K, v: FooterContent[K]) {
+    onChange({ ...data, [k]: v })
+  }
+  return (
+    <div className="space-y-4">
+      <h3 className="text-base font-semibold text-text-main mb-4">פוטר</h3>
+      <p className="text-xs text-text-muted -mt-2 mb-2">
+        השאירו שדה ריק כדי להציג את ברירת המחדל הקיימת באתר.
+      </p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelCls}>טקסט תחת הלוגו {badgeHe}</label>
+          <input
+            type="text"
+            value={data.tagline_he}
+            onChange={(e) => set('tagline_he', e.target.value)}
+            dir="rtl"
+            placeholder="ריהוט בהזמנה אישית, עשוי ביד"
+            className={inputCls}
+          />
+        </div>
+        <div dir="ltr">
+          <label className={labelCls}>Tagline {badgeEn}</label>
+          <input
+            type="text"
+            value={data.tagline_en}
+            onChange={(e) => set('tagline_en', e.target.value)}
+            dir="ltr"
+            placeholder="Custom furniture, handmade"
+            className={inputCls}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between pt-2">
+        <SaveStatus success={success} error={error} />
+        <SaveButton saving={saving} onClick={onSave} />
+      </div>
+    </div>
+  )
+}
+
 interface TestimonialsTabProps {
   data: TestimonialsData
   onChange: (d: TestimonialsData) => void
@@ -898,18 +1114,22 @@ export function SiteContentPage() {
 
   const [homeHero, setHomeHero] = useState<HomeHero>(defaultHomeHero())
   const [homeStory, setHomeStory] = useState<HomeStory>(defaultHomeStory())
+  const [homeContact, setHomeContact] = useState<HomeContact>(defaultHomeContact())
   const [testimonials, setTestimonials] = useState<TestimonialsData>(defaultTestimonials())
   const [about, setAbout] = useState<AboutPage>(defaultAbout())
   const [faq, setFaq] = useState<FaqItems>(defaultFaq())
+  const [footer, setFooter] = useState<FooterContent>(defaultFooter())
 
   const [loadError, setLoadError] = useState<string | null>(null)
   const [pageLoading, setPageLoading] = useState(true)
 
   const homeHeroSave = useSaveSection('home.hero', token)
   const homeStorySave = useSaveSection('home.story', token)
+  const homeContactSave = useSaveSection('home.contact', token)
   const testimonialsSave = useSaveSection('home.testimonials', token)
   const aboutSave = useSaveSection('about.page', token)
   const faqSave = useSaveSection('faq.items', token)
+  const footerSave = useSaveSection('footer', token)
 
   const loadContent = useCallback(async () => {
     if (!token) return
@@ -922,10 +1142,12 @@ export function SiteContentPage() {
       )
       if (content['home.hero']) setHomeHero(content['home.hero'] as HomeHero)
       if (content['home.story']) setHomeStory(content['home.story'] as HomeStory)
+      if (content['home.contact']) setHomeContact(content['home.contact'] as HomeContact)
       if (content['home.testimonials'])
         setTestimonials(content['home.testimonials'] as TestimonialsData)
       if (content['about.page']) setAbout(content['about.page'] as AboutPage)
       if (content['faq.items']) setFaq(content['faq.items'] as FaqItems)
+      if (content['footer']) setFooter(content['footer'] as FooterContent)
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : 'שגיאה בטעינת תוכן האתר')
     } finally {
@@ -1023,6 +1245,16 @@ export function SiteContentPage() {
                 error={testimonialsSave.error}
               />
             )}
+            {activeTab === 'home.contact' && (
+              <HomeContactTab
+                data={homeContact}
+                onChange={setHomeContact}
+                onSave={() => homeContactSave.save(homeContact)}
+                saving={homeContactSave.saving}
+                success={homeContactSave.success}
+                error={homeContactSave.error}
+              />
+            )}
             {activeTab === 'about.page' && (
               <AboutTab
                 data={about}
@@ -1042,6 +1274,16 @@ export function SiteContentPage() {
                 saving={faqSave.saving}
                 success={faqSave.success}
                 error={faqSave.error}
+              />
+            )}
+            {activeTab === 'footer' && (
+              <FooterTab
+                data={footer}
+                onChange={setFooter}
+                onSave={() => footerSave.save(footer)}
+                saving={footerSave.saving}
+                success={footerSave.success}
+                error={footerSave.error}
               />
             )}
           </div>

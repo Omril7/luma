@@ -11,9 +11,10 @@ import { NewsletterSignupForm } from '@/features/newsletter/NewsletterSignupForm
 interface FooterProps {
   instagramUrl?: string
   facebookUrl?: string
+  tagline?: string
 }
 
-export function Footer({ instagramUrl, facebookUrl }: FooterProps) {
+export function Footer({ instagramUrl, facebookUrl, tagline }: FooterProps) {
   const t = useTranslations('footer')
   const tNav = useTranslations('nav')
   const { a11y } = useUiStore()
@@ -61,7 +62,7 @@ export function Footer({ instagramUrl, facebookUrl }: FooterProps) {
           {/* Brand column */}
           <div>
             <Logo inverted className="mb-3" />
-            <p className={`text-sm leading-relaxed ${mutedCls}`}>{t('tagline')}</p>
+            <p className={`text-sm leading-relaxed ${mutedCls}`}>{tagline || t('tagline')}</p>
             {(instagramUrl || facebookUrl) && (
               <div className="flex items-center gap-1 mt-4 -ms-2.5">
                 {instagramUrl && (

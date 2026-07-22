@@ -7,6 +7,12 @@ import { A11yWidget } from '@/components/A11yWidget'
 import { ToastContainer } from '@/components/ToastContainer'
 import { CompareBar } from '@/features/compare/CompareBar'
 import { getSiteSettings } from '@/server/services/adminSettingsService'
+import { getSiteContentByKey } from '@/server/services/adminSiteContentService'
+
+interface FooterContent {
+  tagline_he: string
+  tagline_en: string
+}
 
 export async function StorefrontLayout({
   children,
@@ -16,8 +22,13 @@ export async function StorefrontLayout({
   locale: string
 }) {
   const t = await getTranslations({ locale, namespace: 'header' })
-  const { business } = await getSiteSettings()
+  const [{ business }, footerRow] = await Promise.all([
+    getSiteSettings(),
+    getSiteContentByKey('footer'),
+  ])
   const hours = locale === 'he' ? business.hours_he : business.hours_en
+  const footerContent = footerRow?.value as Partial<FooterContent> | undefined
+  const tagline = locale === 'he' ? footerContent?.tagline_he : footerContent?.tagline_en
 
   return (
     <>
@@ -35,6 +46,7 @@ export async function StorefrontLayout({
       <Footer
         instagramUrl={business.instagramUrl || undefined}
         facebookUrl={business.facebookUrl || undefined}
+        tagline={tagline || undefined}
       />
       <CompareBar />
       <WhatsAppButton whatsappNumber={business.whatsappNumber} />
