@@ -615,10 +615,14 @@ export function SiteContentPage() {
     setPageLoading(true)
     setLoadError(null)
     try {
-      const data = await api.get<Partial<SiteContentMap>>('/api/admin/site-content', token)
-      if (data['home.testimonials']) setTestimonials(data['home.testimonials'] as TestimonialsData)
-      if (data['about.page']) setAbout(data['about.page'] as AboutPage)
-      if (data['faq.items']) setFaq(data['faq.items'] as FaqItems)
+      const { content } = await api.get<{ content: Partial<SiteContentMap> }>(
+        '/api/admin/site-content',
+        token
+      )
+      if (content['home.testimonials'])
+        setTestimonials(content['home.testimonials'] as TestimonialsData)
+      if (content['about.page']) setAbout(content['about.page'] as AboutPage)
+      if (content['faq.items']) setFaq(content['faq.items'] as FaqItems)
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : 'שגיאה בטעינת תוכן האתר')
     } finally {
