@@ -9,15 +9,30 @@ import { cn } from '@/lib/utils'
 
 const DEFAULT_WHATSAPP_NUMBER = '972500000000'
 
+export interface HomeHeroContent {
+  eyebrow_he: string
+  eyebrow_en: string
+  heading_he: string
+  heading_en: string
+  subheading_he: string
+  subheading_en: string
+}
+
 interface HeroSectionProps {
   locale: string
   whatsappNumber: string
+  content?: HomeHeroContent
 }
 
-export function HeroSection({ locale, whatsappNumber }: HeroSectionProps) {
+export function HeroSection({ locale, whatsappNumber, content }: HeroSectionProps) {
   const t = useTranslations('home.hero')
   const { a11y } = useUiStore()
   const shouldAnimate = !a11y.noMotion
+
+  const isHe = locale === 'he'
+  const eyebrow = (isHe ? content?.eyebrow_he : content?.eyebrow_en) || t('eyebrow')
+  const heading = (isHe ? content?.heading_he : content?.heading_en) || t('heading')
+  const subheading = (isHe ? content?.subheading_he : content?.subheading_en) || t('subheading')
   // Charcoal is fixed (never swapped by dark/contrast/etc.) and reads well against the
   // photo's tan wall in every visual mode, since the photo itself is unaffected by them.
   // But with the image hidden, the section falls back to the theme's --color-bg, which
@@ -76,7 +91,7 @@ export function HeroSection({ locale, whatsappNumber }: HeroSectionProps) {
                 onPhoto ? 'text-charcoal' : 'text-accent'
               )}
             >
-              {t('eyebrow')}
+              {eyebrow}
             </span>
           </div>
           <h1
@@ -85,7 +100,7 @@ export function HeroSection({ locale, whatsappNumber }: HeroSectionProps) {
               onPhoto ? 'text-charcoal' : 'text-text-main'
             )}
           >
-            {t('heading')}
+            {heading}
           </h1>
           <p
             className={cn(
@@ -93,7 +108,7 @@ export function HeroSection({ locale, whatsappNumber }: HeroSectionProps) {
               onPhoto ? 'text-charcoal' : 'text-text-muted'
             )}
           >
-            {t('subheading')}
+            {subheading}
           </p>
           <div className="flex flex-wrap gap-3">
             <Link

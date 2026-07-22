@@ -18,6 +18,15 @@ interface AboutPage {
   imageUrl: string
 }
 
+interface HomeHero {
+  eyebrow_he: string
+  eyebrow_en: string
+  heading_he: string
+  heading_en: string
+  subheading_he: string
+  subheading_en: string
+}
+
 interface FaqItem {
   q_he: string
   q_en: string
@@ -44,6 +53,7 @@ interface TestimonialsData {
 }
 
 type SiteContentMap = {
+  'home.hero': HomeHero
   'home.testimonials': TestimonialsData
   'about.page': AboutPage
   'faq.items': FaqItems
@@ -55,6 +65,16 @@ type ContentKey = keyof SiteContentMap
 
 function defaultAbout(): AboutPage {
   return { title_he: '', title_en: '', body_he: '', body_en: '', imageUrl: '' }
+}
+function defaultHomeHero(): HomeHero {
+  return {
+    eyebrow_he: '',
+    eyebrow_en: '',
+    heading_he: '',
+    heading_en: '',
+    subheading_he: '',
+    subheading_en: '',
+  }
 }
 function defaultFaq(): FaqItems {
   return { items: [] }
@@ -149,12 +169,116 @@ function useSaveSection(key: ContentKey, token: string | null) {
 // ── Tab definitions ───────────────────────────────────────────────────────────
 
 const TABS: { key: ContentKey; label: string }[] = [
+  { key: 'home.hero', label: 'דף הבית — הירו' },
   { key: 'home.testimonials', label: 'דף הבית — המלצות לקוחות' },
   { key: 'about.page', label: 'אודות' },
   { key: 'faq.items', label: 'שאלות נפוצות' },
 ]
 
 // ── Tab content panels ─────────────────────────────────────────────────────────
+
+interface HomeHeroTabProps {
+  data: HomeHero
+  onChange: (d: HomeHero) => void
+  onSave: () => void
+  saving: boolean
+  success: boolean
+  error: string | null
+}
+
+function HomeHeroTab({ data, onChange, onSave, saving, success, error }: HomeHeroTabProps) {
+  function set<K extends keyof HomeHero>(k: K, v: HomeHero[K]) {
+    onChange({ ...data, [k]: v })
+  }
+  return (
+    <div className="space-y-4">
+      <h3 className="text-base font-semibold text-text-main mb-4">דף הבית — הירו</h3>
+      <p className="text-xs text-text-muted -mt-2 mb-2">
+        השאירו שדה ריק כדי להציג את ברירת המחדל הקיימת באתר.
+      </p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelCls}>תגית עילית {badgeHe}</label>
+          <input
+            type="text"
+            value={data.eyebrow_he}
+            onChange={(e) => set('eyebrow_he', e.target.value)}
+            dir="rtl"
+            placeholder="עשוי ביד בישראל"
+            className={inputCls}
+          />
+        </div>
+        <div dir="ltr">
+          <label className={labelCls}>Eyebrow {badgeEn}</label>
+          <input
+            type="text"
+            value={data.eyebrow_en}
+            onChange={(e) => set('eyebrow_en', e.target.value)}
+            dir="ltr"
+            placeholder="Handmade in Israel"
+            className={inputCls}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelCls}>כותרת ראשית {badgeHe}</label>
+          <input
+            type="text"
+            value={data.heading_he}
+            onChange={(e) => set('heading_he', e.target.value)}
+            dir="rtl"
+            placeholder="ריהוט בהזמנה אישית"
+            className={inputCls}
+          />
+        </div>
+        <div dir="ltr">
+          <label className={labelCls}>Heading {badgeEn}</label>
+          <input
+            type="text"
+            value={data.heading_en}
+            onChange={(e) => set('heading_en', e.target.value)}
+            dir="ltr"
+            placeholder="Custom Furniture, Handmade"
+            className={inputCls}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelCls}>כותרת משנה {badgeHe}</label>
+          <textarea
+            rows={2}
+            value={data.subheading_he}
+            onChange={(e) => set('subheading_he', e.target.value)}
+            dir="rtl"
+            placeholder="כל פריט עשוי ביד, בהתאמה מושלמת לבית שלך"
+            className={textareaCls}
+          />
+        </div>
+        <div dir="ltr">
+          <label className={labelCls}>Subheading {badgeEn}</label>
+          <textarea
+            rows={2}
+            value={data.subheading_en}
+            onChange={(e) => set('subheading_en', e.target.value)}
+            dir="ltr"
+            placeholder="Every piece crafted by hand, perfectly tailored for your home"
+            className={textareaCls}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between pt-2">
+        <SaveStatus success={success} error={error} />
+        <SaveButton saving={saving} onClick={onSave} />
+      </div>
+    </div>
+  )
+}
 
 interface AboutTabProps {
   data: AboutPage
@@ -597,8 +721,9 @@ function TestimonialsTab({ data, onChange, onSave, saving, success, error }: Tes
 
 export function SiteContentPage() {
   const { token } = useAdminStore()
-  const [activeTab, setActiveTab] = useState<ContentKey>('home.testimonials')
+  const [activeTab, setActiveTab] = useState<ContentKey>('home.hero')
 
+  const [homeHero, setHomeHero] = useState<HomeHero>(defaultHomeHero())
   const [testimonials, setTestimonials] = useState<TestimonialsData>(defaultTestimonials())
   const [about, setAbout] = useState<AboutPage>(defaultAbout())
   const [faq, setFaq] = useState<FaqItems>(defaultFaq())
@@ -606,6 +731,7 @@ export function SiteContentPage() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [pageLoading, setPageLoading] = useState(true)
 
+  const homeHeroSave = useSaveSection('home.hero', token)
   const testimonialsSave = useSaveSection('home.testimonials', token)
   const aboutSave = useSaveSection('about.page', token)
   const faqSave = useSaveSection('faq.items', token)
@@ -619,6 +745,7 @@ export function SiteContentPage() {
         '/api/admin/site-content',
         token
       )
+      if (content['home.hero']) setHomeHero(content['home.hero'] as HomeHero)
       if (content['home.testimonials'])
         setTestimonials(content['home.testimonials'] as TestimonialsData)
       if (content['about.page']) setAbout(content['about.page'] as AboutPage)
@@ -689,6 +816,16 @@ export function SiteContentPage() {
         {/* Content panel */}
         <div className="flex-1 min-w-0">
           <div className="bg-surface border border-border rounded-lg p-5">
+            {activeTab === 'home.hero' && (
+              <HomeHeroTab
+                data={homeHero}
+                onChange={setHomeHero}
+                onSave={() => homeHeroSave.save(homeHero)}
+                saving={homeHeroSave.saving}
+                success={homeHeroSave.success}
+                error={homeHeroSave.error}
+              />
+            )}
             {activeTab === 'home.testimonials' && (
               <TestimonialsTab
                 data={testimonials}

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import dynamicImport from 'next/dynamic'
-import { HeroSection } from '@/features/home/HeroSection'
+import { HeroSection, type HomeHeroContent } from '@/features/home/HeroSection'
 // import { FeaturedSection } from '@/features/home/FeaturedSection'
 import type { TestimonialItem } from '@/features/home/TestimonialsSection'
 
@@ -25,6 +25,15 @@ import { setRequestLocale } from 'next-intl/server'
 
 export const revalidate = 300
 
+const HOME_HERO_DEFAULTS: HomeHeroContent = {
+  eyebrow_he: '',
+  eyebrow_en: '',
+  heading_he: '',
+  heading_en: '',
+  subheading_he: '',
+  subheading_en: '',
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -44,16 +53,21 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
   const { lang } = await params
   setRequestLocale(lang)
 
-  const [row, { business }, instagramHighlights] = await Promise.all([
+  const [row, heroRow, { business }, instagramHighlights] = await Promise.all([
     getSiteContentByKey('home.testimonials'),
+    getSiteContentByKey('home.hero'),
     getSiteSettings(),
     listActiveInstagramHighlights(),
   ])
   const testimonials = (row?.value as { items?: TestimonialItem[] } | undefined)?.items ?? []
+  const heroContent: HomeHeroContent = {
+    ...HOME_HERO_DEFAULTS,
+    ...((heroRow?.value as Partial<HomeHeroContent>) ?? {}),
+  }
 
   return (
     <>
-      <HeroSection locale={lang} whatsappNumber={business.whatsappNumber} />
+      <HeroSection locale={lang} whatsappNumber={business.whatsappNumber} content={heroContent} />
       {/* <div className="bg-bg"><FeaturedSection products={...} locale={lang} /></div> — restore with getProducts({ featured: true, limit: 6 }) */}
       <div className="bg-bg">
         <StorySection locale={lang} />
