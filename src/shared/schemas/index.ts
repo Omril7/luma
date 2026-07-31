@@ -101,6 +101,12 @@ export const contactSchema = z.object({
 
 export type ContactInput = z.infer<typeof contactSchema>
 
+export const updateContactMessageSchema = z.object({
+  status: z.enum(['NEW', 'READ']),
+})
+
+export type UpdateContactMessageInput = z.infer<typeof updateContactMessageSchema>
+
 // ── Newsletter subscribe ──────────────────────────────────────────────────────
 
 export const newsletterSubscribeSchema = z.object({

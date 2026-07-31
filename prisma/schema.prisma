@@ -50,6 +50,11 @@ enum PriceOfferStatus {
   HANDLED
 }
 
+enum ContactMessageStatus {
+  NEW
+  READ
+}
+
 // ── Models ────────────────────────────────────────────────────────────────────
 
 model Product {
@@ -281,6 +286,21 @@ model PriceOfferRequest {
   updatedAt DateTime         @updatedAt
 
   product Product @relation(fields: [productId], references: [id])
+}
+
+// Submissions from the public contact-us form.
+model ContactMessage {
+  id                     String               @id @default(cuid())
+  name                   String
+  email                  String
+  phone                  String?
+  subject                String
+  message                String
+  language               Language             @default(he)
+  subscribedToNewsletter Boolean              @default(false)
+  status                 ContactMessageStatus @default(NEW)
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
 }
 
 model SiteContent {

@@ -11,6 +11,7 @@ import {
   // PackageOpen,
   Star,
   MessageSquareQuote,
+  MessageSquare,
   type LucideIcon,
 } from 'lucide-react'
 import { InstagramIcon } from '@/components/icons/InstagramIcon'
@@ -67,6 +68,12 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: MessageSquareQuote,
     label: 'הצעות מחיר',
     desc: 'בקשות להצעת מחיר מלקוחות מתעניינים',
+  },
+  {
+    href: '/admin/contact',
+    icon: MessageSquare,
+    label: 'יצירת קשר',
+    desc: 'הודעות שהתקבלו מטופס יצירת הקשר באתר',
   },
   { href: '/admin/settings', icon: Settings, label: 'הגדרות', desc: 'פרטי העסק, משלוח ו-WhatsApp' },
   {

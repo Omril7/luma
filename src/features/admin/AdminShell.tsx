@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { LogOut, ExternalLink, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react'
 import { isTokenExpired, useAdminStore } from '@/stores/adminStore'
 import { ADMIN_NAV_ITEMS } from './adminNav'
+import { ContactUnreadBadge } from './contact/ContactUnreadBadge'
 
 const SIDEBAR_ITEMS = ADMIN_NAV_ITEMS.filter((item) => !item.external)
 const ORDERS_LINK = ADMIN_NAV_ITEMS.find((item) => item.external)!
@@ -189,10 +190,16 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                         : 'text-text-muted hover:bg-secondary hover:text-text-main',
                     ].join(' ')}
                   >
-                    <Icon size={18} aria-hidden={true} className="shrink-0" />
+                    <span className="relative flex items-center justify-center shrink-0">
+                      <Icon size={18} aria-hidden={true} className="shrink-0" />
+                      {item.href === '/admin/contact' && collapsed && (
+                        <ContactUnreadBadge variant="dot" />
+                      )}
+                    </span>
                     {!collapsed && (
                       <>
                         <span className="flex-1 truncate">{item.label}</span>
+                        {item.href === '/admin/contact' && <ContactUnreadBadge />}
                         {isActive && (
                           <motion.span
                             layoutId="nav-dot"

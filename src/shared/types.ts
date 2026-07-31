@@ -167,6 +167,19 @@ export interface ReviewDTO {
   createdAt: string
 }
 
+export interface ContactMessageDTO {
+  id: string
+  name: string
+  email: string
+  phone?: string
+  subject: string
+  message: string
+  language: string
+  subscribedToNewsletter: boolean
+  status: 'NEW' | 'READ'
+  createdAt: string
+}
+
 export interface PriceOfferRequestDTO {
   id: string
   productId: string
