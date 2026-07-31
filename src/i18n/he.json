@@ -102,7 +102,9 @@
       "solidWood": "עשוי מעץ מלא",
       "oneOfAKind": "כל פריט הוא ייחודי בסגנונו",
       "madeToOrder": "מיוצר בהזמנה אישית, במיוחד עבורכם",
-      "indoorUse": "מתאים לשימוש בתוך הבית"
+      "indoorUse": "מתאים לשימוש בתוך הבית",
+      "deliveryNotIncluded": "לא כולל משלוח",
+      "vatIncluded": "כולל מע\"מ"
     },
     "variantTable": {
       "title": "השוואת מידות",

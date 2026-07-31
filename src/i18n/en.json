@@ -102,7 +102,9 @@
       "solidWood": "Made of solid wood",
       "oneOfAKind": "Every piece is one-of-a-kind",
       "madeToOrder": "Made to order, specifically for you",
-      "indoorUse": "Suitable for indoor use"
+      "indoorUse": "Suitable for indoor use",
+      "deliveryNotIncluded": "Delivery not included",
+      "vatIncluded": "VAT included"
     },
     "variantTable": {
       "title": "Size Comparison",

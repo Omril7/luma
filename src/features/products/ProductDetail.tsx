@@ -35,7 +35,15 @@ interface ProductDetailProps {
 }
 
 // Static, bilingual, same on every product — not admin-editable (see M1.28g spec).
-const TRUST_KEYS = ['handmade', 'solidWood', 'oneOfAKind', 'madeToOrder', 'indoorUse'] as const
+const TRUST_KEYS = [
+  'handmade',
+  'solidWood',
+  'oneOfAKind',
+  'madeToOrder',
+  'indoorUse',
+  'deliveryNotIncluded',
+  'vatIncluded',
+] as const
 
 function formatPrice(agorot: number, locale: string): string {
   return new Intl.NumberFormat(locale === 'he' ? 'he-IL' : 'en-IL', {

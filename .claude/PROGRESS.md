@@ -60,6 +60,13 @@ Keep entries short and factual. One entry per working session (or per merged cha
   standalone `/faq` page is unaffected (still defaults to `variant="page"`).
 - **Roadmap:** M1.28h (item 3 of 10) ✅.
 
+## 2026-07-31 — M1.28h #4: 2 more brand-value disclaimers ✅
+
+- **Done:** Added `deliveryNotIncluded` and `vatIncluded` to `ProductDetail.tsx`'s `TRUST_KEYS`
+  and `product.trust.*` in both locale files, rendered in the existing brand-values checkmark
+  block (now 7 items).
+- **Roadmap:** M1.28h (item 4 of 10) ✅.
+
 ## 2026-07-27 — M1.28g: Product page trust/spec/FAQ pass (client feedback) ✅
 
 - **Done:** Triaged the client's Hebrew feedback list into dev work vs. content-only work (kept
