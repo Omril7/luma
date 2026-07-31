@@ -373,7 +373,7 @@ from that file; check off as implemented.
       zero-variant products skip the section. Added a closing "want something custom? contact
       us" row that opens the existing `PriceOfferModal`.
 - [x] Image gallery bugs (#2)
-- [ ] Reviews + FAQ side-by-side on desktop (#3)
+- [x] Reviews + FAQ side-by-side on desktop (#3)
 - [ ] 2 more brand values (#4)
 - [ ] Hero heading fluid sizing (#5)
 - [ ] Testimonials carousel (#6)

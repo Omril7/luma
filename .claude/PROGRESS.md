@@ -49,6 +49,17 @@ Keep entries short and factual. One entry per working session (or per merged cha
   for RTL), mirroring the pattern already used in `ReviewsCarousel.tsx`.
 - **Roadmap:** M1.28h (item 2 of 10) ✅.
 
+## 2026-07-31 — M1.28h #3: FAQ + Reviews side by side on desktop ✅
+
+- **Done:** Moved Related products above the FAQ/Reviews section, then put FAQ and Reviews into
+  a `lg:grid-cols-2` grid (stacked single-column below `lg`) — FAQ first in DOM order (informational,
+  pre-purchase) so it lands on the reading-start side in both LTR and RTL automatically. Added an
+  `embedded` variant to both `FaqClient` and `ReviewsSection`: drops their standalone full-width
+  centered-heading/padding treatment (built for the dedicated `/faq` page and page-bottom
+  placement) in favor of a compact, left-aligned heading sized to match its grid sibling. The
+  standalone `/faq` page is unaffected (still defaults to `variant="page"`).
+- **Roadmap:** M1.28h (item 3 of 10) ✅.
+
 ## 2026-07-27 — M1.28g: Product page trust/spec/FAQ pass (client feedback) ✅
 
 - **Done:** Triaged the client's Hebrew feedback list into dev work vs. content-only work (kept

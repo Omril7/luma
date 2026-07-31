@@ -795,13 +795,6 @@ export function ProductDetail({
           </motion.section>
         )}
 
-        {/* FAQ — site-wide content, same on every product */}
-        {faqItems.length > 0 && (
-          <div className="mt-4 md:mt-8">
-            <FaqClient locale={locale} items={faqItems} headingLevel="h2" />
-          </div>
-        )}
-
         {/* Related products */}
         {relatedProducts.length > 0 && (
           <section className="mt-16 md:mt-24">
@@ -814,8 +807,18 @@ export function ProductDetail({
           </section>
         )}
 
-        {/* Reviews */}
-        <ReviewsSection reviews={reviews} productId={product.id} locale={locale} />
+        {/* FAQ + Reviews — side by side on desktop, stacked on mobile */}
+        <div className="mt-16 grid grid-cols-1 gap-12 md:mt-24 lg:grid-cols-2 lg:gap-16">
+          {faqItems.length > 0 && (
+            <FaqClient locale={locale} items={faqItems} headingLevel="h2" variant="embedded" />
+          )}
+          <ReviewsSection
+            reviews={reviews}
+            productId={product.id}
+            locale={locale}
+            variant="embedded"
+          />
+        </div>
       </div>
 
       {/* Price offer request dialog */}

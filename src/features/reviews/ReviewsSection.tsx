@@ -12,9 +12,17 @@ interface ReviewsSectionProps {
   reviews: PublicReviewDTO[]
   productId: string
   locale: string
+  /** 'standalone' = own top margin, for when this is the only bottom section on the page.
+   *  'embedded' = no top margin, for placement inside a shared grid cell (e.g. next to FAQ). */
+  variant?: 'standalone' | 'embedded'
 }
 
-export function ReviewsSection({ reviews, productId, locale }: ReviewsSectionProps) {
+export function ReviewsSection({
+  reviews,
+  productId,
+  locale,
+  variant = 'standalone',
+}: ReviewsSectionProps) {
   const t = useTranslations('reviews')
   const { a11y } = useUiStore()
   const shouldAnimate = !a11y.noMotion
@@ -25,7 +33,7 @@ export function ReviewsSection({ reviews, productId, locale }: ReviewsSectionPro
       : 0
 
   return (
-    <section className="mt-16 md:mt-24">
+    <section className={variant === 'embedded' ? '' : 'mt-16 md:mt-24'}>
       <motion.div
         className="mb-6 flex flex-wrap items-center justify-between gap-3"
         initial={shouldAnimate ? { opacity: 0, y: 16 } : false}

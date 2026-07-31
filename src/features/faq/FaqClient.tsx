@@ -19,9 +19,18 @@ interface FaqClientProps {
   /** Heading level for the section title — 'h1' for the standalone /faq page, 'h2' when
    *  embedded within another page (e.g. the product detail page) to keep heading order sequential. */
   headingLevel?: 'h1' | 'h2'
+  /** 'page' = full-width centered display heading (the standalone /faq page). 'embedded' =
+   *  compact, left-aligned heading sized to match a sibling section (e.g. product-page grid
+   *  cell next to Reviews) instead of looking like a second mini-page. */
+  variant?: 'page' | 'embedded'
 }
 
-export function FaqClient({ locale, items, headingLevel = 'h1' }: FaqClientProps) {
+export function FaqClient({
+  locale,
+  items,
+  headingLevel = 'h1',
+  variant = 'page',
+}: FaqClientProps) {
   const t = useTranslations('faq')
   const { a11y } = useUiStore()
   const shouldAnimate = !a11y.noMotion
@@ -33,20 +42,29 @@ export function FaqClient({ locale, items, headingLevel = 'h1' }: FaqClientProps
   }
 
   const Heading = headingLevel
+  const isEmbedded = variant === 'embedded'
 
   return (
-    <section className="py-12 md:py-20">
-      <div className="mx-auto max-w-3xl px-4 md:px-8">
+    <section className={isEmbedded ? '' : 'py-12 md:py-20'}>
+      <div className={isEmbedded ? '' : 'mx-auto max-w-3xl px-4 md:px-8'}>
         <motion.div
-          className="mb-10 text-center md:mb-14"
+          className={isEmbedded ? 'mb-6' : 'mb-10 text-center md:mb-14'}
           initial={shouldAnimate ? { opacity: 0, y: 16 } : false}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
+          whileInView={isEmbedded ? { opacity: 1, y: 0 } : undefined}
+          animate={isEmbedded ? undefined : { opacity: 1, y: 0 }}
+          viewport={isEmbedded ? { once: true, margin: '-60px' } : undefined}
+          transition={{ duration: isEmbedded ? 0.4 : 0.5, ease: 'easeOut' }}
         >
-          <Heading className="font-heading text-3xl font-semibold text-text-main md:text-4xl lg:text-5xl">
-            {t('title')}
-          </Heading>
-          <p className="mt-4 text-lg leading-relaxed text-text-muted">{t('subtitle')}</p>
+          {isEmbedded ? (
+            <Heading className="text-2xl font-bold text-text-main">{t('title')}</Heading>
+          ) : (
+            <>
+              <Heading className="font-heading text-3xl font-semibold text-text-main md:text-4xl lg:text-5xl">
+                {t('title')}
+              </Heading>
+              <p className="mt-4 text-lg leading-relaxed text-text-muted">{t('subtitle')}</p>
+            </>
+          )}
         </motion.div>
 
         {items.length === 0 ? (
