@@ -6,6 +6,7 @@ import { Logo } from '@/components/ui/Logo'
 import { FEATURES } from '@/lib/featureFlags'
 import { useUiStore } from '@/stores/uiStore'
 import { InstagramIcon } from '@/components/icons/InstagramIcon'
+import { FacebookIcon } from '@/components/icons/FacebookIcon'
 import { NewsletterSignupForm } from '@/features/newsletter/NewsletterSignupForm'
 
 interface FooterProps {
@@ -83,14 +84,7 @@ export function Footer({ instagramUrl, facebookUrl, tagline }: FooterProps) {
                     aria-label={t('facebookLabel')}
                     className={`flex h-11 w-11 items-center justify-center rounded-full ${fgCls} ${fgHoverCls} transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
                   >
-                    <svg
-                      aria-hidden="true"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      className="h-5 w-5"
-                    >
-                      <path d="M13.5 21v-7.8h2.6l.4-3h-3v-1.9c0-.87.24-1.46 1.49-1.46H16.6V4.14C16.34 4.1 15.46 4 14.44 4c-2.13 0-3.59 1.3-3.59 3.68v2.52H8.25v3h2.6V21h2.65z" />
-                    </svg>
+                    <FacebookIcon aria-hidden="true" size={20} />
                   </a>
                 )}
               </div>

@@ -54,8 +54,14 @@
     "pauseMedia": "Pause media",
     "readingGuide": "Reading guide"
   },
-  "whatsapp": {
-    "label": "Contact via WhatsApp"
+  "socials": {
+    "open": "Contact us",
+    "close": "Close contact menu",
+    "whatsapp": "Chat on WhatsApp",
+    "phone": "Call us",
+    "email": "Email us",
+    "facebook": "Visit our Facebook",
+    "instagram": "Visit our Instagram"
   },
   "product": {
     "addToCart": "Add to Cart",

@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { Header } from './Header'
 import { Footer } from './Footer'
 import { InfoBar } from './InfoBar'
-import { WhatsAppButton } from '@/components/WhatsAppButton'
+import { SocialsSpeedDial } from '@/components/SocialsSpeedDial'
 import { A11yWidget } from '@/components/A11yWidget'
 import { ToastContainer } from '@/components/ToastContainer'
 import { CompareBar } from '@/features/compare/CompareBar'
@@ -49,7 +49,13 @@ export async function StorefrontLayout({
         tagline={tagline || undefined}
       />
       <CompareBar />
-      <WhatsAppButton whatsappNumber={business.whatsappNumber} />
+      <SocialsSpeedDial
+        whatsappNumber={business.whatsappNumber}
+        phone={business.phone || undefined}
+        email={business.email || undefined}
+        instagramUrl={business.instagramUrl || undefined}
+        facebookUrl={business.facebookUrl || undefined}
+      />
       <A11yWidget />
       <ToastContainer />
     </>

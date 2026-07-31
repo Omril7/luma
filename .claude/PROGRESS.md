@@ -135,6 +135,19 @@ lg:text-6xl`) to `clamp(1.75rem, 0.84rem + 4.55vw, 3.75rem)` — scales smoothly
   `LegalPageContent` converts via `Object.values()`.
 - **Roadmap:** M1.28h (item 7 of 10) ✅.
 
+## 2026-07-31 — M1.28h #8: Floating WhatsApp button → SocialsSpeedDial ✅
+
+- **Done:** New `src/components/SocialsSpeedDial.tsx` replacing `WhatsAppButton.tsx` (deleted, no
+  other usages) at the same fixed `bottom-6 end-6` position in `StorefrontLayout.tsx`. Clicking
+  the main FAB (message icon, spring-in after 1s like the old button) fans out satellite links
+  above it — Facebook, Instagram, WhatsApp, `tel:`, `mailto:` — each conditionally rendered only
+  when the corresponding business-settings field is configured (WhatsApp always shows, falling
+  back to a placeholder number like the old button did). Closes on outside click or Escape;
+  main icon crossfades to an X while open. New `FacebookIcon.tsx` (also used to de-duplicate the
+  inline SVG that was in `Footer.tsx`). New `socials` i18n namespace replaces the now-unused
+  `whatsapp` one.
+- **Roadmap:** M1.28h (item 8 of 10) ✅.
+
 ## 2026-07-27 — M1.28g: Product page trust/spec/FAQ pass (client feedback) ✅
 
 - **Done:** Triaged the client's Hebrew feedback list into dev work vs. content-only work (kept
