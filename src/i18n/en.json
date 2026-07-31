@@ -381,7 +381,10 @@
       "cta": "Meet Us"
     },
     "testimonials": {
-      "heading": "Customers Say"
+      "heading": "Customers Say",
+      "carouselPrev": "Previous testimonial",
+      "carouselNext": "Next testimonial",
+      "carouselDot": "Go to testimonial {index}"
     },
     "instagram": {
       "heading": "Follow Us",

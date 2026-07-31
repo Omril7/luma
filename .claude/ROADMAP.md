@@ -376,7 +376,7 @@ from that file; check off as implemented.
 - [x] Reviews + FAQ side-by-side on desktop (#3)
 - [x] 2 more brand values (#4)
 - [x] Hero heading fluid sizing (#5)
-- [ ] Testimonials carousel (#6)
+- [x] Testimonials carousel (#6)
 - [ ] Legal pages (#7)
 - [ ] WhatsApp button → SocialsSpeedDial (#8)
 - [ ] Admin gallery drag-and-drop + UI (#9)

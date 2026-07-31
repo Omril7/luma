@@ -80,6 +80,42 @@ lg:text-6xl`) to `clamp(1.75rem, 0.84rem + 4.55vw, 3.75rem)` — scales smoothly
   the plan's fallback (client-side auto-shrink or an admin character-count hint) is still on the
   table.
 
+## 2026-07-31 — M1.28h #6: Testimonials carousel ✅
+
+- **Done:** New `TestimonialsCarousel.tsx` replacing `TestimonialsSection.tsx`'s static 3-col
+  grid — a real embla-driven, drag/scroll-based carousel (matching `ReviewsCarousel.tsx`'s feel,
+  not a click-only widget) that loops infinitely regardless of how few testimonials exist.
+- **Decisions:** Went through several architectures before landing here — client wants
+  `loop: true` (differs from `ReviewsCarousel`'s `loop: false`) with genuine drag/scroll
+  behavior, not a fake "swap the center card" carousel:
+  - embla's own built-in `loop: true` turned out to be unreliable with only 3 seed testimonials
+    at 3-up desktop: it silently no-ops below ~2x container width, and a manual repeated-items
+    workaround (tried next) produced an intermittent empty slot after a couple of clicks,
+    confirmed live by the client.
+  - Landed on a **windowed re-centering** pattern instead of embla's built-in loop: a fixed
+    `WINDOW_SIZE=9` array of real, `mod()`-wrapped `items` indices stays mounted in the embla
+    track (`loop: false`, `align: 'center'`, `dragFree: true` for authentic drag physics). Once
+    the selected snap gets within `EDGE_MARGIN=2` of the window's edge (checked on embla's
+    `'settle'` event, never mid-scroll, so an in-flight drag animation is never cut off), the
+    window's content is silently re-centered around the current real testimonial and the scroll
+    position is jumped back to the middle slot with `scrollTo(_, true)` (no animation) —
+    invisible to the user since the same testimonial lands in the same visual spot. This never
+    depends on embla's own clone/loop engine, so it's correct for any `items.length >= 1`.
+  - Kept the `useTweens` scale/opacity/parallax-by-distance-from-center effect (tuned opacity/
+    scale floors up from a first pass, since at `basis-1/3` all 3 cards sit fully in view — no
+    partial peek — and heavily fading a card made it nearly disappear against the warm/beige
+    background) and embla's own fixed-`'ltr'` internal direction with per-card `dir` (RTL driven
+    by CSS, not embla's native `direction: 'rtl'`, which had separate bugs combined with looping
+    early on).
+  - Added `select-none` to cards — dragging was triggering browser text selection.
+  - Bumped card gap from `gap-6` to `gap-8` per follow-up feedback — tighter spacing read as
+    cards crowding/overlapping once the tween's parallax shift was factored in.
+  - Verified via scripted click sequences (30+ clicks in both directions, reading the rendered
+    author names at every step) — zero empty slots — plus an actual simulated drag gesture
+    (not just button clicks) confirmed the whole track animates together, and both he/RTL and
+    en/LTR read correctly.
+- **Roadmap:** M1.28h (item 6 of 10) ✅.
+
 ## 2026-07-27 — M1.28g: Product page trust/spec/FAQ pass (client feedback) ✅
 
 - **Done:** Triaged the client's Hebrew feedback list into dev work vs. content-only work (kept

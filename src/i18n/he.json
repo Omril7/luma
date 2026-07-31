@@ -381,7 +381,10 @@
       "cta": "הכירו אותנו"
     },
     "testimonials": {
-      "heading": "לקוחות מספרים"
+      "heading": "לקוחות מספרים",
+      "carouselPrev": "המלצה קודמת",
+      "carouselNext": "המלצה הבאה",
+      "carouselDot": "מעבר להמלצה {index}"
     },
     "instagram": {
       "heading": "עקבו אחרינו",
