@@ -2,9 +2,17 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getProductBySlug, getProducts } from '@/server/services/productService'
 import { getApprovedReviewsForProduct } from '@/server/services/reviewService'
+import { getSiteContentByKey } from '@/server/services/adminSiteContentService'
 import { ProductDetail } from '@/features/products/ProductDetail'
 import { FEATURES } from '@/lib/featureFlags'
 import { setRequestLocale } from 'next-intl/server'
+
+interface FaqItem {
+  q_he: string
+  q_en: string
+  a_he: string
+  a_en: string
+}
 
 export const revalidate = 300
 
@@ -44,18 +52,22 @@ export default async function ProductPage({
   const product = await getProductBySlug(slug)
   if (!product) notFound()
 
-  // Related products (same category, exclude self) + reviews, in parallel
-  const [{ products: allRelated }, { reviews }] = await Promise.all([
+  // Related products (same category, exclude self) + reviews + site-wide FAQ, in parallel
+  const [{ products: allRelated }, { reviews }, faqRow] = await Promise.all([
     getProducts({ categoryId: product.category.id, limit: 5 }),
     getApprovedReviewsForProduct(product.id, { limit: 10 }),
+    getSiteContentByKey('faq.items'),
   ])
   const relatedProducts = allRelated.filter((p) => p.id !== product.id).slice(0, 4)
+  const faqValue = faqRow?.value as { items?: FaqItem[] } | undefined
+  const faqItems = faqValue?.items ?? []
 
   return (
     <ProductDetail
       product={product}
       relatedProducts={relatedProducts}
       reviews={reviews}
+      faqItems={faqItems}
       locale={lang}
       purchasingEnabled={FEATURES.shop}
     />

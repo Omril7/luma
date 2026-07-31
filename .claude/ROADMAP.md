@@ -335,6 +335,55 @@ Audit-driven punch list closing gaps between what the admin panel lets you edit 
 - [x] `GalleryImageDTO` (shared between admin service, public `listGalleryImages`, and `GalleryClient`) updated accordingly; no new Prisma model needed (still a JSON blob under `SiteContent` key `gallery`)
 - **Acceptance:** every gallery image can have a bilingual title + subtitle set in the admin; the public `/gallery` page displays them as a caption on the image (grid and/or lightbox); existing images without a title still render without a broken/empty caption. _(Verified end-to-end via admin API + both locale pages.)_
 
+### M1.28g Product page trust/content pass (client feedback) ✅
+
+Client feedback round: add brand-trust content to the product page without disturbing the
+narrative description. See `.claude/PROGRESS.md` for the full feedback triage.
+
+- [x] **Brand values block** — static block of 5 checkmarks (handmade in Israel, solid wood,
+      one-of-a-kind, made-to-order, indoor use) rendered below the price/"Request a price offer"
+      CTA on the product page. Bilingual strings in `he.json`/`en.json`, same on every product —
+      no schema change.
+- [x] ~~**Technical spec block**~~ — shipped, then reverted per client's second feedback round
+      (M1.28h): client changed their mind on the technical-spec block. See M1.28h.
+- [x] **FAQ on product page** — reuse the existing site-wide FAQ content (`SiteContent` key
+      `faq.items`) and accordion UI (`FaqClient.tsx`); extracted/reused as a section rendered on
+      `ProductDetail.tsx`, in addition to the standalone `/faq` page.
+      Same questions, same order, on every product — no per-product FAQ assignment. _(Found
+      `adminFaqService.ts`/`"faq"` key referenced in the spec was dead/unwired legacy code —
+      the live source is `faq.items`, same one the admin Site Content page already edits.)_
+- **Note:** client's 8 FAQ questions and per-product description rewrites (Cove/TALO/MOSS-style
+  character copy) are content tasks, not dev — enter via admin once written; category
+  renaming (coffee/living-room tables, dressers/chests, consoles, shelves) is also
+  admin-content-only via `/admin/products/categories`, already supported by M1.28c.
+- **Acceptance:** product page shows description → brand values → FAQ, all bilingual/RTL-correct;
+  editing the site FAQ content updates both `/faq` and every product page.
+
+### M1.28h Product page — 2nd feedback round (client feedback, 2026-07-28) ✅ _(in progress)_
+
+Second round of client feedback, staged in `CHANGES.md`. Each sub-item below tracks one entry
+from that file; check off as implemented.
+
+- [x] **Spec block → variant comparison table** (`CHANGES.md` #1): removed `Product.specs`
+      entirely (schema column dropped via migration, Zod schemas, `ProductSpecRow` type, admin
+      form's "specs" tab, DTO mapping, `product.specsTitle` i18n key). Replaced with a bilingual
+      dimension-only comparison table built from existing `ProductVariant` data (columns =
+      variants, rows = width/height/depth/diameter, whichever the product uses; never renders
+      price). Single-variant products get an inline `dl` instead of a 1-column table;
+      zero-variant products skip the section. Added a closing "want something custom? contact
+      us" row that opens the existing `PriceOfferModal`.
+- [ ] Image gallery bugs (#2)
+- [ ] Reviews + FAQ side-by-side on desktop (#3)
+- [ ] 2 more brand values (#4)
+- [ ] Hero heading fluid sizing (#5)
+- [ ] Testimonials carousel (#6)
+- [ ] Legal pages (#7)
+- [ ] WhatsApp button → SocialsSpeedDial (#8)
+- [ ] Admin gallery drag-and-drop + UI (#9)
+- [ ] Performance: loading/error boundaries + `/shop` caching (#10)
+- Instagram integration (#11) is a separate, larger effort — see
+  `.claude/docs/14-instagram-integration.md`, not scoped for this milestone.
+
 ---
 
 ## Phase 1 — Hardening / launch readiness

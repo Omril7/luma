@@ -19,6 +19,57 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-07-31 — M1.28h #1: Spec block → variant comparison table ✅
+
+- **Done:** Client reversed course on the technical-spec block shipped in M1.28g (uncommitted at
+  the time, so no revert commit needed — just removed in place). Dropped `Product.specs`
+  end-to-end: Prisma column (new migration `20260731045614_drop_product_specs`), `productSpecRowSchema`/
+  `productSpecsSchema`/`specs` in `createProductSchema`, `ProductSpecRow` type + `ProductDTO.specs`,
+  DTO mapping in both product services, the admin form's "specs" tab (state, handlers,
+  validation, submit payload, render), and the `product.specsTitle` i18n key. Replaced with a
+  bilingual variant size-comparison table on `ProductDetail.tsx`: columns are variants, rows are
+  whichever of width/height/depth/diameter the product's variants actually use, price is never
+  shown. Single-variant products render an inline `dl` instead of a 1-column table; zero-variant
+  products skip the section entirely. Added a closing "want something custom?" row that opens the
+  existing `PriceOfferModal` (reuses the same request-a-quote flow as the buy-box CTA).
+- **Roadmap:** M1.28h (item 1 of 10) ✅ — M1.28g's spec-block checkbox updated to reflect the
+  revert.
+- **Decisions:** Dropped the DB column rather than leaving it unused (5 dev rows lost, all test
+  data, confirmed acceptable). Rebuilt the migration folder that had been deleted mid-session
+  once `prisma migrate status` showed it was already applied to the Supabase dev DB, then added a
+  proper drop migration on top rather than rewriting history.
+- **Notes/blockers:** `CHANGES.md` tracks the remaining 9 items from this feedback round; working
+  through them in order this session.
+
+## 2026-07-27 — M1.28g: Product page trust/spec/FAQ pass (client feedback) ✅
+
+- **Done:** Triaged the client's Hebrew feedback list into dev work vs. content-only work (kept
+  in the chat, not duplicated here — see ROADMAP M1.28g for the resulting scope). Shipped the
+  3 items that needed code:
+  - Static bilingual "brand values" checkmark block (handmade in Israel, solid wood,
+    one-of-a-kind, made-to-order, indoor use) below the price/CTA, above the description, in
+    `ProductDetail.tsx`. New i18n keys under `product.trust.*`.
+  - `Product.specs` — new `Json @default("[]")` column (array of
+    `{label_he, label_en, value_he, value_en}` rows); Zod (`productSpecRowSchema`/
+    `productSpecsSchema`, max 50 rows) and `ProductSpecRow` type in `src/shared/`; admin
+    product form gained a repeatable-row editor (add/edit/reorder/remove, mirrors the existing
+    variants-table pattern); product page renders it as a `dl`/`dt`/`dd` list, hidden entirely
+    when empty.
+  - FAQ section on the product page: reused `FaqClient` (new `headingLevel` prop for heading
+    sequencing) fed by `getSiteContentByKey('faq.items')` — the same content the admin's Site
+    Content → FAQ tab already edits and `/faq` already renders.
+- **Roadmap:** M1.28g ✅.
+- **Decisions:** Kept the 8 FAQ questions / description rewrites / category renaming as
+  content-only, no code — existing admin surfaces (Site Content FAQ tab, product description
+  field, `/admin/products/categories`) already support them. Chose a flexible JSON row array
+  for specs (not fixed typed columns) so the client can add/remove/reorder spec lines without a
+  deploy. `.claude/docs/02-data-models.md`'s `Category` enum section was already stale before
+  this session (superseded by M1.28c) — not fixed here, flagging for a docs pass.
+- **Notes/blockers:** `adminFaqService.ts` / `SiteContent` key `"faq"` turned out to be dead
+  code, unwired to any UI — the live FAQ path is `faq.items`. Worth a cleanup pass to remove the
+  dead service rather than leave two "FAQ" paths in the codebase. Visual/browser verification
+  of the three new sections (light+dark, he+en, RTL) still pending — see next steps.
+
 ## 2026-07-19 — M1.28f: Gallery image titles/subtitles ✅
 
 - **Done:** Gallery items (SiteContent `gallery` JSON blob) gained optional bilingual

@@ -14,16 +14,28 @@ import { ImageGallery } from './ImageGallery'
 import { ProductCard } from './ProductCard'
 import { PriceOfferModal } from './PriceOfferModal'
 import { ReviewsSection } from '@/features/reviews/ReviewsSection'
+import { FaqClient } from '@/features/faq/FaqClient'
 import type { ProductDTO, ProductVariantDTO, PublicReviewDTO } from '@/shared/types'
+
+interface FaqItem {
+  q_he: string
+  q_en: string
+  a_he: string
+  a_en: string
+}
 
 interface ProductDetailProps {
   product: ProductDTO
   relatedProducts: ProductDTO[]
   reviews: PublicReviewDTO[]
+  faqItems: FaqItem[]
   locale: string
   /** When false, hides all purchase controls and shows a static "starting from" price instead. */
   purchasingEnabled: boolean
 }
+
+// Static, bilingual, same on every product — not admin-editable (see M1.28g spec).
+const TRUST_KEYS = ['handmade', 'solidWood', 'oneOfAKind', 'madeToOrder', 'indoorUse'] as const
 
 function formatPrice(agorot: number, locale: string): string {
   return new Intl.NumberFormat(locale === 'he' ? 'he-IL' : 'en-IL', {
@@ -37,6 +49,7 @@ export function ProductDetail({
   product,
   relatedProducts,
   reviews,
+  faqItems,
   locale,
   purchasingEnabled,
 }: ProductDetailProps) {
@@ -201,6 +214,12 @@ export function ProductDetail({
     if (dims.length === 0) return name
     return `${name} — ${dims.join('×')} ${t('cm')}`
   }
+
+  // Which dimension rows to show in the size-comparison table — only the ones any
+  // variant actually has a value for (rectangular products skip diameter and vice versa).
+  const dimensionKeys = (['width', 'height', 'depth', 'diameter'] as const).filter((key) =>
+    product.variants.some((v) => v[key] != null)
+  )
 
   // ── Add to cart ───────────────────────────────────────────────────────────────
   const handleAddToCart = useCallback(() => {
@@ -675,8 +694,113 @@ export function ProductDetail({
                 {productDesc}
               </p>
             )}
+
+            {/* Brand values — static, bilingual, same on every product */}
+            <motion.div
+              initial={shouldAnimate ? { opacity: 0, y: 8 } : false}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+              className="rounded-xl border border-border bg-secondary p-4 sm:p-5"
+            >
+              <ul className="grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2">
+                {TRUST_KEYS.map((key) => (
+                  <li key={key} className="flex items-center gap-2 text-sm text-text-main">
+                    <Check size={16} aria-hidden="true" className="shrink-0 text-accent" />
+                    <span>{t(`trust.${key}`)}</span>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
           </div>
         </div>
+
+        {/* Variant size comparison — dimensions only, never prices */}
+        {product.variants.length > 0 && (
+          <motion.section
+            className="mt-16 md:mt-24"
+            initial={shouldAnimate ? { opacity: 0, y: 16 } : false}
+            whileInView={shouldAnimate ? { opacity: 1, y: 0 } : undefined}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+          >
+            <h2 className="text-2xl font-bold text-text-main mb-6">{t('variantTable.title')}</h2>
+
+            {product.variants.length > 1 && dimensionKeys.length > 0 ? (
+              <div className="overflow-x-auto rounded-xl border border-border bg-surface">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="px-4 py-3 text-start font-medium text-text-muted sm:px-6">
+                        {t('variantTable.size')}
+                      </th>
+                      {product.variants.map((v) => (
+                        <th
+                          key={v.id}
+                          className="px-4 py-3 text-start font-semibold text-text-main sm:px-6"
+                        >
+                          {locale === 'he' ? v.name_he : v.name_en}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {dimensionKeys.map((key) => (
+                      <tr key={key}>
+                        <td className="px-4 py-3 text-start font-medium text-text-muted sm:px-6">
+                          {t(key)}
+                        </td>
+                        {product.variants.map((v) => (
+                          <td
+                            key={v.id}
+                            className="px-4 py-3 text-start text-text-main tabular-nums sm:px-6"
+                          >
+                            {v[key] != null ? `${v[key]} ${t('cm')}` : '—'}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : dimensionKeys.length > 0 ? (
+              <dl className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+                {dimensionKeys.map((key) => (
+                  <div key={key} className="grid grid-cols-2 gap-4 px-4 py-3 sm:px-6">
+                    <dt className="text-start text-sm font-medium text-text-muted">{t(key)}</dt>
+                    <dd className="text-end text-sm text-text-main tabular-nums">
+                      {product.variants[0][key]} {t('cm')}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
+
+            {/* Closing contact row */}
+            <div className="mt-4 flex flex-col items-start gap-3 rounded-xl border border-dashed border-border bg-secondary/50 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+              <div>
+                <p className="text-sm font-semibold text-text-main">
+                  {t('variantTable.contactTitle')}
+                </p>
+                <p className="text-sm text-text-muted">{t('variantTable.contactBody')}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOfferOpen(true)}
+                className="flex shrink-0 items-center justify-center gap-2 min-h-[44px] rounded-full border border-primary px-5 text-sm font-semibold text-primary hover:bg-primary/5 transition-colors duration-150 cursor-pointer"
+              >
+                <MessageSquareQuote size={16} aria-hidden="true" />
+                {t('variantTable.contactCta')}
+              </button>
+            </div>
+          </motion.section>
+        )}
+
+        {/* FAQ — site-wide content, same on every product */}
+        {faqItems.length > 0 && (
+          <div className="mt-4 md:mt-8">
+            <FaqClient locale={locale} items={faqItems} headingLevel="h2" />
+          </div>
+        )}
 
         {/* Related products */}
         {relatedProducts.length > 0 && (

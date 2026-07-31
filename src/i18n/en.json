@@ -97,6 +97,20 @@
     "share": "Share",
     "shareCopied": "Link copied to clipboard",
     "shareCopyFailed": "Couldn't copy the link",
+    "trust": {
+      "handmade": "Handmade in Israel",
+      "solidWood": "Made of solid wood",
+      "oneOfAKind": "Every piece is one-of-a-kind",
+      "madeToOrder": "Made to order, specifically for you",
+      "indoorUse": "Suitable for indoor use"
+    },
+    "variantTable": {
+      "title": "Size Comparison",
+      "size": "Size",
+      "contactTitle": "Want something different?",
+      "contactBody": "Custom dimensions, a different color, or anything else — we'll make it happen.",
+      "contactCta": "Contact us"
+    },
     "priceOffer": {
       "button": "Request a Price Offer",
       "title": "Request a Price Offer",

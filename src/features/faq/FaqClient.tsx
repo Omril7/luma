@@ -16,9 +16,12 @@ interface FaqItem {
 interface FaqClientProps {
   locale: string
   items: FaqItem[]
+  /** Heading level for the section title — 'h1' for the standalone /faq page, 'h2' when
+   *  embedded within another page (e.g. the product detail page) to keep heading order sequential. */
+  headingLevel?: 'h1' | 'h2'
 }
 
-export function FaqClient({ locale, items }: FaqClientProps) {
+export function FaqClient({ locale, items, headingLevel = 'h1' }: FaqClientProps) {
   const t = useTranslations('faq')
   const { a11y } = useUiStore()
   const shouldAnimate = !a11y.noMotion
@@ -29,6 +32,8 @@ export function FaqClient({ locale, items }: FaqClientProps) {
     setOpenIndex((current) => (current === index ? null : index))
   }
 
+  const Heading = headingLevel
+
   return (
     <section className="py-12 md:py-20">
       <div className="mx-auto max-w-3xl px-4 md:px-8">
@@ -38,9 +43,9 @@ export function FaqClient({ locale, items }: FaqClientProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
         >
-          <h1 className="font-heading text-3xl font-semibold text-text-main md:text-4xl lg:text-5xl">
+          <Heading className="font-heading text-3xl font-semibold text-text-main md:text-4xl lg:text-5xl">
             {t('title')}
-          </h1>
+          </Heading>
           <p className="mt-4 text-lg leading-relaxed text-text-muted">{t('subtitle')}</p>
         </motion.div>
 
