@@ -1,7 +1,16 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { ArrowUp, ArrowDown, Trash2, Plus, Check, AlertCircle } from 'lucide-react'
+import { Reorder, useDragControls } from 'motion/react'
+import {
+  GripVertical,
+  ChevronDown,
+  Trash2,
+  Plus,
+  Check,
+  AlertCircle,
+  X as XIcon,
+} from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import { ImageUpload } from '@/components/ui/ImageUpload'
@@ -21,10 +30,13 @@ interface GalleryImageDTO {
   sortOrder: number
 }
 
-// The editable text fields of a gallery image (everything except url/id/sortOrder)
-type GalleryImageTexts = Pick<
-  GalleryImageDTO,
-  'title_he' | 'title_en' | 'subtitle_he' | 'subtitle_en' | 'altText_he' | 'altText_en'
+// The editable text fields of a gallery image (everything except url/id/sortOrder). `Required`
+// because `textsOf`/`emptyTexts` always coalesce to '' — draft state should never see undefined.
+type GalleryImageTexts = Required<
+  Pick<
+    GalleryImageDTO,
+    'title_he' | 'title_en' | 'subtitle_he' | 'subtitle_en' | 'altText_he' | 'altText_en'
+  >
 >
 
 interface GalleryIntro {
@@ -36,6 +48,17 @@ interface GalleryIntro {
 
 function defaultIntro(): GalleryIntro {
   return { title_he: '', title_en: '', subtitle_he: '', subtitle_en: '' }
+}
+
+function emptyTexts(): GalleryImageTexts {
+  return {
+    title_he: '',
+    title_en: '',
+    subtitle_he: '',
+    subtitle_en: '',
+    altText_he: '',
+    altText_en: '',
+  }
 }
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
@@ -61,6 +84,7 @@ export function GalleryPage() {
   const [images, setImages] = useState<GalleryImageDTO[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [reordering, setReordering] = useState(false)
 
   // Intro text (title/subtitle shown above the gallery on the public /gallery page)
   const [intro, setIntro] = useState<GalleryIntro>(defaultIntro())
@@ -68,17 +92,8 @@ export function GalleryPage() {
   const [introSuccess, setIntroSuccess] = useState(false)
   const [introError, setIntroError] = useState<string | null>(null)
 
-  // New image form state
-  const [newUrl, setNewUrl] = useState<string | null>(null)
-  const [newTitleHe, setNewTitleHe] = useState('')
-  const [newTitleEn, setNewTitleEn] = useState('')
-  const [newSubtitleHe, setNewSubtitleHe] = useState('')
-  const [newSubtitleEn, setNewSubtitleEn] = useState('')
-  const [newAltHe, setNewAltHe] = useState('')
-  const [newAltEn, setNewAltEn] = useState('')
-  const [adding, setAdding] = useState(false)
-  const [addError, setAddError] = useState<string | null>(null)
-  const [addSuccess, setAddSuccess] = useState(false)
+  // Add-image modal
+  const [addOpen, setAddOpen] = useState(false)
 
   // Delete confirmation
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -136,43 +151,34 @@ export function GalleryPage() {
     setIntro((prev) => ({ ...prev, [k]: v }))
   }
 
-  // ── Reorder ───────────────────────────────────────────────────────────────
+  // ── Reorder (drag-and-drop) ──────────────────────────────────────────────────
 
-  async function handleMove(idx: number, dir: -1 | 1) {
-    const next = idx + dir
-    if (next < 0 || next >= images.length) return
+  // Live reorder while dragging — cheap local state update, not persisted yet.
+  function handleReorder(next: GalleryImageDTO[]) {
+    setImages(next)
+  }
 
-    const idA = images[idx].id
-    const idB = images[next].id
-    const sortA = images[idx].sortOrder
-    const sortB = images[next].sortOrder
-
-    // Optimistic update
-    setImages((prev) =>
-      prev
-        .map((img) => {
-          if (img.id === idA) return { ...img, sortOrder: sortB }
-          if (img.id === idB) return { ...img, sortOrder: sortA }
-          return img
-        })
-        .sort((a, b) => a.sortOrder - b.sortOrder)
-    )
-
+  // Persisted once the drag gesture ends: every row's sortOrder is set to its new index.
+  // Gallery lists are small, so re-sending all of them (vs. diffing) keeps this simple.
+  async function persistOrder() {
+    if (!token) return
+    setReordering(true)
+    const reindexed = images.map((img, i) => ({ ...img, sortOrder: i }))
+    setImages(reindexed)
     try {
-      await Promise.all([
-        api.patch<{ image: GalleryImageDTO }>(
-          `/api/admin/gallery/${idA}`,
-          { sortOrder: sortB },
-          token ?? ''
-        ),
-        api.patch<{ image: GalleryImageDTO }>(
-          `/api/admin/gallery/${idB}`,
-          { sortOrder: sortA },
-          token ?? ''
-        ),
-      ])
+      await Promise.all(
+        reindexed.map((img) =>
+          api.patch<{ image: GalleryImageDTO }>(
+            `/api/admin/gallery/${img.id}`,
+            { sortOrder: img.sortOrder },
+            token
+          )
+        )
+      )
     } catch {
       fetchImages() // revert on failure
+    } finally {
+      setReordering(false)
     }
   }
 
@@ -189,48 +195,6 @@ export function GalleryPage() {
       alert(e instanceof Error ? e.message : 'שגיאה במחיקה')
     } finally {
       setDeleting(false)
-    }
-  }
-
-  // ── Add ───────────────────────────────────────────────────────────────────
-
-  const canAdd =
-    !!newUrl &&
-    (newTitleHe.trim().length > 0 || newAltHe.trim().length > 0) &&
-    (newTitleEn.trim().length > 0 || newAltEn.trim().length > 0)
-
-  async function handleAdd() {
-    if (!token || !canAdd || !newUrl) return
-    setAdding(true)
-    setAddError(null)
-    try {
-      const data = await api.post<{ image: GalleryImageDTO }>(
-        '/api/admin/gallery',
-        {
-          url: newUrl,
-          title_he: newTitleHe.trim(),
-          title_en: newTitleEn.trim(),
-          subtitle_he: newSubtitleHe.trim(),
-          subtitle_en: newSubtitleEn.trim(),
-          altText_he: newAltHe.trim(),
-          altText_en: newAltEn.trim(),
-        },
-        token
-      )
-      setImages((prev) => [...prev, data.image].sort((a, b) => a.sortOrder - b.sortOrder))
-      setNewUrl(null)
-      setNewTitleHe('')
-      setNewTitleEn('')
-      setNewSubtitleHe('')
-      setNewSubtitleEn('')
-      setNewAltHe('')
-      setNewAltEn('')
-      setAddSuccess(true)
-      setTimeout(() => setAddSuccess(false), 3000)
-    } catch (e) {
-      setAddError(e instanceof Error ? e.message : 'שגיאה בהוספת התמונה')
-    } finally {
-      setAdding(false)
     }
   }
 
@@ -260,11 +224,21 @@ export function GalleryPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div>
-        <h2 className="text-xl font-bold text-text-main">גלריה</h2>
-        <p className="text-sm text-text-muted mt-0.5">
-          {images.length} תמונות · גרור לשינוי סדר או השתמש בחצים
-        </p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-text-main">גלריה</h2>
+          <p className="text-sm text-text-muted mt-0.5">
+            {images.length} תמונות · גררו לפי הידית לשינוי סדר
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setAddOpen(true)}
+          className="flex items-center gap-2 bg-primary text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-primary/90 transition-colors min-h-[44px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 shrink-0"
+        >
+          <Plus size={16} aria-hidden="true" />
+          הוסף תמונה
+        </button>
       </div>
 
       {/* ── Intro text (shown above the gallery on the public /gallery page) ──── */}
@@ -351,146 +325,41 @@ export function GalleryPage() {
         </div>
       </section>
 
-      {/* ── Existing images ──────────────────────────────────────────────────── */}
+      {/* ── Existing images — dense, drag-to-reorder rows ───────────────────── */}
       {images.length === 0 ? (
         <div className="py-12 text-center text-text-muted text-sm bg-surface border border-border rounded-lg">
-          אין תמונות בגלריה עדיין. הוסף תמונה ראשונה למטה.
+          אין תמונות בגלריה עדיין. הוסיפו תמונה ראשונה למעלה.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Reorder.Group axis="y" values={images} onReorder={handleReorder} className="space-y-2">
           {images.map((img, idx) => (
-            <ImageCard
+            <ImageRow
               key={img.id}
               img={img}
               idx={idx}
-              count={images.length}
               token={token ?? ''}
-              onMove={handleMove}
+              reordering={reordering}
+              onDragEnd={persistOrder}
               onRequestDelete={setDeleteId}
               onSaved={(updated) =>
                 setImages((prev) => prev.map((i) => (i.id === updated.id ? updated : i)))
               }
             />
           ))}
-        </div>
+        </Reorder.Group>
       )}
 
-      {/* ── Add new image ─────────────────────────────────────────────────────── */}
-      <section className="bg-surface border border-border rounded-lg p-5 space-y-4">
-        <div className="flex items-center gap-2">
-          <Plus size={16} className="text-text-muted" aria-hidden="true" />
-          <h3 className="text-base font-semibold text-text-main">הוסף תמונה לגלריה</h3>
-        </div>
-
-        <ImageUpload value={newUrl} onChange={setNewUrl} token={token ?? ''} label="תמונה" />
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className={labelCls}>כותרת {badgeHe}</label>
-            <input
-              type="text"
-              value={newTitleHe}
-              onChange={(e) => setNewTitleHe(e.target.value)}
-              dir="rtl"
-              placeholder="שולחן אלון בהזמנה אישית"
-              className={inputCls}
-            />
-          </div>
-          <div dir="ltr">
-            <label className={labelCls}>Title {badgeEn}</label>
-            <input
-              type="text"
-              value={newTitleEn}
-              onChange={(e) => setNewTitleEn(e.target.value)}
-              dir="ltr"
-              placeholder="Custom oak table"
-              className={inputCls}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className={labelCls}>תת-כותרת {badgeHe}</label>
-            <input
-              type="text"
-              value={newSubtitleHe}
-              onChange={(e) => setNewSubtitleHe(e.target.value)}
-              dir="rtl"
-              placeholder="אלון מלא, גימור שמן טבעי"
-              className={inputCls}
-            />
-          </div>
-          <div dir="ltr">
-            <label className={labelCls}>Subtitle {badgeEn}</label>
-            <input
-              type="text"
-              value={newSubtitleEn}
-              onChange={(e) => setNewSubtitleEn(e.target.value)}
-              dir="ltr"
-              placeholder="Solid oak, natural oil finish"
-              className={inputCls}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className={labelCls}>טקסט חלופי (נגישות) {badgeHe}</label>
-            <input
-              type="text"
-              value={newAltHe}
-              onChange={(e) => setNewAltHe(e.target.value)}
-              dir="rtl"
-              placeholder="אם ריק — הכותרת תשמש"
-              className={inputCls}
-            />
-          </div>
-          <div dir="ltr">
-            <label className={labelCls}>Alt text {badgeEn}</label>
-            <input
-              type="text"
-              value={newAltEn}
-              onChange={(e) => setNewAltEn(e.target.value)}
-              dir="ltr"
-              placeholder="Falls back to title"
-              className={inputCls}
-            />
-          </div>
-        </div>
-        <p className="text-[11px] text-text-muted -mt-2">
-          הכותרת והתת-כותרת יוצגו על התמונה בגלריה. נדרשת כותרת או טקסט חלופי בכל שפה.
-        </p>
-
-        <div className="flex items-center justify-between pt-1">
-          <div>
-            {addSuccess && (
-              <p className="text-xs text-green-600 flex items-center gap-1">
-                <Check size={12} aria-hidden="true" /> התמונה נוספה בהצלחה
-              </p>
-            )}
-            {addError && <p className="text-xs text-red-600">{addError}</p>}
-          </div>
-          <button
-            type="button"
-            onClick={handleAdd}
-            disabled={!canAdd || adding}
-            className="flex items-center gap-2 bg-primary text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors min-h-[44px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-          >
-            {adding ? (
-              <>
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                מוסיף...
-              </>
-            ) : (
-              <>
-                <Plus size={14} aria-hidden="true" />
-                הוסף לגלריה
-              </>
-            )}
-          </button>
-        </div>
-      </section>
+      {/* ── Add-image modal ──────────────────────────────────────────────────── */}
+      {addOpen && (
+        <AddImageModal
+          token={token ?? ''}
+          onClose={() => setAddOpen(false)}
+          onAdded={(image) => {
+            setImages((prev) => [...prev, image].sort((a, b) => a.sortOrder - b.sortOrder))
+            setAddOpen(false)
+          }}
+        />
+      )}
 
       {/* ── Delete confirmation ───────────────────────────────────────────────── */}
       {deleteId && (
@@ -543,7 +412,198 @@ export function GalleryPage() {
   )
 }
 
-// ── Editable image card ────────────────────────────────────────────────────────
+// ── Add-image modal ──────────────────────────────────────────────────────────
+
+function AddImageModal({
+  token,
+  onClose,
+  onAdded,
+}: {
+  token: string
+  onClose: () => void
+  onAdded: (image: GalleryImageDTO) => void
+}) {
+  const [url, setUrl] = useState<string | null>(null)
+  const [draft, setDraft] = useState<GalleryImageTexts>(emptyTexts())
+  const [adding, setAdding] = useState(false)
+  const [addError, setAddError] = useState<string | null>(null)
+
+  function setField<K extends keyof GalleryImageTexts>(k: K, v: string) {
+    setDraft((prev) => ({ ...prev, [k]: v }))
+  }
+
+  const canAdd =
+    !!url &&
+    (draft.title_he.trim().length > 0 || draft.altText_he.trim().length > 0) &&
+    (draft.title_en.trim().length > 0 || draft.altText_en.trim().length > 0)
+
+  async function handleAdd() {
+    if (!token || !canAdd || !url) return
+    setAdding(true)
+    setAddError(null)
+    try {
+      const data = await api.post<{ image: GalleryImageDTO }>(
+        '/api/admin/gallery',
+        {
+          url,
+          title_he: draft.title_he.trim(),
+          title_en: draft.title_en.trim(),
+          subtitle_he: draft.subtitle_he.trim(),
+          subtitle_en: draft.subtitle_en.trim(),
+          altText_he: draft.altText_he.trim(),
+          altText_en: draft.altText_en.trim(),
+        },
+        token
+      )
+      onAdded(data.image)
+    } catch (e) {
+      setAddError(e instanceof Error ? e.message : 'שגיאה בהוספת התמונה')
+    } finally {
+      setAdding(false)
+    }
+  }
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="add-gallery-dialog-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
+      <div className="bg-surface border border-border rounded-xl shadow-xl p-6 max-w-lg w-full my-8 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 id="add-gallery-dialog-title" className="text-base font-semibold text-text-main">
+            הוספת תמונה לגלריה
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="סגירה"
+            className="flex items-center justify-center w-8 h-8 rounded-lg text-text-muted hover:bg-secondary transition-colors cursor-pointer"
+          >
+            <XIcon size={16} aria-hidden="true" />
+          </button>
+        </div>
+
+        <ImageUpload value={url} onChange={setUrl} token={token} label="תמונה" />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>כותרת {badgeHe}</label>
+            <input
+              type="text"
+              value={draft.title_he}
+              onChange={(e) => setField('title_he', e.target.value)}
+              dir="rtl"
+              placeholder="שולחן אלון בהזמנה אישית"
+              className={inputCls}
+            />
+          </div>
+          <div dir="ltr">
+            <label className={labelCls}>Title {badgeEn}</label>
+            <input
+              type="text"
+              value={draft.title_en}
+              onChange={(e) => setField('title_en', e.target.value)}
+              dir="ltr"
+              placeholder="Custom oak table"
+              className={inputCls}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>תת-כותרת {badgeHe}</label>
+            <input
+              type="text"
+              value={draft.subtitle_he}
+              onChange={(e) => setField('subtitle_he', e.target.value)}
+              dir="rtl"
+              placeholder="אלון מלא, גימור שמן טבעי"
+              className={inputCls}
+            />
+          </div>
+          <div dir="ltr">
+            <label className={labelCls}>Subtitle {badgeEn}</label>
+            <input
+              type="text"
+              value={draft.subtitle_en}
+              onChange={(e) => setField('subtitle_en', e.target.value)}
+              dir="ltr"
+              placeholder="Solid oak, natural oil finish"
+              className={inputCls}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>טקסט חלופי (נגישות) {badgeHe}</label>
+            <input
+              type="text"
+              value={draft.altText_he}
+              onChange={(e) => setField('altText_he', e.target.value)}
+              dir="rtl"
+              placeholder="אם ריק — הכותרת תשמש"
+              className={inputCls}
+            />
+          </div>
+          <div dir="ltr">
+            <label className={labelCls}>Alt text {badgeEn}</label>
+            <input
+              type="text"
+              value={draft.altText_en}
+              onChange={(e) => setField('altText_en', e.target.value)}
+              dir="ltr"
+              placeholder="Falls back to title"
+              className={inputCls}
+            />
+          </div>
+        </div>
+        <p className="text-[11px] text-text-muted">
+          הכותרת והתת-כותרת יוצגו על התמונה בגלריה. נדרשת כותרת או טקסט חלופי בכל שפה.
+        </p>
+
+        <div className="flex items-center justify-between pt-1">
+          <div>{addError && <p className="text-xs text-red-600">{addError}</p>}</div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm rounded-lg bg-bg border border-border text-text-main hover:bg-secondary transition-colors cursor-pointer min-h-[44px]"
+            >
+              ביטול
+            </button>
+            <button
+              type="button"
+              onClick={handleAdd}
+              disabled={!canAdd || adding}
+              className="flex items-center gap-2 bg-primary text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors min-h-[44px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            >
+              {adding ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  מוסיף...
+                </>
+              ) : (
+                <>
+                  <Plus size={14} aria-hidden="true" />
+                  הוסף לגלריה
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Dense, expandable, draggable row ───────────────────────────────────────────
 
 function textsOf(img: GalleryImageDTO): GalleryImageTexts {
   return {
@@ -556,23 +616,25 @@ function textsOf(img: GalleryImageDTO): GalleryImageTexts {
   }
 }
 
-function ImageCard({
+function ImageRow({
   img,
   idx,
-  count,
   token,
-  onMove,
+  reordering,
+  onDragEnd,
   onRequestDelete,
   onSaved,
 }: {
   img: GalleryImageDTO
   idx: number
-  count: number
   token: string
-  onMove: (idx: number, dir: -1 | 1) => void
+  reordering: boolean
+  onDragEnd: () => void
   onRequestDelete: (id: string) => void
   onSaved: (updated: GalleryImageDTO) => void
 }) {
+  const dragControls = useDragControls()
+  const [expanded, setExpanded] = useState(false)
   const [draft, setDraft] = useState<GalleryImageTexts>(() => textsOf(img))
   const [saving, setSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
@@ -605,133 +667,162 @@ function ImageCard({
   }
 
   const cardTitle = draft.title_he || draft.altText_he || `תמונה ${idx + 1}`
+  const cardSubtitle = draft.subtitle_he || draft.subtitle_en
 
   return (
-    <div className="bg-surface border border-border rounded-lg overflow-hidden group">
-      {/* Image */}
-      <div className="relative aspect-[4/3] bg-bg">
+    <Reorder.Item
+      value={img}
+      dragListener={false}
+      dragControls={dragControls}
+      onDragEnd={onDragEnd}
+      className="bg-surface border border-border rounded-lg overflow-hidden"
+    >
+      <div className="flex items-center gap-3 p-2.5">
+        {/* Drag handle — only this triggers the drag gesture, not the whole row */}
+        <button
+          type="button"
+          onPointerDown={(e) => dragControls.start(e)}
+          aria-label="גרירה לשינוי סדר"
+          disabled={reordering}
+          className="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg text-text-muted hover:bg-secondary transition-colors cursor-grab active:cursor-grabbing touch-none disabled:opacity-40"
+        >
+          <GripVertical size={16} aria-hidden="true" />
+        </button>
+
+        {/* Thumbnail */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={img.url}
           alt={img.altText_he || img.title_he || ''}
-          className="w-full h-full object-cover"
+          className="w-12 h-12 shrink-0 rounded-md object-cover bg-bg"
           loading="lazy"
         />
 
-        {/* Reorder controls — overlay on hover */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
-          <button
-            type="button"
-            onClick={() => onMove(idx, -1)}
-            disabled={idx === 0}
-            aria-label="הזז למעלה"
-            className="flex items-center justify-center w-9 h-9 rounded-full bg-white/90 text-text-main hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-sm"
-          >
-            <ArrowUp size={16} aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            onClick={() => onMove(idx, 1)}
-            disabled={idx === count - 1}
-            aria-label="הזז למטה"
-            className="flex items-center justify-center w-9 h-9 rounded-full bg-white/90 text-text-main hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-sm"
-          >
-            <ArrowDown size={16} aria-hidden="true" />
-          </button>
-        </div>
+        {/* Title / subtitle */}
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          className="flex-1 min-w-0 text-start cursor-pointer"
+        >
+          <p className="text-sm font-medium text-text-main truncate">{cardTitle}</p>
+          {cardSubtitle && <p className="text-xs text-text-muted truncate">{cardSubtitle}</p>}
+        </button>
+
+        {saveSuccess && (
+          <p className="text-xs text-green-600 flex items-center gap-1 shrink-0">
+            <Check size={12} aria-hidden="true" /> נשמר
+          </p>
+        )}
+
+        {/* Expand / delete */}
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          aria-label={expanded ? 'כווץ עריכה' : 'הרחב לעריכה'}
+          aria-expanded={expanded}
+          className="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg text-text-muted hover:bg-secondary transition-colors cursor-pointer"
+        >
+          <ChevronDown
+            size={16}
+            aria-hidden="true"
+            className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+          />
+        </button>
+        <button
+          type="button"
+          onClick={() => onRequestDelete(img.id)}
+          aria-label={`מחק תמונה — ${cardTitle}`}
+          className="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg text-text-muted hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+        >
+          <Trash2 size={15} aria-hidden="true" />
+        </button>
       </div>
 
-      {/* Editable texts */}
-      <div className="p-3 space-y-3">
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className={labelCls}>כותרת {badgeHe}</label>
-            <input
-              type="text"
-              value={draft.title_he}
-              onChange={(e) => setField('title_he', e.target.value)}
-              dir="rtl"
-              className={inputCls}
-            />
+      {/* Expanded editor */}
+      {expanded && (
+        <div className="border-t border-border p-3 space-y-3 bg-bg/50">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className={labelCls}>כותרת {badgeHe}</label>
+              <input
+                type="text"
+                value={draft.title_he}
+                onChange={(e) => setField('title_he', e.target.value)}
+                dir="rtl"
+                className={inputCls}
+              />
+            </div>
+            <div dir="ltr">
+              <label className={labelCls}>Title {badgeEn}</label>
+              <input
+                type="text"
+                value={draft.title_en}
+                onChange={(e) => setField('title_en', e.target.value)}
+                dir="ltr"
+                className={inputCls}
+              />
+            </div>
           </div>
-          <div dir="ltr">
-            <label className={labelCls}>Title {badgeEn}</label>
-            <input
-              type="text"
-              value={draft.title_en}
-              onChange={(e) => setField('title_en', e.target.value)}
-              dir="ltr"
-              className={inputCls}
-            />
-          </div>
-        </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className={labelCls}>תת-כותרת {badgeHe}</label>
-            <input
-              type="text"
-              value={draft.subtitle_he}
-              onChange={(e) => setField('subtitle_he', e.target.value)}
-              dir="rtl"
-              className={inputCls}
-            />
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className={labelCls}>תת-כותרת {badgeHe}</label>
+              <input
+                type="text"
+                value={draft.subtitle_he}
+                onChange={(e) => setField('subtitle_he', e.target.value)}
+                dir="rtl"
+                className={inputCls}
+              />
+            </div>
+            <div dir="ltr">
+              <label className={labelCls}>Subtitle {badgeEn}</label>
+              <input
+                type="text"
+                value={draft.subtitle_en}
+                onChange={(e) => setField('subtitle_en', e.target.value)}
+                dir="ltr"
+                className={inputCls}
+              />
+            </div>
           </div>
-          <div dir="ltr">
-            <label className={labelCls}>Subtitle {badgeEn}</label>
-            <input
-              type="text"
-              value={draft.subtitle_en}
-              onChange={(e) => setField('subtitle_en', e.target.value)}
-              dir="ltr"
-              className={inputCls}
-            />
-          </div>
-        </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className={labelCls}>טקסט חלופי (נגישות) {badgeHe}</label>
-            <input
-              type="text"
-              value={draft.altText_he}
-              onChange={(e) => setField('altText_he', e.target.value)}
-              dir="rtl"
-              placeholder="אם ריק — הכותרת תשמש"
-              className={inputCls}
-            />
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className={labelCls}>טקסט חלופי (נגישות) {badgeHe}</label>
+              <input
+                type="text"
+                value={draft.altText_he}
+                onChange={(e) => setField('altText_he', e.target.value)}
+                dir="rtl"
+                placeholder="אם ריק — הכותרת תשמש"
+                className={inputCls}
+              />
+            </div>
+            <div dir="ltr">
+              <label className={labelCls}>Alt text {badgeEn}</label>
+              <input
+                type="text"
+                value={draft.altText_en}
+                onChange={(e) => setField('altText_en', e.target.value)}
+                dir="ltr"
+                placeholder="Falls back to title"
+                className={inputCls}
+              />
+            </div>
           </div>
-          <div dir="ltr">
-            <label className={labelCls}>Alt text {badgeEn}</label>
-            <input
-              type="text"
-              value={draft.altText_en}
-              onChange={(e) => setField('altText_en', e.target.value)}
-              dir="ltr"
-              placeholder="Falls back to title"
-              className={inputCls}
-            />
-          </div>
-        </div>
 
-        {/* Footer: order, feedback, actions */}
-        <div className="flex items-center justify-between gap-2 pt-0.5">
-          <div className="flex items-center gap-2 min-w-0">
-            <p className="text-[11px] text-text-muted shrink-0">סדר: {img.sortOrder + 1}</p>
-            {saveSuccess && (
-              <p className="text-xs text-green-600 flex items-center gap-1">
-                <Check size={12} aria-hidden="true" /> נשמר
-              </p>
-            )}
-            {saveError && <p className="text-xs text-red-600 truncate">{saveError}</p>}
-          </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center justify-between gap-2 pt-0.5">
+            <div className="min-w-0">
+              {saveError && <p className="text-xs text-red-600 truncate">{saveError}</p>}
+            </div>
             {dirty && (
               <button
                 type="button"
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-1.5 bg-primary text-white text-xs font-medium px-3 py-2 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors min-h-[36px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="flex items-center gap-1.5 bg-primary text-white text-xs font-medium px-3 py-2 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors min-h-[36px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
               >
                 {saving ? (
                   <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -741,17 +832,9 @@ function ImageCard({
                 שמור
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => onRequestDelete(img.id)}
-              aria-label={`מחק תמונה — ${cardTitle}`}
-              className="flex items-center justify-center min-h-[36px] min-w-[36px] rounded-lg text-text-muted hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-            >
-              <Trash2 size={15} aria-hidden="true" />
-            </button>
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </Reorder.Item>
   )
 }

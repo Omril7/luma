@@ -379,7 +379,7 @@ from that file; check off as implemented.
 - [x] Testimonials carousel (#6)
 - [x] Legal pages (#7)
 - [x] WhatsApp button → SocialsSpeedDial (#8)
-- [ ] Admin gallery drag-and-drop + UI (#9)
+- [x] Admin gallery drag-and-drop + UI (#9)
 - [ ] Performance: loading/error boundaries + `/shop` caching (#10)
 - Instagram integration (#11) is a separate, larger effort — see
   `.claude/docs/14-instagram-integration.md`, not scoped for this milestone.

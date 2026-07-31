@@ -148,6 +148,35 @@ lg:text-6xl`) to `clamp(1.75rem, 0.84rem + 4.55vw, 3.75rem)` — scales smoothly
   `whatsapp` one.
 - **Roadmap:** M1.28h (item 8 of 10) ✅.
 
+## 2026-07-31 — M1.28h #9: Admin gallery drag-and-drop + denser UI ✅
+
+- **Done:** Rebuilt `GalleryPage.tsx`'s image list. Went with `motion`'s `Reorder.Group`/
+  `Reorder.Item` (already a dependency, matches the "use motion/react throughout" convention)
+  over `@dnd-kit/*` — switched the layout from a 3-col card grid to a single-column dense row
+  list specifically so `Reorder`'s single-axis drag (it doesn't natively handle wrapped
+  multi-column grids well) is a natural fit, which also satisfies the "denser display" ask in
+  one move. Each row: drag handle (grip icon, drag-only-from-handle via `dragListener={false}` +
+  `useDragControls()`, so the row's own buttons/inputs stay clickable), thumbnail, title/subtitle,
+  expand chevron collapsing the 6 text fields (previously always visible) behind an edit toggle,
+  delete. Reordering updates local state live during the drag (`onReorder`) and persists all
+  rows' `sortOrder` in parallel once the drag ends (`onDragEnd` → `Promise.all` of PATCH calls;
+  reverts via refetch on failure). "Add image" moved from an always-visible bottom section into
+  a modal triggered by a button at the top of the page, mirroring the existing delete-confirmation
+  dialog's markup pattern.
+- **Decisions:** `GalleryImageTexts` (the shared editable-fields type) had to become `Required<>`
+  — it was `Pick<GalleryImageDTO, ...>`, which inherited the DTO's optional `title_he?`/etc.
+  modifiers, so string methods (`.trim()`) on draft state didn't typecheck once the add-form
+  fields switched from separate `useState('')` calls to sharing this type with the row editor.
+- **Notes/blockers:** Automated drag-gesture testing needed care — simulated pointer events must
+  target `window` (not the handle element) for `pointermove` and use ~15-20 incremental steps
+  with real delays for Framer Motion's gesture system to recognize the drag; a single
+  down-to-up jump (or one intermediate synthetic move on the wrong target) doesn't trigger it.
+  Verified end-to-end: dragged the first row down 3 positions, confirmed 10 parallel PATCH
+  calls (200 OK), reloaded the page, and the new order persisted server-side.
+- **Roadmap:** M1.28h (item 9 of 10) ✅. Instagram admin page (`InstagramPage.tsx`) mirrors this
+  same pre-refactor pattern (up/down arrows, always-visible add form) — not in scope for this
+  round per the client's ask, flagged for a future consistency pass.
+
 ## 2026-07-27 — M1.28g: Product page trust/spec/FAQ pass (client feedback) ✅
 
 - **Done:** Triaged the client's Hebrew feedback list into dev work vs. content-only work (kept
