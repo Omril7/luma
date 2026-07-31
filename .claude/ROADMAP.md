@@ -377,7 +377,7 @@ from that file; check off as implemented.
 - [x] 2 more brand values (#4)
 - [x] Hero heading fluid sizing (#5)
 - [x] Testimonials carousel (#6)
-- [ ] Legal pages (#7)
+- [x] Legal pages (#7)
 - [ ] WhatsApp button → SocialsSpeedDial (#8)
 - [ ] Admin gallery drag-and-drop + UI (#9)
 - [ ] Performance: loading/error boundaries + `/shop` caching (#10)

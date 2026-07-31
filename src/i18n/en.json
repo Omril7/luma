@@ -222,6 +222,7 @@
     "terms": "Terms of Service",
     "privacy": "Privacy Policy",
     "returns": "Returns Policy",
+    "accessibility": "Accessibility Statement",
     "tagline": "Custom furniture, handmade to order",
     "shopLinks": "Shop",
     "infoLinks": "Info",
@@ -293,6 +294,100 @@
   "about": {
     "title": "About Luma",
     "imageAlt": "Luma — woodworking studio"
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "updated": "Last updated: July 2026",
+    "intro": "These terms govern your use of the Luma website and any furniture you order from us. By placing an order or using this site, you agree to the terms below.",
+    "sections": {
+      "0": {
+        "heading": "Handmade products",
+        "body": "Every piece is handmade to order from solid wood. Natural variation in grain, color, and texture is expected and is not a defect — no two pieces are identical, and photos on the site represent the general design and character of each piece rather than an exact match."
+      },
+      "1": {
+        "heading": "Custom dimensions and pricing",
+        "body": "Where custom dimensions are offered, price is calculated automatically based on the measurements you provide. Please double-check your measurements before submitting an order — production begins once an order is confirmed."
+      },
+      "2": {
+        "heading": "Orders and payment",
+        "body": "An order is confirmed once payment (or an agreed deposit) is received. We reserve the right to decline or cancel an order — for example if a requested customization isn't feasible — in which case any payment made will be refunded in full."
+      },
+      "3": {
+        "heading": "Lead time and delivery",
+        "body": "Because each piece is made to order, production and delivery typically take several weeks. Estimated timelines are provided for guidance and may vary depending on the piece and current workload."
+      },
+      "4": {
+        "heading": "Changes and cancellations",
+        "body": "Changes or cancellations may be possible before production begins on a custom piece; once production has started, changes may not be possible. Contact us as soon as possible if you need to make a change."
+      },
+      "5": {
+        "heading": "Intellectual property",
+        "body": "All designs, photos, and content on this site belong to Luma and may not be copied or reused without permission."
+      },
+      "6": {
+        "heading": "Governing law",
+        "body": "These terms are governed by the laws of the State of Israel."
+      },
+      "7": {
+        "heading": "Contact",
+        "body": "Questions about these terms? Reach out via the contact page and we'll be glad to help."
+      }
+    }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "updated": "Last updated: July 2026",
+    "intro": "This policy explains what information we collect when you use the Luma website, and how we use it.",
+    "sections": {
+      "0": {
+        "heading": "Information we collect",
+        "body": "When you place an order, request a quote, or contact us, we collect the details you provide — such as your name, phone number, email address, and delivery address. Browsing our site may also generate basic technical data (like pages visited) used to keep the site running smoothly."
+      },
+      "1": {
+        "heading": "How we use your information",
+        "body": "We use your information to process orders and quote requests, communicate with you about your order, provide customer support, and — only with your consent — send newsletter updates. We do not sell your information to third parties."
+      },
+      "2": {
+        "heading": "Sharing your information",
+        "body": "We share information only where necessary to fulfill an order — for example with delivery providers and payment processors — and only to the extent needed for that purpose."
+      },
+      "3": {
+        "heading": "Cookies",
+        "body": "The site uses cookies for essential functionality, such as remembering items in your cart and your language preference."
+      },
+      "4": {
+        "heading": "Data security",
+        "body": "We take reasonable measures to protect the information you share with us against unauthorized access or disclosure."
+      },
+      "5": {
+        "heading": "Your rights",
+        "body": "You may request to view, correct, or delete the personal information we hold about you, and you may unsubscribe from marketing communications at any time."
+      },
+      "6": {
+        "heading": "Contact",
+        "body": "For any privacy-related request or question, please reach out via the contact page."
+      }
+    }
+  },
+  "accessibility": {
+    "title": "Accessibility Statement",
+    "updated": "Last updated: July 2026",
+    "contactLabel": "Report an accessibility issue by email:",
+    "intro": "Luma is committed to making this website accessible to all users, including people with disabilities, in line with the Israeli Equal Rights for Persons with Disabilities regulations and the WCAG 2.1 (Level AA) international guidelines.",
+    "sections": {
+      "0": {
+        "heading": "Accessibility features on this site",
+        "body": "This site includes a dedicated accessibility widget offering font-size adjustment, a high-contrast display mode, and a reduced-motion option, alongside a general baseline of semantic markup, keyboard navigation, labelled form controls, visible focus indicators, and alt text on product images."
+      },
+      "1": {
+        "heading": "Ongoing efforts",
+        "body": "We review the site on an ongoing basis and work to fix accessibility issues as they're identified. As with most websites, some pages or third-party components may not yet be fully accessible — we welcome reports of any barrier you encounter."
+      },
+      "2": {
+        "heading": "Contact us about accessibility",
+        "body": "If you encounter an accessibility barrier on this site, please let us know via the contact page or by email, and we'll do our best to address it promptly."
+      }
+    }
   },
   "gallery": {
     "title": "Our Gallery",

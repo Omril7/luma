@@ -37,14 +37,13 @@ export function Footer({ instagramUrl, facebookUrl, tagline }: FooterProps) {
   const infoLinks = [
     { href: '/contact', label: tNav('contact') },
     { href: '/faq', label: t('faq') },
-    // Legal pages ship alongside the shop/checkout flow (M1.21) — hidden while FEATURES.shop is off.
-    ...(FEATURES.shop
-      ? [
-          { href: '/terms', label: t('terms') },
-          { href: '/privacy', label: t('privacy') },
-          { href: '/returns', label: t('returns') },
-        ]
-      : []),
+    // Terms/privacy/accessibility are legal requirements independent of whether checkout is
+    // live (an accessibility statement is legally required in Israel regardless of e-commerce
+    // status) — always shown. Returns policy only matters once purchasing is live.
+    { href: '/terms', label: t('terms') },
+    { href: '/privacy', label: t('privacy') },
+    { href: '/accessibility', label: t('accessibility') },
+    ...(FEATURES.shop ? [{ href: '/returns', label: t('returns') }] : []),
   ]
 
   const headingCls = themeOverride ? 'text-primary' : 'text-[var(--color-charcoal-heading)]'

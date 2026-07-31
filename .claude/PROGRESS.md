@@ -116,6 +116,25 @@ lg:text-6xl`) to `clamp(1.75rem, 0.84rem + 4.55vw, 3.75rem)` — scales smoothly
     en/LTR read correctly.
 - **Roadmap:** M1.28h (item 6 of 10) ✅.
 
+## 2026-07-31 — M1.28h #7: Legal pages (terms, privacy, accessibility) ✅
+
+- **Done:** New `/terms`, `/privacy`, `/accessibility` bilingual routes, following the `/about`
+  static-page layout pattern via a new shared `LegalPageContent.tsx` (title + intro + ordered
+  sections). Content lives in three new i18n namespaces (`terms`, `privacy`, `accessibility`) —
+  static placeholder copy per `CHANGES.md`'s fallback (content-editable via `SiteContent`/admin
+  wasn't scoped this round, given the size of `SiteContentPage.tsx` already). Standard sections
+  for each (handmade-goods terms, what-data-we-collect privacy, WCAG 2.1 AA accessibility
+  commitment) — flagged to the client that a lawyer should review before this is treated as
+  binding legal text. Accessibility page additionally shows a live mailto contact block sourced
+  from the admin's business-settings email (`getSiteSettings()`), matching the legal requirement
+  to provide a reporting channel. `Footer.tsx`'s terms/privacy/accessibility links now always
+  show regardless of `FEATURES.shop` (legal requirements independent of checkout status); the
+  returns-policy link stays gated behind `FEATURES.shop`.
+- **Decisions:** next-intl's message types don't allow JSON arrays — `sections` had to be
+  restructured as an index-keyed object (`{"0": {...}, "1": {...}}`) rather than an array;
+  `LegalPageContent` converts via `Object.values()`.
+- **Roadmap:** M1.28h (item 7 of 10) ✅.
+
 ## 2026-07-27 — M1.28g: Product page trust/spec/FAQ pass (client feedback) ✅
 
 - **Done:** Triaged the client's Hebrew feedback list into dev work vs. content-only work (kept
