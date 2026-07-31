@@ -67,6 +67,19 @@ Keep entries short and factual. One entry per working session (or per merged cha
   block (now 7 items).
 - **Roadmap:** M1.28h (item 4 of 10) ✅.
 
+## 2026-07-31 — M1.28h #5: Fluid hero heading sizing ✅
+
+- **Done:** `HeroSection.tsx` h1 switched from fixed breakpoint jumps (`text-4xl md:text-5xl
+lg:text-6xl`) to `clamp(1.75rem, 0.84rem + 4.55vw, 3.75rem)` — scales smoothly from 28px at
+  320px viewport width to 60px (same cap as the old `lg:text-6xl`) at 1024px, instead of jumping
+  discretely at each breakpoint. Verified via computed style (60px at 1440px viewport, matching
+  the old max) and the clamp formula for narrower widths.
+- **Roadmap:** M1.28h (item 5 of 10) ✅.
+- **Notes/blockers:** This is the "first pass" the plan called for — pure viewport-based fluid
+  sizing, not text-length-aware. If very long admin-entered headings still wrap on real content,
+  the plan's fallback (client-side auto-shrink or an admin character-count hint) is still on the
+  table.
+
 ## 2026-07-27 — M1.28g: Product page trust/spec/FAQ pass (client feedback) ✅
 
 - **Done:** Triaged the client's Hebrew feedback list into dev work vs. content-only work (kept

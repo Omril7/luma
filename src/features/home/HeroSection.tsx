@@ -96,7 +96,10 @@ export function HeroSection({ locale, whatsappNumber, content }: HeroSectionProp
           </div>
           <h1
             className={cn(
-              'font-heading text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight',
+              // Fluid clamp() instead of fixed breakpoint jumps (28px -> 60px between 320-1024px
+              // viewports) so long admin-entered headings scale smoothly instead of wrapping at
+              // a hard breakpoint edge.
+              'font-heading text-[clamp(1.75rem,0.84rem_+_4.55vw,3.75rem)] font-semibold leading-tight',
               onPhoto ? 'text-charcoal' : 'text-text-main'
             )}
           >
