@@ -177,6 +177,27 @@ lg:text-6xl`) to `clamp(1.75rem, 0.84rem + 4.55vw, 3.75rem)` — scales smoothly
   same pre-refactor pattern (up/down arrows, always-visible add form) — not in scope for this
   round per the client's ask, flagged for a future consistency pass.
 
+## 2026-07-31 — M1.28h #10: Perf — loading/error boundaries + `/shop` query caching ✅
+
+- **Done:** Added `loading.tsx` (skeleton, matching each page's real layout so there's no shift
+  once content arrives) and `error.tsx` (shared `RouteError.tsx` client component — logs the
+  error, offers retry/home) for `/shop` and `/product/[slug]`, the two routes the client flagged
+  as feeling slow with "nothing happens" on load. `/shop` reads `searchParams` (a Dynamic API),
+  which forces per-request SSR — that's inherent to per-filter browsing and wasn't changed —
+  but its two DB queries (`getProducts`, `getActiveCategories`) are now wrapped in
+  `unstable_cache` (new `getProductsCached`/`getActiveCategoriesCached` exports, 120s revalidate,
+  keyed automatically per distinct filter combination) so repeat views of the same filter/page
+  combo skip the DB roundtrip. Scoped to these new exports rather than the base functions, so
+  the public `/api/products` route and the product page's related-products query keep seeing
+  fresh, uncached data.
+- **Decisions:** `/product/[slug]` already had real ISR (`revalidate = 300`) — only needed the
+  loading/error boundary, no caching changes there. Confirmed the one hydration warning seen
+  while testing (`aria-pressed`/wishlist heart icon) is pre-existing — the client-only wishlist
+  store reading `localStorage` after SSR — unrelated to this work, not fixed here (out of scope).
+- **Roadmap:** M1.28h (item 10 of 10) ✅ — **all 10 items from this feedback round are now
+  shipped.** Item 11 (Instagram integration) remains a separate, larger effort per
+  `.claude/docs/14-instagram-integration.md`.
+
 ## 2026-07-27 — M1.28g: Product page trust/spec/FAQ pass (client feedback) ✅
 
 - **Done:** Triaged the client's Hebrew feedback list into dev work vs. content-only work (kept

@@ -359,7 +359,7 @@ narrative description. See `.claude/PROGRESS.md` for the full feedback triage.
 - **Acceptance:** product page shows description → brand values → FAQ, all bilingual/RTL-correct;
   editing the site FAQ content updates both `/faq` and every product page.
 
-### M1.28h Product page — 2nd feedback round (client feedback, 2026-07-28) ✅ _(in progress)_
+### M1.28h Product page — 2nd feedback round (client feedback, 2026-07-28) ✅
 
 Second round of client feedback, staged in `CHANGES.md`. Each sub-item below tracks one entry
 from that file; check off as implemented.
@@ -380,7 +380,7 @@ from that file; check off as implemented.
 - [x] Legal pages (#7)
 - [x] WhatsApp button → SocialsSpeedDial (#8)
 - [x] Admin gallery drag-and-drop + UI (#9)
-- [ ] Performance: loading/error boundaries + `/shop` caching (#10)
+- [x] Performance: loading/error boundaries + `/shop` caching (#10)
 - Instagram integration (#11) is a separate, larger effort — see
   `.claude/docs/14-instagram-integration.md`, not scoped for this milestone.
 

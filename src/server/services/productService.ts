@@ -1,5 +1,6 @@
 import 'server-only'
 import { cache } from 'react'
+import { unstable_cache } from 'next/cache'
 import { Prisma } from '@prisma/client'
 import { prisma } from '@/server/prisma'
 import type { ProductDTO } from '@/shared/types'
@@ -161,6 +162,20 @@ export async function getProducts(opts: GetProductsOptions = {}): Promise<Produc
     totalPages: Math.ceil(total / limit),
   }
 }
+
+// /shop renders dynamically per request (it reads `searchParams` for filters — a Dynamic API
+// that opts the whole route out of ISR), so without this every page view was a fresh DB
+// roundtrip regardless of how often the same filter combination gets requested. unstable_cache
+// keys on the serialized arguments automatically, so each distinct {categoryId, sort, page}
+// combination gets its own ~2min cache entry — the route stays per-request/per-filter, only the
+// underlying query is cached. Scoped to this export rather than `getProducts` itself, since
+// other callers (the public /api/products route, related-products on the product page) should
+// keep seeing fresh data.
+export const getProductsCached = unstable_cache(
+  (opts: GetProductsOptions) => getProducts(opts),
+  ['shop-products'],
+  { revalidate: 120 }
+)
 
 // React cache(): deduped per request — generateMetadata and the product page
 // both fetch the same slug, so this halves the DB roundtrips per page view.

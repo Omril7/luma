@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import dynamicImport from 'next/dynamic'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { getProducts } from '@/server/services/productService'
-import { getActiveCategories } from '@/server/services/categoryService'
+import { getProductsCached } from '@/server/services/productService'
+import { getActiveCategoriesCached } from '@/server/services/categoryService'
 import type { ProductSortKey } from '@/server/services/productService'
 import { ShopClient } from '@/features/shop/ShopClient'
 import { getSiteSettings } from '@/server/services/adminSettingsService'
@@ -59,8 +59,8 @@ export default async function ShopPage({
 
   const [{ products, total, totalPages }, categories, { business }, contactRow] = await Promise.all(
     [
-      getProducts({ categoryId, sort, page, limit: PAGE_SIZE }),
-      getActiveCategories(),
+      getProductsCached({ categoryId, sort, page, limit: PAGE_SIZE }),
+      getActiveCategoriesCached(),
       getSiteSettings(),
       getSiteContentByKey('home.contact'),
     ]

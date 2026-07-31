@@ -1,4 +1,10 @@
 {
+  "errorPage": {
+    "title": "Something went wrong",
+    "body": "We couldn't load this page. Please try again.",
+    "retry": "Try again",
+    "home": "Back to Home"
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",

@@ -1,4 +1,5 @@
 import 'server-only'
+import { unstable_cache } from 'next/cache'
 import { prisma } from '@/server/prisma'
 import type { CategoryDTO } from '@/shared/types'
 
@@ -11,6 +12,14 @@ export async function getActiveCategories(): Promise<CategoryDTO[]> {
   })
   return categories
 }
+
+// Cached for /shop specifically — see the matching comment on getProductsCached in
+// productService.ts for why (route stays dynamic, only the DB query is cached).
+export const getActiveCategoriesCached = unstable_cache(
+  () => getActiveCategories(),
+  ['shop-categories'],
+  { revalidate: 120 }
+)
 
 export interface CategoryWithCount extends CategoryDTO {
   count: number
