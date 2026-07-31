@@ -372,7 +372,7 @@ from that file; check off as implemented.
       price). Single-variant products get an inline `dl` instead of a 1-column table;
       zero-variant products skip the section. Added a closing "want something custom? contact
       us" row that opens the existing `PriceOfferModal`.
-- [ ] Image gallery bugs (#2)
+- [x] Image gallery bugs (#2)
 - [ ] Reviews + FAQ side-by-side on desktop (#3)
 - [ ] 2 more brand values (#4)
 - [ ] Hero heading fluid sizing (#5)

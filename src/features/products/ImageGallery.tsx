@@ -37,6 +37,7 @@ export function ImageGallery({ images, productName, locale }: ImageGalleryProps)
   const t = useTranslations('product')
   const { a11y } = useUiStore()
   const shouldAnimate = !a11y.noMotion
+  const isRtl = locale === 'he'
   const [selectedIndex, setSelectedIndex] = useState(0)
 
   // Fade only on image *changes* — fading the initial image ships opacity:0 in
@@ -81,7 +82,7 @@ export function ImageGallery({ images, productName, locale }: ImageGalleryProps)
                 alt={altText}
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover"
+                className="object-contain"
                 priority={selectedIndex === 0}
                 fetchPriority={selectedIndex === 0 ? 'high' : undefined}
               />
@@ -100,7 +101,11 @@ export function ImageGallery({ images, productName, locale }: ImageGalleryProps)
               aria-label={t('prevImage')}
               className="absolute start-2 top-1/2 -translate-y-1/2 z-10 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-surface/80 backdrop-blur-sm border border-border text-text-main hover:bg-surface transition-colors duration-150 cursor-pointer shadow-sm"
             >
-              <ChevronLeft size={20} aria-hidden="true" />
+              {isRtl ? (
+                <ChevronRight size={20} aria-hidden="true" />
+              ) : (
+                <ChevronLeft size={20} aria-hidden="true" />
+              )}
             </button>
             <button
               type="button"
@@ -108,7 +113,11 @@ export function ImageGallery({ images, productName, locale }: ImageGalleryProps)
               aria-label={t('nextImage')}
               className="absolute end-2 top-1/2 -translate-y-1/2 z-10 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-surface/80 backdrop-blur-sm border border-border text-text-main hover:bg-surface transition-colors duration-150 cursor-pointer shadow-sm"
             >
-              <ChevronRight size={20} aria-hidden="true" />
+              {isRtl ? (
+                <ChevronLeft size={20} aria-hidden="true" />
+              ) : (
+                <ChevronRight size={20} aria-hidden="true" />
+              )}
             </button>
           </>
         )}

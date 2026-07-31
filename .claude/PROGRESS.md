@@ -41,6 +41,14 @@ Keep entries short and factual. One entry per working session (or per merged cha
 - **Notes/blockers:** `CHANGES.md` tracks the remaining 9 items from this feedback round; working
   through them in order this session.
 
+## 2026-07-31 — M1.28h #2: Image gallery crop + RTL arrow fixes ✅
+
+- **Done:** `ImageGallery.tsx` main image switched from `object-cover` to `object-contain`
+  (letterboxed on the existing `bg-secondary` panel) so photos whose native ratio isn't 4:3 no
+  longer get cropped. Prev/next chevrons now swap based on `locale` (`ChevronRight`/`ChevronLeft`
+  for RTL), mirroring the pattern already used in `ReviewsCarousel.tsx`.
+- **Roadmap:** M1.28h (item 2 of 10) ✅.
+
 ## 2026-07-27 — M1.28g: Product page trust/spec/FAQ pass (client feedback) ✅
 
 - **Done:** Triaged the client's Hebrew feedback list into dev work vs. content-only work (kept
