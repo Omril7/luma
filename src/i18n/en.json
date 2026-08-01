@@ -481,6 +481,13 @@
       "wishlistRemove": "Remove from wishlist",
       "empty": "No featured products yet"
     },
+    "gallery": {
+      "heading": "From Our Gallery",
+      "viewAll": "View Full Gallery",
+      "carouselPrev": "Previous image",
+      "carouselNext": "Next image",
+      "carouselDot": "Go to image {index}"
+    },
     "story": {
       "heading": "Lums's Story",
       "body1": "Luma was born from a love of wood and craftsmanship. Every piece we create goes through a careful design and production process, using carefully selected natural materials.",
@@ -495,7 +502,7 @@
     },
     "instagram": {
       "heading": "Follow Us",
-      "handle": "@luma.furniture",
+      "handle": "@lumastudio_3",
       "coming": "Coming Soon",
       "viewPost": "View on Instagram"
     },

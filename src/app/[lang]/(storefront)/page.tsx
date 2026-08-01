@@ -8,6 +8,9 @@ import type { TestimonialItem } from '@/features/home/TestimonialsSection'
 
 // Below-the-fold sections: still server-rendered, but their client JS is split
 // into separate chunks so above-the-fold hydration isn't one long task.
+const GallerySection = dynamicImport(() =>
+  import('@/features/home/GallerySection').then((m) => m.GallerySection)
+)
 const StorySection = dynamicImport(() =>
   import('@/features/home/StorySection').then((m) => m.StorySection)
 )
@@ -23,6 +26,7 @@ const ContactSection = dynamicImport(() =>
 import { getSiteContentByKey } from '@/server/services/adminSiteContentService'
 import { getSiteSettings } from '@/server/services/adminSettingsService'
 import { listActiveInstagramHighlights } from '@/server/services/adminInstagramService'
+import { listGalleryImages } from '@/server/services/adminGalleryService'
 import { setRequestLocale } from 'next-intl/server'
 
 export const revalidate = 300
@@ -78,16 +82,16 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
   const { lang } = await params
   setRequestLocale(lang)
 
-  const [row, heroRow, storyRow, contactRow, { business }, instagramHighlights] = await Promise.all(
-    [
+  const [row, heroRow, storyRow, contactRow, { business }, instagramHighlights, galleryImages] =
+    await Promise.all([
       getSiteContentByKey('home.testimonials'),
       getSiteContentByKey('home.hero'),
       getSiteContentByKey('home.story'),
       getSiteContentByKey('home.contact'),
       getSiteSettings(),
       listActiveInstagramHighlights(),
-    ]
-  )
+      listGalleryImages(),
+    ])
   const testimonials = (row?.value as { items?: TestimonialItem[] } | undefined)?.items ?? []
   const heroContent: HomeHeroContent = {
     ...HOME_HERO_DEFAULTS,
@@ -106,6 +110,9 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
     <>
       <HeroSection locale={lang} whatsappNumber={business.whatsappNumber} content={heroContent} />
       {/* <div className="bg-bg"><FeaturedSection products={...} locale={lang} /></div> — restore with getProducts({ featured: true, limit: 6 }) */}
+      <div className="bg-secondary">
+        <GallerySection locale={lang} images={galleryImages} />
+      </div>
       <div className="bg-bg">
         <StorySection locale={lang} content={storyContent} />
       </div>

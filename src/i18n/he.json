@@ -481,6 +481,13 @@
       "wishlistRemove": "הסר מרשימת המשאלות",
       "empty": "אין מוצרים מומלצים כרגע"
     },
+    "gallery": {
+      "heading": "מהגלריה שלנו",
+      "viewAll": "לגלריה המלאה",
+      "carouselPrev": "תמונה קודמת",
+      "carouselNext": "תמונה הבאה",
+      "carouselDot": "מעבר לתמונה {index}"
+    },
     "story": {
       "heading": "הסיפור של LUMA",
       "body1": "לומה נולדה מאהבה לעץ ולמלאכת יד. כל פריט ריהוט שאנו יוצרים עובר תהליך עיצוב וייצור קפדני, מחומרים טבעיים שנבחרו בקפידה.",
@@ -495,7 +502,7 @@
     },
     "instagram": {
       "heading": "עקבו אחרינו",
-      "handle": "@luma.furniture",
+      "handle": "@lumastudio_3",
       "coming": "בקרוב",
       "viewPost": "צפייה באינסטגרם"
     },

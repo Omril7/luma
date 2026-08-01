@@ -40,6 +40,7 @@ export function InstagramSection({ locale: _locale, items, instagramUrl }: Insta
           </h2>
           {instagramUrl ? (
             <a
+              dir="ltr"
               href={instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
