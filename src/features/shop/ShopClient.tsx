@@ -134,12 +134,9 @@ export function ShopClient({
           {/* Main content */}
           <div className="flex-1 min-w-0">
             {/* Mobile filters */}
-            <div className="flex gap-3 items-center mb-6 lg:hidden">
+            <div className="flex flex-col gap-3 mb-6 lg:hidden">
               {/* Category pills — horizontally scrollable */}
-              <div
-                className="flex-1 flex gap-2 overflow-x-auto pb-1"
-                style={{ scrollbarWidth: 'none' }}
-              >
+              <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
                 <CategoryPill cat={null} />
                 {categories.map((cat) => (
                   <CategoryPill key={cat.id} cat={cat} />
@@ -147,7 +144,7 @@ export function ShopClient({
               </div>
 
               {/* Compact sort */}
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 self-start">
                 <SortSelect compact />
               </div>
             </div>
