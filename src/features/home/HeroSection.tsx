@@ -115,7 +115,7 @@ export function HeroSection({ locale, whatsappNumber, content }: HeroSectionProp
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/contact"
+              href="/shop"
               className="inline-block cursor-pointer rounded-lg bg-primary px-6 py-3 font-semibold text-surface transition-all duration-150 hover:-translate-y-0.5 hover:bg-primary-600 hover:shadow-soft"
             >
               {t('contactCta')}
