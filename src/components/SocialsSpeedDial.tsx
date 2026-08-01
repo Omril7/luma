@@ -35,10 +35,17 @@ export function SocialsSpeedDial({
   facebookUrl,
 }: SocialsSpeedDialProps) {
   const t = useTranslations('socials')
-  const { a11y } = useUiStore()
+  const { a11y, mobileMenuOpen } = useUiStore()
   const shouldAnimate = !a11y.noMotion
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  // The mobile nav dropdown can grow tall enough to sit under this fixed widget —
+  // collapse the open satellite menu too, not just hide the trigger, so it doesn't
+  // reopen underneath the dropdown.
+  useEffect(() => {
+    if (mobileMenuOpen) setOpen(false)
+  }, [mobileMenuOpen])
 
   useEffect(() => {
     if (!open) return
@@ -104,6 +111,8 @@ export function SocialsSpeedDial({
       : null,
   ]
   const visibleLinks = links.filter((l): l is SatelliteLink => l !== null)
+
+  if (mobileMenuOpen) return null
 
   return (
     <div ref={containerRef} className="fixed bottom-6 end-6 z-50 flex flex-col items-end gap-3">

@@ -82,7 +82,7 @@ const DEFAULT_PREFS: A11yPrefs = {
 export function A11yWidget() {
   const t = useTranslations('a11y')
   const locale = useLocale()
-  const { a11y, setA11y } = useUiStore()
+  const { a11y, setA11y, mobileMenuOpen } = useUiStore()
   const [open, setOpen] = useState(false)
   const closeRef = useRef<HTMLButtonElement>(null)
   const guideRef = useRef<HTMLDivElement>(null)
@@ -147,6 +147,11 @@ export function A11yWidget() {
 
   const hasActive = a11y.fontPercent > 100 || OPTIONS.some(({ key }) => a11y[key])
 
+  // The drawer's own chrome (width/padding/gaps/icons) is pinned to fixed px below so
+  // it can't balloon with --font-scale (rem) — only text should grow. Past a threshold
+  // a 2-column option grid gets too cramped for the enlarged labels, so drop to 1 column.
+  const optionsGridCols = a11y.fontPercent > 130 ? 'grid-cols-1' : 'grid-cols-2'
+
   const resetAll = () => setA11y(DEFAULT_PREFS)
 
   // dark / contrast / grayscale / sepia are mutually exclusive visual modes
@@ -179,7 +184,7 @@ export function A11yWidget() {
 
       {/* Floating trigger */}
       <AnimatePresence>
-        {!open && (
+        {!open && !mobileMenuOpen && (
           <motion.button
             key="a11y-trigger"
             initial={shouldAnimate ? { opacity: 0, scale: 0.8 } : false}
@@ -235,46 +240,46 @@ export function A11yWidget() {
             transition={
               shouldAnimate ? { type: 'tween', duration: 0.25, ease: 'easeOut' } : { duration: 0 }
             }
-            className="fixed inset-y-0 start-0 z-[60] flex w-80 flex-col border-e border-border bg-surface shadow-2xl"
+            className="fixed inset-y-0 start-0 z-[60] flex w-[320px] flex-col border-e border-border bg-surface shadow-2xl"
           >
             {/* Header */}
-            <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
-              <div className="flex items-center gap-2.5">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-surface">
-                  <Accessibility className="h-5 w-5" aria-hidden="true" />
+            <div className="flex shrink-0 items-center justify-between border-b border-border px-[16px] py-[12px]">
+              <div className="flex items-center gap-[10px]">
+                <span className="flex h-[28px] w-[28px] shrink-0 items-center justify-center rounded-full bg-primary text-surface">
+                  <Accessibility className="h-[20px] w-[20px]" aria-hidden="true" />
                 </span>
                 <span className="font-semibold text-text-main">{t('widget')}</span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-[4px]">
                 {hasActive && (
                   <button
                     onClick={resetAll}
                     aria-label={t('resetAll')}
                     title={t('resetAll')}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-secondary hover:text-primary focus-visible:outline-2"
+                    className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-secondary hover:text-primary focus-visible:outline-2"
                   >
-                    <RotateCcw className="h-4 w-4" />
+                    <RotateCcw className="h-[16px] w-[16px]" />
                   </button>
                 )}
                 <button
                   ref={closeRef}
                   onClick={() => setOpen(false)}
                   aria-label={t('close')}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-secondary hover:text-primary focus-visible:outline-2"
+                  className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-secondary hover:text-primary focus-visible:outline-2"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-[16px] w-[16px]" />
                 </button>
               </div>
             </div>
 
             {/* Scrollable body */}
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-[16px]">
               {/* Font size stepper */}
-              <div className="mb-5">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
+              <div className="mb-[20px]">
+                <p className="mb-[8px] text-xs font-semibold uppercase tracking-wider text-text-muted">
                   {t('fontSize')}
                 </p>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-[12px]">
                   <input
                     type="range"
                     min={FONT_MIN}
@@ -284,16 +289,16 @@ export function A11yWidget() {
                     onChange={(e) => setA11y({ fontPercent: Number(e.target.value) })}
                     aria-label={t('fontSize')}
                     aria-valuetext={`${a11y.fontPercent}%`}
-                    className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-border accent-primary"
+                    className="h-[8px] flex-1 cursor-pointer appearance-none rounded-full bg-border accent-primary"
                   />
-                  <span className="min-w-[44px] text-center text-sm font-medium tabular-nums text-text-main">
+                  <span className="min-w-[44px] shrink-0 text-center text-sm font-medium tabular-nums text-text-main">
                     {a11y.fontPercent}%
                   </span>
                 </div>
               </div>
 
-              {/* Options grid */}
-              <div className="grid grid-cols-2 gap-2.5">
+              {/* Options grid — drops to 1 column once the enlarged labels no longer fit 2-up */}
+              <div className={`grid ${optionsGridCols} gap-[10px]`}>
                 {OPTIONS.map(({ key, Icon }) => {
                   const active = a11y[key]
                   return (
@@ -303,14 +308,17 @@ export function A11yWidget() {
                       aria-checked={active}
                       onClick={() => toggle(key)}
                       className={[
-                        'flex min-h-[80px] flex-col items-center justify-center gap-2 rounded-xl border-2 px-2 py-3 text-center transition-all duration-200',
+                        'flex min-h-[80px] items-center rounded-xl border-2 px-[8px] py-[12px] text-center transition-all duration-200',
                         'focus-visible:outline-2 focus-visible:outline-offset-2',
+                        optionsGridCols === 'grid-cols-1'
+                          ? 'flex-row justify-start gap-[12px] ps-[16px] text-start'
+                          : 'flex-col justify-center gap-[8px]',
                         active
                           ? 'border-primary bg-primary/10 text-primary'
                           : 'border-border bg-surface text-text-main hover:border-primary/40 hover:bg-secondary',
                       ].join(' ')}
                     >
-                      <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                      <Icon className="h-[20px] w-[20px] shrink-0" aria-hidden="true" />
                       <span className="text-xs font-medium leading-tight">{t(key)}</span>
                     </button>
                   )

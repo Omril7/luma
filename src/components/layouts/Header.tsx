@@ -28,7 +28,7 @@ export function Header({ phone }: { phone?: string }) {
   const { switchTo, isHebrew } = useLanguageSwitch()
   const cartItems = useCartStore((s) => s.items)
   const wishlistIds = useWishlistStore((s) => s.ids)
-  const { a11y } = useUiStore()
+  const { a11y, setMobileMenuOpen } = useUiStore()
   const pathname = usePathname()
 
   const [scrolled, setScrolled] = useState(false)
@@ -57,6 +57,13 @@ export function Header({ phone }: { phone?: string }) {
   useEffect(() => {
     setMenuOpen(false)
   }, [pathname])
+
+  // Let fixed-position floating widgets (a11y trigger, socials speed-dial) know to
+  // hide themselves — the mobile dropdown can grow tall enough to sit under them.
+  useEffect(() => {
+    setMobileMenuOpen(menuOpen)
+    return () => setMobileMenuOpen(false)
+  }, [menuOpen, setMobileMenuOpen])
 
   return (
     <header
@@ -94,7 +101,7 @@ export function Header({ phone }: { phone?: string }) {
           })}
         </nav>
 
-        {/* Actions */}
+        {/* Actions — full set on desktop; mobile shows only the menu toggle below */}
         <div className="flex items-center gap-2">
           {/* Click-to-call phone number — desktop only, sourced from Settings */}
           {telHref && (
@@ -110,12 +117,12 @@ export function Header({ phone }: { phone?: string }) {
             </a>
           )}
 
-          {/* Language switcher — flag group button */}
+          {/* Language switcher — flag group button (desktop; duplicated inside the mobile menu) */}
           <div
             dir="ltr"
             role="group"
             aria-label="Language / שפה"
-            className="relative flex items-center rounded-full border border-border bg-secondary/50 p-0.5"
+            className="relative hidden items-center rounded-full border border-border bg-secondary/50 p-0.5 md:flex"
           >
             <span
               aria-hidden="true"
@@ -155,10 +162,10 @@ export function Header({ phone }: { phone?: string }) {
             </button>
           </div>
 
-          {/* Wishlist */}
+          {/* Wishlist — desktop; duplicated inside the mobile menu */}
           <Link
             href="/wishlist"
-            className="relative flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-text-main transition-colors hover:text-primary focus-visible:outline-2"
+            className="relative hidden min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-text-main transition-colors hover:text-primary focus-visible:outline-2 md:flex"
             aria-label={`${t('wishlist')}${wishlistCount > 0 ? ` (${wishlistCount})` : ''}`}
           >
             <Heart size={22} />
@@ -172,11 +179,11 @@ export function Header({ phone }: { phone?: string }) {
             )}
           </Link>
 
-          {/* Cart */}
+          {/* Cart — desktop; duplicated inside the mobile menu */}
           {FEATURES.shop && (
             <Link
               href="/cart"
-              className="relative flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-text-main transition-colors hover:text-primary focus-visible:outline-2"
+              className="relative hidden min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-text-main transition-colors hover:text-primary focus-visible:outline-2 md:flex"
               aria-label={`${t('cart')}${itemCount > 0 ? ` (${itemCount})` : ''}`}
             >
               <ShoppingBag size={22} />
@@ -191,14 +198,20 @@ export function Header({ phone }: { phone?: string }) {
             </Link>
           )}
 
-          {/* Mobile menu toggle */}
+          {/* Mobile menu toggle — the only action shown next to the logo on mobile */}
           <button
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-text-main transition-colors hover:bg-secondary hover:text-primary focus-visible:outline-2 md:hidden"
+            className="relative flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-text-main transition-colors hover:bg-secondary hover:text-primary focus-visible:outline-2 md:hidden"
             onClick={() => setMenuOpen((v) => !v)}
             aria-label={menuOpen ? tHeader('closeMenu') : tHeader('openMenu')}
             aria-expanded={menuOpen}
           >
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
+            {!menuOpen && (wishlistCount > 0 || itemCount > 0) && (
+              <span
+                aria-hidden="true"
+                className="absolute end-1.5 top-1.5 h-2 w-2 rounded-full bg-primary"
+              />
+            )}
           </button>
         </div>
       </div>
@@ -237,6 +250,94 @@ export function Header({ phone }: { phone?: string }) {
                   </Link>
                 )
               })}
+
+              <div className="my-2 border-t border-border" />
+
+              {/* Wishlist / cart — icon + label rows, moved here from the top bar so it
+                  never has to compete for space with the logo at large a11y font sizes */}
+              <Link
+                href="/wishlist"
+                className="flex min-h-[44px] items-center gap-3 py-2.5 text-base font-medium text-text-main transition-colors hover:text-primary"
+                onClick={() => setMenuOpen(false)}
+              >
+                <Heart size={20} aria-hidden="true" className="shrink-0" />
+                {t('wishlist')}
+                {wishlistCount > 0 && (
+                  <span
+                    aria-hidden="true"
+                    className="ms-auto flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-surface"
+                  >
+                    {wishlistCount > 99 ? '99+' : wishlistCount}
+                  </span>
+                )}
+              </Link>
+              {FEATURES.shop && (
+                <Link
+                  href="/cart"
+                  className="flex min-h-[44px] items-center gap-3 py-2.5 text-base font-medium text-text-main transition-colors hover:text-primary"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <ShoppingBag size={20} aria-hidden="true" className="shrink-0" />
+                  {t('cart')}
+                  {itemCount > 0 && (
+                    <span
+                      aria-hidden="true"
+                      className="ms-auto flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-surface"
+                    >
+                      {itemCount > 99 ? '99+' : itemCount}
+                    </span>
+                  )}
+                </Link>
+              )}
+
+              {/* Language switcher — same flag pill as desktop, moved here on mobile */}
+              <div className="mt-2 flex min-h-[44px] items-center justify-between gap-3 py-2">
+                <span className="text-sm font-medium text-text-muted">Language / שפה</span>
+                <div
+                  dir="ltr"
+                  role="group"
+                  aria-label="Language / שפה"
+                  className="relative flex items-center rounded-full border border-border bg-secondary/50 p-0.5"
+                >
+                  <span
+                    aria-hidden="true"
+                    className={[
+                      'pointer-events-none absolute inset-y-0.5 w-[calc(50%-2px)] rounded-full bg-surface shadow-sm',
+                      'transition-[left] duration-200 ease-out',
+                      isHebrew ? 'left-0.5' : 'left-1/2',
+                    ].join(' ')}
+                  />
+                  <button
+                    onClick={() => switchTo('he')}
+                    className={[
+                      'relative z-10 flex h-8 w-9 items-center justify-center rounded-full',
+                      'transition-opacity duration-200 focus-visible:outline-2',
+                      isHebrew
+                        ? 'opacity-100'
+                        : 'opacity-30 grayscale hover:opacity-60 hover:grayscale-0',
+                    ].join(' ')}
+                    aria-pressed={isHebrew}
+                    aria-label="עברית"
+                  >
+                    <IsraelFlag className="h-[13px] w-[20px] rounded-[2px] shadow-[0_0_0_0.5px_rgba(0,0,0,0.12)]" />
+                  </button>
+                  <button
+                    onClick={() => switchTo('en')}
+                    className={[
+                      'relative z-10 flex h-8 w-9 items-center justify-center rounded-full',
+                      'transition-opacity duration-200 focus-visible:outline-2',
+                      !isHebrew
+                        ? 'opacity-100'
+                        : 'opacity-30 grayscale hover:opacity-60 hover:grayscale-0',
+                    ].join(' ')}
+                    aria-pressed={!isHebrew}
+                    aria-label="English"
+                  >
+                    <USAFlag className="h-[13px] w-[20px] rounded-[2px] shadow-[0_0_0_0.5px_rgba(0,0,0,0.12)]" />
+                  </button>
+                </div>
+              </div>
+
               {telHref && (
                 <a
                   href={telHref}

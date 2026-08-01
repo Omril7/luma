@@ -64,6 +64,10 @@ html[lang='he'] {
 html {
   font-size: calc(16px * var(--font-scale));
   scroll-behavior: smooth;
+  /* Safety net: entrance-animation transforms (e.g. StorySection's slide-in) can
+     briefly inflate scrollable width before they're in view. Never let that (or
+     any future animation) create a horizontal scrollbar on mobile. */
+  overflow-x: hidden;
 }
 
 body {
@@ -71,6 +75,10 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text);
   line-height: 1.6;
+  /* clip, not hidden — hidden turns body into a scroll container and breaks
+     position:sticky (e.g. the header) since sticky then resolves against body
+     instead of the viewport. clip blocks horizontal bleed without that side effect. */
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

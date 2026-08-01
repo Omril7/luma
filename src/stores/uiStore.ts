@@ -32,15 +32,21 @@ export interface A11yPrefs {
 interface UiState {
   toasts: Toast[]
   a11y: A11yPrefs
+  // Not persisted — lets fixed-position floating widgets (a11y trigger, socials
+  // speed-dial) hide themselves while the mobile nav dropdown is open, since it
+  // can grow tall enough to sit underneath them.
+  mobileMenuOpen: boolean
   addToast: (toast: Omit<Toast, 'id'>) => void
   removeToast: (id: string) => void
   setA11y: (prefs: Partial<A11yPrefs>) => void
+  setMobileMenuOpen: (open: boolean) => void
 }
 
 export const useUiStore = create<UiState>()(
   persist(
     (set) => ({
       toasts: [],
+      mobileMenuOpen: false,
       a11y: {
         fontPercent: 100,
         contrast: false,
@@ -73,6 +79,7 @@ export const useUiStore = create<UiState>()(
       removeToast: (id) => set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
 
       setA11y: (prefs) => set((state) => ({ a11y: { ...state.a11y, ...prefs } })),
+      setMobileMenuOpen: (open) => set({ mobileMenuOpen: open }),
     }),
     {
       name: 'luma-ui',
