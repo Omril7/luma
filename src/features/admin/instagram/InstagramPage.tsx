@@ -1,19 +1,41 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { ArrowUp, ArrowDown, Trash2, Plus, Check, AlertCircle, Link2, EyeOff } from 'lucide-react'
+import { Reorder, useDragControls } from 'motion/react'
+import {
+  GripVertical,
+  ChevronDown,
+  Trash2,
+  Plus,
+  Check,
+  AlertCircle,
+  Link2,
+  Eye,
+  EyeOff,
+  X as XIcon,
+} from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import { ImageUpload } from '@/components/ui/ImageUpload'
+import { InstagramIcon } from '@/components/icons/InstagramIcon'
+import { InstagramEmbedBlockquote } from '@/components/ui/InstagramEmbedBlockquote'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 interface InstagramHighlightDTO {
   id: string
-  url: string
+  url?: string
   linkUrl?: string
+  permalink?: string
   sortOrder: number
   isActive: boolean
+}
+
+const IMPORT_ERROR_MESSAGES: Record<string, string> = {
+  ACCESS_TOKEN_REQUIRED:
+    'אינסטגרם דורש כרגע אישור גישה (access token) שעדיין לא הוגדר במערכת. יש לפנות למפתח האתר להגדרת INSTAGRAM_OEMBED_ACCESS_TOKEN.',
+  MEDIA_NOT_FOUND: 'הפוסט לא נמצא — ייתכן שהוא פרטי, נמחק, או שהכתובת שגויה.',
+  INVALID_URL: 'הכתובת שהוזנה אינה קישור תקין לפוסט באינסטגרם.',
 }
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
@@ -31,13 +53,10 @@ export function InstagramPage() {
   const [items, setItems] = useState<InstagramHighlightDTO[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [reordering, setReordering] = useState(false)
 
-  // New item form state
-  const [newUrl, setNewUrl] = useState<string | null>(null)
-  const [newLinkUrl, setNewLinkUrl] = useState('')
-  const [adding, setAdding] = useState(false)
-  const [addError, setAddError] = useState<string | null>(null)
-  const [addSuccess, setAddSuccess] = useState(false)
+  // Add-post modal
+  const [addOpen, setAddOpen] = useState(false)
 
   // Delete confirmation
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -54,7 +73,7 @@ export function InstagramPage() {
       )
       setItems(data.highlights.sort((a, b) => a.sortOrder - b.sortOrder))
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'שגיאה בטעינת התמונות')
+      setError(e instanceof Error ? e.message : 'שגיאה בטעינת הפוסטים')
     } finally {
       setLoading(false)
     }
@@ -64,43 +83,33 @@ export function InstagramPage() {
     fetchItems()
   }, [fetchItems])
 
-  // ── Reorder ───────────────────────────────────────────────────────────────
+  // ── Reorder (drag-and-drop) ──────────────────────────────────────────────────
 
-  async function handleMove(idx: number, dir: -1 | 1) {
-    const next = idx + dir
-    if (next < 0 || next >= items.length) return
+  // Live reorder while dragging — cheap local state update, not persisted yet.
+  function handleReorder(next: InstagramHighlightDTO[]) {
+    setItems(next)
+  }
 
-    const idA = items[idx].id
-    const idB = items[next].id
-    const sortA = items[idx].sortOrder
-    const sortB = items[next].sortOrder
-
-    // Optimistic update
-    setItems((prev) =>
-      prev
-        .map((item) => {
-          if (item.id === idA) return { ...item, sortOrder: sortB }
-          if (item.id === idB) return { ...item, sortOrder: sortA }
-          return item
-        })
-        .sort((a, b) => a.sortOrder - b.sortOrder)
-    )
-
+  // Persisted once the drag gesture ends: every row's sortOrder is set to its new index.
+  async function persistOrder() {
+    if (!token) return
+    setReordering(true)
+    const reindexed = items.map((item, i) => ({ ...item, sortOrder: i }))
+    setItems(reindexed)
     try {
-      await Promise.all([
-        api.patch<{ highlight: InstagramHighlightDTO }>(
-          `/api/admin/instagram/${idA}`,
-          { sortOrder: sortB },
-          token ?? ''
-        ),
-        api.patch<{ highlight: InstagramHighlightDTO }>(
-          `/api/admin/instagram/${idB}`,
-          { sortOrder: sortA },
-          token ?? ''
-        ),
-      ])
+      await Promise.all(
+        reindexed.map((item) =>
+          api.patch<{ highlight: InstagramHighlightDTO }>(
+            `/api/admin/instagram/${item.id}`,
+            { sortOrder: item.sortOrder },
+            token
+          )
+        )
+      )
     } catch {
       fetchItems() // revert on failure
+    } finally {
+      setReordering(false)
     }
   }
 
@@ -137,35 +146,6 @@ export function InstagramPage() {
     }
   }
 
-  // ── Add ───────────────────────────────────────────────────────────────────
-
-  async function handleAdd() {
-    if (!token || !newUrl) return
-    setAdding(true)
-    setAddError(null)
-    try {
-      const data = await api.post<{ highlight: InstagramHighlightDTO }>(
-        '/api/admin/instagram',
-        {
-          url: newUrl,
-          ...(newLinkUrl.trim() ? { linkUrl: newLinkUrl.trim() } : {}),
-        },
-        token
-      )
-      setItems((prev) => [...prev, data.highlight].sort((a, b) => a.sortOrder - b.sortOrder))
-      setNewUrl(null)
-      setNewLinkUrl('')
-      setAddSuccess(true)
-      setTimeout(() => setAddSuccess(false), 3000)
-    } catch (e) {
-      setAddError(e instanceof Error ? e.message : 'שגיאה בהוספת התמונה')
-    } finally {
-      setAdding(false)
-    }
-  }
-
-  const canAdd = !!newUrl
-
   // ── Loading / error ───────────────────────────────────────────────────────
 
   if (loading) {
@@ -192,154 +172,60 @@ export function InstagramPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div>
-        <h2 className="text-xl font-bold text-text-main">אינסטגרם</h2>
-        <p className="text-sm text-text-muted mt-0.5">
-          {items.length} תמונות · מוצגות בסקשן &quot;עקבו אחרינו&quot; בעמוד הבית · גרור לשינוי סדר
-          או השתמש בחצים
-        </p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-text-main">אינסטגרם</h2>
+          <p className="text-sm text-text-muted mt-0.5">
+            {items.length} פוסטים · מוצגים בסקשן &quot;עקבו אחרינו&quot; בעמוד הבית · גררו לפי הידית
+            לשינוי סדר
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setAddOpen(true)}
+          className="flex items-center gap-2 bg-primary text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-primary/90 transition-colors min-h-[44px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 shrink-0"
+        >
+          <Plus size={16} aria-hidden="true" />
+          הוסף פוסט
+        </button>
       </div>
 
-      {/* ── Existing items ───────────────────────────────────────────────────── */}
+      {/* ── Existing posts — dense, drag-to-reorder rows ─────────────────────── */}
       {items.length === 0 ? (
         <div className="py-12 text-center text-text-muted text-sm bg-surface border border-border rounded-lg">
-          אין תמונות עדיין. הוסף תמונה ראשונה למטה.
+          אין פוסטים עדיין. הוסיפו פוסט ראשון למעלה.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Reorder.Group axis="y" values={items} onReorder={handleReorder} className="space-y-2">
           {items.map((item, idx) => (
-            <div
+            <PostRow
               key={item.id}
-              className={`bg-surface border rounded-lg overflow-hidden group ${
-                item.isActive ? 'border-border' : 'border-border opacity-50'
-              }`}
-            >
-              {/* Image */}
-              <div className="relative aspect-square bg-bg">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.url} alt="" className="w-full h-full object-cover" loading="lazy" />
-
-                {!item.isActive && (
-                  <div className="absolute top-2 start-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[11px] text-white">
-                    <EyeOff size={11} aria-hidden="true" />
-                    מוסתר
-                  </div>
-                )}
-
-                {/* Reorder controls — overlay on hover */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
-                  <button
-                    type="button"
-                    onClick={() => handleMove(idx, -1)}
-                    disabled={idx === 0}
-                    aria-label="הזז למעלה"
-                    className="flex items-center justify-center w-9 h-9 rounded-full bg-white/90 text-text-main hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-sm"
-                  >
-                    <ArrowUp size={16} aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleMove(idx, 1)}
-                    disabled={idx === items.length - 1}
-                    aria-label="הזז למטה"
-                    className="flex items-center justify-center w-9 h-9 rounded-full bg-white/90 text-text-main hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-sm"
-                  >
-                    <ArrowDown size={16} aria-hidden="true" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Meta + actions */}
-              <div className="p-3 space-y-2">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    {item.linkUrl ? (
-                      <p
-                        className="text-xs text-text-muted truncate flex items-center gap-1.5"
-                        dir="ltr"
-                      >
-                        <Link2 size={12} className="shrink-0" aria-hidden="true" />
-                        {item.linkUrl}
-                      </p>
-                    ) : (
-                      <p className="text-xs text-text-muted italic">ללא קישור</p>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setDeleteId(item.id)}
-                    aria-label="מחק תמונה"
-                    className="flex items-center justify-center w-8 h-8 min-h-[44px] min-w-[44px] -me-1 rounded-lg text-text-muted hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                  >
-                    <Trash2 size={15} aria-hidden="true" />
-                  </button>
-                </div>
-
-                <label className="flex items-center gap-2 text-xs text-text-main cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={item.isActive}
-                    onChange={() => handleToggleActive(item)}
-                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
-                  />
-                  מוצג באתר
-                </label>
-              </div>
-            </div>
+              item={item}
+              idx={idx}
+              token={token ?? ''}
+              reordering={reordering}
+              onDragEnd={persistOrder}
+              onToggleActive={handleToggleActive}
+              onRequestDelete={setDeleteId}
+              onSaved={(updated) =>
+                setItems((prev) => prev.map((i) => (i.id === updated.id ? updated : i)))
+              }
+            />
           ))}
-        </div>
+        </Reorder.Group>
       )}
 
-      {/* ── Add new item ───────────────────────────────────────────────────────── */}
-      <section className="bg-surface border border-border rounded-lg p-5 space-y-4">
-        <div className="flex items-center gap-2">
-          <Plus size={16} className="text-text-muted" aria-hidden="true" />
-          <h3 className="text-base font-semibold text-text-main">הוסף תמונה</h3>
-        </div>
-
-        <ImageUpload value={newUrl} onChange={setNewUrl} token={token ?? ''} label="תמונה" />
-
-        <div>
-          <label className={labelCls}>קישור לפוסט באינסטגרם (אופציונלי)</label>
-          <input
-            type="url"
-            value={newLinkUrl}
-            onChange={(e) => setNewLinkUrl(e.target.value)}
-            dir="ltr"
-            placeholder="https://instagram.com/p/..."
-            className={inputCls}
-          />
-        </div>
-
-        <div className="flex items-center justify-between pt-1">
-          <div>
-            {addSuccess && (
-              <p className="text-xs text-green-600 flex items-center gap-1">
-                <Check size={12} aria-hidden="true" /> התמונה נוספה בהצלחה
-              </p>
-            )}
-            {addError && <p className="text-xs text-red-600">{addError}</p>}
-          </div>
-          <button
-            type="button"
-            onClick={handleAdd}
-            disabled={!canAdd || adding}
-            className="flex items-center gap-2 bg-primary text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors min-h-[44px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-          >
-            {adding ? (
-              <>
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                מוסיף...
-              </>
-            ) : (
-              <>
-                <Plus size={14} aria-hidden="true" />
-                הוסף
-              </>
-            )}
-          </button>
-        </div>
-      </section>
+      {/* ── Add-post modal ────────────────────────────────────────────────────── */}
+      {addOpen && (
+        <AddPostModal
+          token={token ?? ''}
+          onClose={() => setAddOpen(false)}
+          onAdded={(highlight) => {
+            setItems((prev) => [...prev, highlight].sort((a, b) => a.sortOrder - b.sortOrder))
+            setAddOpen(false)
+          }}
+        />
+      )}
 
       {/* ── Delete confirmation ───────────────────────────────────────────────── */}
       {deleteId && (
@@ -357,11 +243,9 @@ export function InstagramPage() {
               id="delete-instagram-dialog-title"
               className="text-base font-semibold text-text-main mb-2"
             >
-              מחיקת תמונה
+              מחיקת פוסט
             </h3>
-            <p className="text-sm text-text-muted mb-5">
-              האם למחוק את התמונה? פעולה זו אינה הפיכה.
-            </p>
+            <p className="text-sm text-text-muted mb-5">האם למחוק את הפוסט? פעולה זו אינה הפיכה.</p>
             <div className="flex justify-end gap-3">
               <button
                 type="button"
@@ -389,5 +273,402 @@ export function InstagramPage() {
         </div>
       )}
     </div>
+  )
+}
+
+// ── Add-post modal ────────────────────────────────────────────────────────────
+// Two ways to add, mirroring the page's previous inline layout: import-by-URL (primary) and
+// manual upload (secondary), separated by a divider inside the same dialog.
+
+function AddPostModal({
+  token,
+  onClose,
+  onAdded,
+}: {
+  token: string
+  onClose: () => void
+  onAdded: (highlight: InstagramHighlightDTO) => void
+}) {
+  // Import-from-URL
+  const [importUrl, setImportUrl] = useState('')
+  const [importing, setImporting] = useState(false)
+  const [importError, setImportError] = useState<string | null>(null)
+
+  // Manual upload
+  const [newUrl, setNewUrl] = useState<string | null>(null)
+  const [newLinkUrl, setNewLinkUrl] = useState('')
+  const [adding, setAdding] = useState(false)
+  const [addError, setAddError] = useState<string | null>(null)
+
+  async function handleImport() {
+    if (!token || !importUrl.trim()) return
+    setImporting(true)
+    setImportError(null)
+    try {
+      const data = await api.post<{ highlight: InstagramHighlightDTO }>(
+        '/api/admin/instagram/import',
+        { postUrl: importUrl.trim() },
+        token
+      )
+      onAdded(data.highlight)
+    } catch (e) {
+      const code = e instanceof Error ? e.message : ''
+      setImportError(IMPORT_ERROR_MESSAGES[code] ?? 'שגיאה בייבוא הפוסט. נסו שוב.')
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  async function handleAdd() {
+    if (!token || !newUrl) return
+    setAdding(true)
+    setAddError(null)
+    try {
+      const data = await api.post<{ highlight: InstagramHighlightDTO }>(
+        '/api/admin/instagram',
+        {
+          url: newUrl,
+          ...(newLinkUrl.trim() ? { linkUrl: newLinkUrl.trim() } : {}),
+        },
+        token
+      )
+      onAdded(data.highlight)
+    } catch (e) {
+      setAddError(e instanceof Error ? e.message : 'שגיאה בהוספת התמונה')
+    } finally {
+      setAdding(false)
+    }
+  }
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="add-instagram-dialog-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
+      <div className="bg-surface border border-border rounded-xl shadow-xl p-6 max-w-lg w-full my-8 space-y-5">
+        <div className="flex items-center justify-between">
+          <h3 id="add-instagram-dialog-title" className="text-base font-semibold text-text-main">
+            הוספת פוסט לאינסטגרם
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="סגירה"
+            className="flex items-center justify-center w-8 h-8 rounded-lg text-text-muted hover:bg-secondary transition-colors cursor-pointer"
+          >
+            <XIcon size={16} aria-hidden="true" />
+          </button>
+        </div>
+
+        {/* Import from URL */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <InstagramIcon size={16} className="text-text-muted" aria-hidden="true" />
+            <h4 className="text-sm font-semibold text-text-main">ייבוא מאינסטגרם</h4>
+          </div>
+          <div>
+            <label className={labelCls}>קישור לפוסט</label>
+            <input
+              type="url"
+              value={importUrl}
+              onChange={(e) => setImportUrl(e.target.value)}
+              dir="ltr"
+              placeholder="https://www.instagram.com/p/..."
+              className={inputCls}
+            />
+          </div>
+          <div className="flex items-center justify-between pt-1">
+            <div>{importError && <p className="text-xs text-red-600">{importError}</p>}</div>
+            <button
+              type="button"
+              onClick={handleImport}
+              disabled={!importUrl.trim() || importing}
+              className="flex items-center gap-2 bg-primary text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors min-h-[44px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            >
+              {importing ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  מייבא...
+                </>
+              ) : (
+                <>
+                  <InstagramIcon size={14} aria-hidden="true" />
+                  ייבוא
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-text-muted">או</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
+        {/* Manual upload */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Plus size={16} className="text-text-muted" aria-hidden="true" />
+            <h4 className="text-sm font-semibold text-text-main">העלאה ידנית</h4>
+          </div>
+
+          <ImageUpload value={newUrl} onChange={setNewUrl} token={token} label="תמונה" />
+
+          <div>
+            <label className={labelCls}>קישור לפוסט באינסטגרם (אופציונלי)</label>
+            <input
+              type="url"
+              value={newLinkUrl}
+              onChange={(e) => setNewLinkUrl(e.target.value)}
+              dir="ltr"
+              placeholder="https://instagram.com/p/..."
+              className={inputCls}
+            />
+          </div>
+
+          <div className="flex items-center justify-between pt-1">
+            <div>{addError && <p className="text-xs text-red-600">{addError}</p>}</div>
+            <button
+              type="button"
+              onClick={handleAdd}
+              disabled={!newUrl || adding}
+              className="flex items-center gap-2 bg-primary text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors min-h-[44px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            >
+              {adding ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  מוסיף...
+                </>
+              ) : (
+                <>
+                  <Plus size={14} aria-hidden="true" />
+                  הוסף
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Dense, expandable, draggable row ───────────────────────────────────────────
+
+function PostRow({
+  item,
+  idx,
+  token,
+  reordering,
+  onDragEnd,
+  onToggleActive,
+  onRequestDelete,
+  onSaved,
+}: {
+  item: InstagramHighlightDTO
+  idx: number
+  token: string
+  reordering: boolean
+  onDragEnd: () => void
+  onToggleActive: (item: InstagramHighlightDTO) => void
+  onRequestDelete: (id: string) => void
+  onSaved: (updated: InstagramHighlightDTO) => void
+}) {
+  const dragControls = useDragControls()
+  const [expanded, setExpanded] = useState(false)
+  const [linkUrlDraft, setLinkUrlDraft] = useState(item.linkUrl ?? '')
+  const [saving, setSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+
+  const dirty = linkUrlDraft.trim() !== (item.linkUrl ?? '')
+  const imported = !item.url
+
+  async function handleSave() {
+    if (!token || !dirty) return
+    setSaving(true)
+    setSaveError(null)
+    try {
+      const data = await api.patch<{ highlight: InstagramHighlightDTO }>(
+        `/api/admin/instagram/${item.id}`,
+        { linkUrl: linkUrlDraft.trim() || undefined },
+        token
+      )
+      onSaved(data.highlight)
+      setSaveSuccess(true)
+      setTimeout(() => setSaveSuccess(false), 3000)
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'שגיאה בשמירה')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const cardTitle = imported ? 'פוסט מיובא' : `תמונה ${idx + 1}`
+  const cardSubtitle = item.permalink || item.linkUrl
+
+  return (
+    <Reorder.Item
+      value={item}
+      dragListener={false}
+      dragControls={dragControls}
+      onDragEnd={onDragEnd}
+      className={`bg-surface border rounded-lg overflow-hidden ${
+        item.isActive ? 'border-border' : 'border-border opacity-60'
+      }`}
+    >
+      <div className="flex items-center gap-3 p-2.5">
+        {/* Drag handle — only this triggers the drag gesture, not the whole row */}
+        <button
+          type="button"
+          onPointerDown={(e) => dragControls.start(e)}
+          aria-label="גרירה לשינוי סדר"
+          disabled={reordering}
+          className="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg text-text-muted hover:bg-secondary transition-colors cursor-grab active:cursor-grabbing touch-none disabled:opacity-40"
+        >
+          <GripVertical size={16} aria-hidden="true" />
+        </button>
+
+        {/* Thumbnail — image for manual uploads, Instagram-icon avatar for imported posts */}
+        {item.url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={item.url}
+            alt=""
+            className="w-12 h-12 shrink-0 rounded-md object-cover bg-bg"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-12 h-12 shrink-0 rounded-md bg-secondary/50 flex items-center justify-center">
+            <InstagramIcon size={18} className="text-text-muted" aria-hidden="true" />
+          </div>
+        )}
+
+        {/* Title / subtitle */}
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          className="flex-1 min-w-0 text-start cursor-pointer"
+        >
+          <p className="text-sm font-medium text-text-main truncate">{cardTitle}</p>
+          {cardSubtitle && (
+            <p className="text-xs text-text-muted truncate" dir="ltr">
+              {cardSubtitle}
+            </p>
+          )}
+        </button>
+
+        {saveSuccess && (
+          <p className="text-xs text-green-600 flex items-center gap-1 shrink-0">
+            <Check size={12} aria-hidden="true" /> נשמר
+          </p>
+        )}
+
+        {/* Show/hide toggle */}
+        <button
+          type="button"
+          onClick={() => onToggleActive(item)}
+          aria-label={item.isActive ? 'הסתר באתר' : 'הצג באתר'}
+          aria-pressed={item.isActive}
+          className="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg text-text-muted hover:bg-secondary transition-colors cursor-pointer"
+        >
+          {item.isActive ? (
+            <Eye size={16} aria-hidden="true" />
+          ) : (
+            <EyeOff size={16} aria-hidden="true" />
+          )}
+        </button>
+
+        {/* Expand / delete */}
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          aria-label={expanded ? 'כווץ עריכה' : 'הרחב לעריכה'}
+          aria-expanded={expanded}
+          className="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg text-text-muted hover:bg-secondary transition-colors cursor-pointer"
+        >
+          <ChevronDown
+            size={16}
+            aria-hidden="true"
+            className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+          />
+        </button>
+        <button
+          type="button"
+          onClick={() => onRequestDelete(item.id)}
+          aria-label={`מחק פוסט — ${cardTitle}`}
+          className="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg text-text-muted hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+        >
+          <Trash2 size={15} aria-hidden="true" />
+        </button>
+      </div>
+
+      {/* Expanded editor */}
+      {expanded && (
+        <div className="border-t border-border p-3 space-y-3 bg-bg/50">
+          {item.permalink && (
+            <>
+              <a
+                href={item.permalink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-primary hover:underline flex items-center gap-1.5 w-fit"
+                dir="ltr"
+              >
+                <Link2 size={12} className="shrink-0" aria-hidden="true" />
+                {item.permalink}
+              </a>
+              <div className="rounded-lg overflow-hidden bg-bg flex justify-center">
+                <InstagramEmbedBlockquote permalink={item.permalink} maxWidth={360} />
+              </div>
+            </>
+          )}
+          <div>
+            <label className={labelCls}>קישור מותאם אישית (אופציונלי)</label>
+            <input
+              type="url"
+              value={linkUrlDraft}
+              onChange={(e) => setLinkUrlDraft(e.target.value)}
+              dir="ltr"
+              placeholder="https://instagram.com/p/..."
+              className={inputCls}
+            />
+            <p className="text-[11px] text-text-muted mt-1">
+              {imported
+                ? 'אם מוגדר, ישמש במקום קישור הפוסט המקורי בעת לחיצה בעמוד הבית.'
+                : 'הקישור שאליו יועברו מבקרים בלחיצה על התמונה בעמוד הבית.'}
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between gap-2 pt-0.5">
+            <div className="min-w-0">
+              {saveError && <p className="text-xs text-red-600 truncate">{saveError}</p>}
+            </div>
+            {dirty && (
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-1.5 bg-primary text-white text-xs font-medium px-3 py-2 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors min-h-[36px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
+              >
+                {saving ? (
+                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Check size={13} aria-hidden="true" />
+                )}
+                שמור
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </Reorder.Item>
   )
 }

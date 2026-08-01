@@ -2,16 +2,21 @@ import 'server-only'
 import { Prisma } from '@prisma/client'
 import { prisma } from '@/server/prisma'
 import { deleteIfOrphaned } from '@/server/services/cloudinaryCleanupService'
+import { resolveInstagramPermalink } from '@/server/services/instagramOEmbedService'
 
 // ── Note ──────────────────────────────────────────────────────────────────────
 // The Prisma schema has no dedicated InstagramHighlight model.
 // Highlights are stored as a SiteContent blob under key "instagram.highlights".
-// Shape: array of { id, url, linkUrl, sortOrder, isActive }
+// Shape: array of { id, url, linkUrl, permalink, sortOrder, isActive } — url is set for
+// manually-uploaded highlights, permalink for oEmbed-imported ones (rendered as a native
+// Instagram embed on the storefront; there's no image to store for those). Exactly one of
+// url/permalink is present per item.
 
 export interface InstagramHighlightDTO {
   id: string
-  url: string
+  url?: string
   linkUrl?: string
+  permalink?: string
   sortOrder: number
   isActive: boolean
 }
@@ -52,8 +57,9 @@ export async function listActiveInstagramHighlights(): Promise<InstagramHighligh
 // ── Create ────────────────────────────────────────────────────────────────────
 
 export interface CreateInstagramHighlightInput {
-  url: string
+  url?: string
   linkUrl?: string
+  permalink?: string
   sortOrder?: number
   isActive?: boolean
 }
@@ -67,6 +73,7 @@ export async function createInstagramHighlight(
     id: generateId(),
     url: data.url,
     linkUrl: data.linkUrl,
+    permalink: data.permalink,
     sortOrder: data.sortOrder ?? maxSort + 1,
     isActive: data.isActive ?? true,
   }
@@ -75,11 +82,24 @@ export async function createInstagramHighlight(
   return newItem
 }
 
+// ── Import from Instagram post URL ──────────────────────────────────────────────
+// Validates the post via oEmbed and stores its canonical permalink — the storefront renders it
+// as a native Instagram embed (see InstagramEmbedCarousel.tsx), there's no image to host.
+// May throw InstagramOEmbedError — the route handler maps its `code` to an HTTP status.
+
+export async function importInstagramHighlightFromUrl(
+  postUrl: string
+): Promise<InstagramHighlightDTO> {
+  const permalink = await resolveInstagramPermalink(postUrl)
+  return createInstagramHighlight({ permalink })
+}
+
 // ── Update ────────────────────────────────────────────────────────────────────
 
 export interface UpdateInstagramHighlightInput {
   url?: string
   linkUrl?: string
+  permalink?: string
   sortOrder?: number
   isActive?: boolean
 }
@@ -96,8 +116,9 @@ export async function updateInstagramHighlight(
   items[idx] = { ...items[idx], ...data }
   await saveItems(items)
 
-  // If the URL changed, fire-and-forget orphan cleanup on the old URL
-  if (data.url !== undefined && data.url !== oldUrl) {
+  // If the URL changed, fire-and-forget orphan cleanup on the old URL (only ever set for
+  // manually-uploaded items — imported items have no url to clean up).
+  if (oldUrl && data.url !== undefined && data.url !== oldUrl) {
     deleteIfOrphaned(oldUrl).catch(console.error)
   }
 
@@ -113,8 +134,10 @@ export async function deleteInstagramHighlight(id: string): Promise<boolean> {
   const filtered = items.filter((i) => i.id !== id)
   await saveItems(filtered)
 
-  // Fire-and-forget orphan cleanup for the removed highlight's URL
-  deleteIfOrphaned(deleted.url).catch(console.error)
+  // Fire-and-forget orphan cleanup for the removed highlight's URL, if it had one.
+  if (deleted.url) {
+    deleteIfOrphaned(deleted.url).catch(console.error)
+  }
 
   return true
 }

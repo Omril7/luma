@@ -418,7 +418,7 @@ from that file; check off as implemented.
 - [ ] **Payments:** integrate Meshulam / Tranzila / PayPlus behind the existing `PaymentProvider`
 - [ ] **Bundles:** admin bundle pricing UI + storefront display
 - [x] **Reviews:** public review form (rating + text, per product) so any visitor can leave a review; admin moderation queue (approve/reject) before publishing; storefront carousel via **embla-carousel**
-- [x] **Instagram feed** integration on Home — shipped as admin-curated images (`/admin/instagram`, mirrors the Gallery pattern) rather than the live Graph API, per the M1.21.b decision
+- [x] **Instagram feed** integration on Home — shipped as admin-curated images (`/admin/instagram`, mirrors the Gallery pattern) rather than the live Graph API, per the M1.21.b decision. Extended with Option B from `docs/14-instagram-integration.md`: admin can also paste a post URL, which is validated via Meta's oEmbed endpoint and rendered as a native Instagram embed widget (real photo/video playback) alongside the manually-uploaded tiles — no Meta Developer app required.
 - [ ] **Newsletter system** (Mailchimp/SendGrid) wired to `EmailProvider.sendNewsletter` — basic
       in-house sending (Nodemailer SMTP, correct From/Reply-To) already works end-to-end via M1.27 + M1.28d; this item is specifically about swapping in a dedicated ESP for deliverability/analytics, not a functional gap
 - [ ] **Google Analytics** integration

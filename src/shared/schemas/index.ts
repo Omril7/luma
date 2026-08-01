@@ -280,17 +280,31 @@ export type UpdateGalleryImageInput = z.infer<typeof updateGalleryImageSchema>
 
 // ── Instagram highlight ───────────────────────────────────────────────────────
 
-export const createInstagramHighlightSchema = z.object({
-  url: z.string().url(),
+// url = manually-uploaded highlight; permalink = oEmbed-imported highlight (rendered as a native
+// Instagram embed, no image to store). Exactly one of the two is required on create — .refine()
+// can't be chained with .partial() (it returns ZodEffects, not ZodObject), so the shared field set
+// is split out and each of create/update builds on it separately instead of update = create.partial().
+const instagramHighlightFields = z.object({
+  url: z.string().url().optional(),
   linkUrl: z.string().url().optional(),
+  permalink: z.string().url().optional(),
   sortOrder: z.number().int().min(0).optional(),
   isActive: z.boolean().optional(),
 })
 
+export const createInstagramHighlightSchema = instagramHighlightFields.refine(
+  (d) => !!d.url || !!d.permalink,
+  { message: 'Either url or permalink is required', path: ['url'] }
+)
 export type CreateInstagramHighlightInput = z.infer<typeof createInstagramHighlightSchema>
 
-export const updateInstagramHighlightSchema = createInstagramHighlightSchema.partial()
+export const updateInstagramHighlightSchema = instagramHighlightFields.partial()
 export type UpdateInstagramHighlightInput = z.infer<typeof updateInstagramHighlightSchema>
+
+export const importInstagramPostSchema = z.object({
+  postUrl: z.string().url(),
+})
+export type ImportInstagramPostInput = z.infer<typeof importInstagramPostSchema>
 
 // ── FAQ item ──────────────────────────────────────────────────────────────────
 

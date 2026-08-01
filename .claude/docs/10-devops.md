@@ -82,6 +82,11 @@ EMAIL_FROM=
 # --- delivery distance (OpenRouteService) ---
 OPENROUTESERVICE_API_KEY=            # free tier: openrouteservice.org — 2,000 req/day
 
+# --- instagram oEmbed (paste-a-link import) ---
+# Not required today — Meta's oEmbed endpoint currently accepts unauthenticated requests.
+# Only set this if imports start failing with an "access token required" error.
+INSTAGRAM_OEMBED_ACCESS_TOKEN=
+
 # --- business / frontend ---
 NEXT_PUBLIC_WHATSAPP_NUMBER=972500000000
 NEXT_PUBLIC_DEFAULT_LANGUAGE=he

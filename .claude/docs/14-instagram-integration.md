@@ -1,8 +1,12 @@
-# 14 — Instagram integration (plan, not yet implemented)
+# 14 — Instagram integration
 
-Staged 2026-07-28 alongside `CHANGES.md` item 11. This is a plan to review and decide on, not a
-build spec — has external dependencies outside this codebase (a Meta Developer app, the client's
-actual Instagram account type/access) that need answers before implementation starts.
+Staged 2026-07-28 alongside `CHANGES.md` item 11. Originally a plan to review and decide on, not a
+build spec. **Option B shipped 2026-08-01** (see `PROGRESS.md` entry of the same date) — the
+client wanted to defer Option A's Meta Developer app/OAuth setup, so the "paste-a-link import" path
+below is now live. Option A remains a documented possibility for later; this doc keeps its
+original analysis for that context, with the Option B section updated to match what was actually
+buildable (see the note inside it — the original Option B write-up assumed oEmbed returns a
+thumbnail image, which live testing during implementation proved false).
 
 ## Current state (confirmed in code)
 
@@ -68,14 +72,31 @@ permalink, caption, timestamp`) — `media_type` is `IMAGE`, `VIDEO`, or `CAROUS
   settings blob (`adminSettingsService.ts`), alongside a refresh-cron env var/secret for the
   Meta app credentials.
 
-### Option B — lighter middle ground: paste-a-link import (no Graph API)
+### Option B — lighter middle ground: paste-a-link import (no Graph API) — ✅ shipped 2026-08-01
 
-Instead of a live API connection, let the admin paste an Instagram post URL and use Instagram's
-public **oEmbed** endpoint to pull the image/video/caption automatically (no OAuth, no token
-refresh, no Business-account requirement) — still manual per-post, but removes the "download the
-image, re-upload it" busywork the client is complaining about. Doesn't give the admin a "pick from
-recent posts" list — the admin still needs to know which posts they want and paste each URL. Less
-work to build, but doesn't match the client's stated want ("choose from what's on the account").
+Instead of a live API connection, the admin pastes an Instagram post URL in `/admin/instagram` and
+the server validates it against Instagram's oEmbed endpoint (`graph.facebook.com/v20.0/
+instagram_oembed`) — no OAuth, no token refresh, no Business-account requirement. Still manual
+per-post (no "pick from recent posts" list — doesn't fully match the client's original want), but
+removes the "download the image, re-upload it" busywork.
+
+**Correction vs. the original write-up above:** this was originally scoped as "pull the
+image/video/caption automatically" and re-host the image on Cloudinary, keeping the existing
+custom square-tile grid. Live testing during implementation showed Meta's current oEmbed response
+for an unauthenticated request has **no `thumbnail_url`, caption, or author field at all** —
+confirmed against two different real posts, only `{ version, provider_name, provider_url, type,
+width, html }`. `og:image` scraping off the post page directly also failed (client-rendered app
+shell, no server-rendered meta tags). What actually shipped: the service
+(`src/server/services/instagramOEmbedService.ts`) uses the oEmbed call purely to validate the URL
+and extract Meta's canonicalized permalink from the `html` it returns; the storefront then renders
+Instagram's own embed widget (`embed.js`) against that permalink — via a new
+`InstagramEmbedCarousel.tsx`, shown below the existing manual-upload grid rather than merged into
+it (the widget has its own ~326–658px width assumptions, incompatible with a square grid cell).
+This gets real native photo/video playback, at the cost of imported posts showing as Instagram's
+own branded card instead of a custom tile, and loading Instagram's third-party script on the
+storefront. `INSTAGRAM_OEMBED_ACCESS_TOKEN` is documented as an optional/unset env var — the
+validation call works unauthenticated today; the token is a dormant fallback if Meta starts
+requiring one.
 
 ### Option C — third-party embed widget (e.g. an Instagram-feed embedding library/SaaS)
 

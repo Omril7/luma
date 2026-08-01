@@ -4,11 +4,13 @@ import { motion } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { useUiStore } from '@/stores/uiStore'
 import { InstagramIcon } from '@/components/icons/InstagramIcon'
+import { InstagramEmbedCarousel } from './InstagramEmbedCarousel'
 
 export interface InstagramHighlightItem {
   id: string
-  url: string
+  url?: string
   linkUrl?: string
+  permalink?: string
 }
 
 interface InstagramSectionProps {
@@ -19,10 +21,15 @@ interface InstagramSectionProps {
 
 const PLACEHOLDER_TILE_COUNT = 6
 
-export function InstagramSection({ locale: _locale, items, instagramUrl }: InstagramSectionProps) {
+export function InstagramSection({ locale, items, instagramUrl }: InstagramSectionProps) {
   const t = useTranslations('home.instagram')
   const { a11y } = useUiStore()
   const shouldAnimate = !a11y.noMotion
+
+  // Manually-uploaded highlights (square photo tiles) vs oEmbed-imported ones (native Instagram
+  // embed, rendered separately below since the widget can't be forced into a grid tile).
+  const imageItems = items.filter((item) => item.url)
+  const embedItems = items.filter((item) => !item.url && item.permalink)
 
   return (
     <section className="py-16 md:py-20">
@@ -53,10 +60,10 @@ export function InstagramSection({ locale: _locale, items, instagramUrl }: Insta
           )}
         </motion.div>
 
-        {items.length > 0 ? (
+        {imageItems.length > 0 ? (
           /* Real, admin-curated highlights */
           <div className="grid grid-cols-3 gap-2 md:gap-3 max-w-2xl mx-auto">
-            {items.map((item, index) => {
+            {imageItems.map((item, index) => {
               const href = item.linkUrl || instagramUrl
               const Tile = (
                 <motion.div
@@ -95,7 +102,7 @@ export function InstagramSection({ locale: _locale, items, instagramUrl }: Insta
               )
             })}
           </div>
-        ) : (
+        ) : embedItems.length === 0 ? (
           /* Placeholder grid — shown until the admin adds real highlights */
           <>
             <div className="grid grid-cols-3 gap-2 md:gap-3 max-w-2xl mx-auto">
@@ -122,6 +129,13 @@ export function InstagramSection({ locale: _locale, items, instagramUrl }: Insta
             </div>
             <p className="text-text-muted text-sm text-center mt-4">{t('coming')}</p>
           </>
+        ) : null}
+
+        {embedItems.length > 0 && (
+          <InstagramEmbedCarousel
+            items={embedItems.map((item) => ({ id: item.id, permalink: item.permalink! }))}
+            locale={locale}
+          />
         )}
       </div>
     </section>

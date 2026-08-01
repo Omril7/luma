@@ -504,7 +504,10 @@
       "heading": "עקבו אחרינו",
       "handle": "@lumastudio_3",
       "coming": "בקרוב",
-      "viewPost": "צפייה באינסטגרם"
+      "viewPost": "צפייה באינסטגרם",
+      "carouselPrev": "פוסט קודם",
+      "carouselNext": "פוסט הבא",
+      "carouselDot": "מעבר לפוסט {index}"
     },
     "contact": {
       "heading": "לא מצאתם בדיוק מה שחיפשתם?",

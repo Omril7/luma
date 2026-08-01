@@ -19,6 +19,40 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-08-01 — Instagram integration Option B: paste-a-link import
+
+- **Done:** Implemented Option B from `docs/14-instagram-integration.md` (client deferred Option
+  A's full Meta Graph API/OAuth setup). Admin can now paste an Instagram post URL in
+  `/admin/instagram`, alongside the existing manual `ImageUpload` flow:
+  - `src/server/services/instagramOEmbedService.ts` (new) — calls
+    `graph.facebook.com/v20.0/instagram_oembed` to validate the post is real/public/embeddable
+    and extract Meta's canonicalized permalink; typed `InstagramOEmbedError` codes
+    (`INVALID_URL`/`MEDIA_NOT_FOUND`/`ACCESS_TOKEN_REQUIRED`/`UPSTREAM_ERROR`/`FETCH_FAILED`)
+    mapped to HTTP statuses by the new `POST /api/admin/instagram/import` route.
+  - `InstagramHighlightDTO` extended with an optional `permalink` field (manual highlights keep
+    `url`; imported ones set `permalink` instead — exactly one of the two, enforced via a Zod
+    `.refine()` on create).
+  - Storefront (`InstagramSection.tsx` + new `InstagramEmbedCarousel.tsx`) renders imported posts
+    as Instagram's real embed widget (`embed.js`, native photo/video playback) in a small embla
+    carousel below the existing manual-upload square-tile grid — the two render paths are kept
+    separate rather than unified into one grid.
+- **Decisions:**
+  - Original plan was "fetch oEmbed's thumbnail, re-host on Cloudinary" (keeps the existing
+    custom tile-grid look) — live-tested and abandoned mid-implementation: Meta's current oEmbed
+    response for an unauthenticated request has no `thumbnail_url`/caption/author field at all
+    (confirmed against two real posts), only `{ version, provider_name, provider_url, type,
+width, html }`. Scraping `og:image` off the post page directly also failed (client-rendered
+    app shell). Switched to rendering Meta's own embed `html` via `embed.js` instead — the only
+    approach that works today with zero Meta Developer App/access token.
+  - `INSTAGRAM_OEMBED_ACCESS_TOKEN` env var documented (`.claude/docs/10-devops.md`) but left
+    unset/optional — the oEmbed _validation_ call itself works unauthenticated today; the token
+    is a dormant escape hatch if Meta starts rejecting it.
+- **Notes:** video/Reel posts get real native playback via the embed widget (better than the
+  play-badge-on-static-thumbnail fallback originally planned, which is no longer needed).
+  Manually-uploaded highlights are unaffected — same grid, same `ImageUpload` flow as before.
+
+---
+
 ## 2026-07-31 — M1.28h #1: Spec block → variant comparison table ✅
 
 - **Done:** Client reversed course on the technical-spec block shipped in M1.28g (uncommitted at

@@ -504,7 +504,10 @@
       "heading": "Follow Us",
       "handle": "@lumastudio_3",
       "coming": "Coming Soon",
-      "viewPost": "View on Instagram"
+      "viewPost": "View on Instagram",
+      "carouselPrev": "Previous post",
+      "carouselNext": "Next post",
+      "carouselDot": "Go to post {index}"
     },
     "contact": {
       "heading": "Can't find exactly what you're looking for?",
