@@ -1,7 +1,17 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Check, RotateCcw, Trash2, ChevronRight, ChevronLeft, Mail, Phone } from 'lucide-react'
+import {
+  Check,
+  RotateCcw,
+  Trash2,
+  ChevronRight,
+  ChevronLeft,
+  Mail,
+  Phone,
+  Eye,
+  X,
+} from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import type { ContactMessageDTO } from '@/shared/types'
@@ -36,6 +46,7 @@ export function ContactMessagesListPage() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(25)
 
+  const [viewMessage, setViewMessage] = useState<ContactMessageDTO | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
@@ -248,6 +259,15 @@ export function ContactMessagesListPage() {
                     {/* פעולות */}
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setViewMessage(message)}
+                          title="צפייה בהודעה"
+                          aria-label="צפייה בהודעה"
+                          className="p-2 rounded-lg text-text-muted hover:bg-secondary hover:text-text-main transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
+                        >
+                          <Eye size={15} aria-hidden="true" />
+                        </button>
+
                         {message.status === 'READ' ? (
                           <button
                             onClick={() => handleSetStatus(message, 'NEW')}
@@ -333,6 +353,92 @@ export function ContactMessagesListPage() {
           </div>
         )}
       </div>
+
+      {/* View message dialog */}
+      {viewMessage && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="view-message-dialog-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setViewMessage(null)
+          }}
+        >
+          <div className="bg-surface border border-border rounded-xl shadow-xl max-w-lg w-full max-h-[85vh] flex flex-col">
+            <div className="flex items-start justify-between gap-4 p-6 pb-4 border-b border-border">
+              <div>
+                <h3
+                  id="view-message-dialog-title"
+                  className="text-base font-semibold text-text-main"
+                >
+                  {viewMessage.name}
+                </h3>
+                <p className="text-xs text-text-muted mt-1">{formatDate(viewMessage.createdAt)}</p>
+              </div>
+              <button
+                onClick={() => setViewMessage(null)}
+                title="סגירה"
+                aria-label="סגירה"
+                className="p-2 -m-2 rounded-lg text-text-muted hover:bg-secondary hover:text-text-main transition-colors cursor-pointer"
+              >
+                <X size={16} aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 overflow-y-auto">
+              <div className="flex flex-wrap gap-4 text-sm">
+                <a
+                  href={`mailto:${viewMessage.email}`}
+                  className="flex items-center gap-1.5 text-text-muted hover:text-primary"
+                  dir="ltr"
+                >
+                  <Mail size={14} aria-hidden="true" className="shrink-0" />
+                  {viewMessage.email}
+                </a>
+                {viewMessage.phone && (
+                  <a
+                    href={`tel:${viewMessage.phone}`}
+                    className="flex items-center gap-1.5 text-text-muted hover:text-primary"
+                    dir="ltr"
+                  >
+                    <Phone size={14} aria-hidden="true" className="shrink-0" />
+                    {viewMessage.phone}
+                  </a>
+                )}
+                {viewMessage.subscribedToNewsletter && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                    נרשם/ה לניוזלטר
+                  </span>
+                )}
+                {viewMessage.status === 'READ' ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                    נקראה
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                    חדשה
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-1">
+                  נושא
+                </p>
+                <p className="text-sm text-text-main">{viewMessage.subject}</p>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-1">
+                  הודעה
+                </p>
+                <p className="text-sm text-text-main whitespace-pre-line">{viewMessage.message}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete confirmation dialog */}
       {deleteId && (
