@@ -70,10 +70,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params
   return {
-    title: lang === 'he' ? 'לומה — ריהוט בהזמנה אישית' : 'Luma — Custom Furniture',
+    title: lang === 'he' ? 'לומה — ריהוט בעיצוב כפרי' : 'Luma — Custom Furniture',
     description:
       lang === 'he'
-        ? 'ריהוט בהזמנה אישית, עשוי ביד. שולחנות, מדפים, שידות ועוד.'
+        ? 'ריהוט בעיצוב כפרי, עשוי ביד. שולחנות, מדפים, שידות ועוד.'
         : 'Handmade custom furniture. Tables, shelves, nightstands and more.',
   }
 }

@@ -292,7 +292,7 @@ function HomeHeroTab({ data, onChange, onSave, saving, success, error }: HomeHer
             value={data.heading_he}
             onChange={(e) => set('heading_he', e.target.value)}
             dir="rtl"
-            placeholder="ריהוט בהזמנה אישית"
+            placeholder="ריהוט בעיצוב כפרי"
             className={inputCls}
           />
         </div>
@@ -882,7 +882,7 @@ function FooterTab({ data, onChange, onSave, saving, success, error }: FooterTab
             value={data.tagline_he}
             onChange={(e) => set('tagline_he', e.target.value)}
             dir="rtl"
-            placeholder="ריהוט בהזמנה אישית, עשוי ביד"
+            placeholder="ריהוט בעיצוב כפרי, עשוי ביד"
             className={inputCls}
           />
         </div>
