@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 import { Phone, Mail, MapPin, Clock, Loader2, CheckCircle2 } from 'lucide-react'
 import { useUiStore } from '@/stores/uiStore'
 import { api } from '@/lib/api'
+import { trackWhatsAppClick } from '@/lib/analytics'
 
 interface ContactInfo {
   phone: string
@@ -346,6 +347,7 @@ export function ContactClient({ locale, info }: ContactClientProps) {
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => trackWhatsAppClick('contact_page')}
                   className="flex min-h-[44px] w-full items-center justify-center gap-2.5 rounded-lg bg-primary px-5 text-sm font-semibold text-surface shadow-sm transition-colors duration-150 hover:bg-primary-600"
                 >
                   <svg

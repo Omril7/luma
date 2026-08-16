@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { MessageCircle, Phone, Mail, X } from 'lucide-react'
 import { useUiStore } from '@/stores/uiStore'
+import { trackWhatsAppClick } from '@/lib/analytics'
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon'
 import { InstagramIcon } from '@/components/icons/InstagramIcon'
 import { FacebookIcon } from '@/components/icons/FacebookIcon'
@@ -25,6 +26,7 @@ interface SatelliteLink {
   label: string
   icon: ReactNode
   bgClass: string
+  onClick?: () => void
 }
 
 export function SocialsSpeedDial({
@@ -90,6 +92,7 @@ export function SocialsSpeedDial({
       label: t('whatsapp'),
       icon: <WhatsAppIcon size={20} aria-hidden="true" />,
       bgClass: 'bg-[#25D366]',
+      onClick: () => trackWhatsAppClick('floating'),
     },
     phone
       ? {
@@ -127,6 +130,7 @@ export function SocialsSpeedDial({
                 rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                 aria-label={link.label}
                 title={link.label}
+                onClick={link.onClick}
                 initial={shouldAnimate ? { opacity: 0, scale: 0.5, y: 10 } : { opacity: 1 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={shouldAnimate ? { opacity: 0, scale: 0.5, y: 10 } : { opacity: 0 }}

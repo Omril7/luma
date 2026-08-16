@@ -6,6 +6,9 @@ import { SocialsSpeedDial } from '@/components/SocialsSpeedDial'
 import { A11yWidget } from '@/components/A11yWidget'
 import { ToastContainer } from '@/components/ToastContainer'
 import { CompareBar } from '@/features/compare/CompareBar'
+import { GoogleTagManager } from '@/components/analytics/GoogleTagManager'
+import { ConsentBanner } from '@/components/analytics/ConsentBanner'
+import { RouteChangeTracker } from '@/components/analytics/RouteChangeTracker'
 import { getSiteSettings } from '@/server/services/adminSettingsService'
 import { getSiteContentByKey } from '@/server/services/adminSiteContentService'
 
@@ -32,6 +35,8 @@ export async function StorefrontLayout({
 
   return (
     <>
+      <GoogleTagManager />
+      <RouteChangeTracker />
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[9999] focus:rounded focus:bg-primary focus:px-4 focus:py-2 focus:text-surface"
@@ -58,6 +63,7 @@ export async function StorefrontLayout({
       />
       <A11yWidget />
       <ToastContainer />
+      <ConsentBanner />
     </>
   )
 }

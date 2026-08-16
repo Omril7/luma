@@ -90,6 +90,11 @@ INSTAGRAM_OEMBED_ACCESS_TOKEN=
 # --- business / frontend ---
 NEXT_PUBLIC_WHATSAPP_NUMBER=972500000000
 NEXT_PUBLIC_DEFAULT_LANGUAGE=he
+
+# --- analytics ---
+# GTM-XXXXXXX; GA4 + Meta Pixel are configured as tags inside this GTM container, not in code
+# (see .claude/docs/15-analytics.md). Leave unset in dev/preview to avoid polluting prod analytics.
+NEXT_PUBLIC_GTM_ID=
 ```
 
 ## Storage abstraction

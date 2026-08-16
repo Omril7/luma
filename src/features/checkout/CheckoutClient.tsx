@@ -15,9 +15,10 @@ import {
 import { motion, AnimatePresence } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { Link, useRouter } from '@/i18n/navigation'
-import { useCartStore } from '@/stores/cartStore'
+import { useCartStore, type CartItem } from '@/stores/cartStore'
 import { useUiStore } from '@/stores/uiStore'
 import { api } from '@/lib/api'
+import { trackBeginCheckout, trackPurchase, type AnalyticsItem } from '@/lib/analytics'
 
 interface CheckoutClientProps {
   locale: string
@@ -32,6 +33,15 @@ function formatPrice(agorot: number, locale: string): string {
 }
 
 const INSTALLMENT_OPTIONS = [1, 3, 6, 12]
+
+function toAnalyticsItems(items: CartItem[], locale: string): AnalyticsItem[] {
+  return items.map((item) => ({
+    item_id: item.productId,
+    item_name: locale === 'he' ? item.name_he : item.name_en,
+    price: item.unitPrice,
+    quantity: item.quantity,
+  }))
+}
 
 export function CheckoutClient({ locale }: CheckoutClientProps) {
   const t = useTranslations('checkout')
@@ -61,6 +71,13 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
   } | null>(null)
   const [estimating, setEstimating] = useState(false)
   const [estimateError, setEstimateError] = useState<string | null>(null)
+
+  // ── Analytics: begin_checkout ────────────────────────────────────────────────
+  useEffect(() => {
+    if (items.length === 0) return
+    trackBeginCheckout(toAnalyticsItems(items, locale), total())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // ── Delivery estimate (debounced) ────────────────────────────────────────────
   useEffect(() => {
@@ -201,6 +218,7 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
           quantity: item.quantity,
         })),
       })
+      trackPurchase(order.id, toAnalyticsItems(items, locale), total())
       clear()
       router.push(`/order-confirmation/${order.id}`)
     } catch (err) {

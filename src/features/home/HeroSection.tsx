@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { useUiStore } from '@/stores/uiStore'
 import { cn } from '@/lib/utils'
+import { trackWhatsAppClick } from '@/lib/analytics'
 
 const DEFAULT_WHATSAPP_NUMBER = '972500000000'
 
@@ -124,6 +125,7 @@ export function HeroSection({ locale, whatsappNumber, content }: HeroSectionProp
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackWhatsAppClick('hero')}
               className={cn(
                 'inline-block cursor-pointer rounded-lg border px-6 py-3 font-medium transition-all duration-150 hover:-translate-y-0.5',
                 onPhoto

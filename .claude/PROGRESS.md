@@ -19,6 +19,31 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-08-16 — Analytics: GA4 + GTM + Meta Pixel + WhatsApp click tracking
+
+- **Done:** Implemented `docs/15-analytics.md`. GTM is the only tag loader
+  (`src/components/analytics/GoogleTagManager.tsx`, mounted in `StorefrontLayout.tsx` only —
+  not in admin); GA4 + the client's existing Meta Pixel are configured as tags inside the GTM
+  container itself, not in code. `src/lib/analytics.ts` provides typed `dataLayer` push
+  helpers. Consent Mode v2 via `ConsentBanner.tsx` + `consentStore.ts` (Zustand+persist),
+  defaulting to denied until the user chooses. `RouteChangeTracker.tsx` covers client-side App
+  Router navigations. Instrumented events: `view_item`/`add_to_cart`
+  (`ProductDetail.tsx`), `begin_checkout`/`purchase` (`CheckoutClient.tsx`, fired from the cart
+  snapshot before `clear()`), and `whatsapp_click` on all 4 WhatsApp CTAs (floating speed-dial,
+  hero, home contact section, `/contact` page) with a `click_location` label. Added
+  `NEXT_PUBLIC_GTM_ID` to `.env.example`/`10-devops.md`, `cookieConsent` i18n namespace, and a
+  cookies/analytics note in the existing `/privacy` page content.
+- **Roadmap:** not tracked as a roadmap milestone (client ad-hoc request) — no ROADMAP.md boxes
+  to check.
+- **Decisions:** GTM-only architecture (never load `gtag.js`/`fbq()` directly) so the client can
+  add/reconfigure tags from the GTM dashboard without code deploys. IDs as env vars, not
+  DB-backed admin settings (unlike `whatsappNumber`) — deploy-time technical config, and we want
+  them absent in dev/preview.
+- **Notes/blockers:** GA4 property + GTM container still need to be created by the client
+  (Meta Pixel already exists); manual GTM tag/trigger/consent-settings setup checklist is in
+  `docs/15-analytics.md`. Not yet tested end-to-end against a real GTM container (no
+  `NEXT_PUBLIC_GTM_ID` available yet) — verify via GTM Preview mode once the container exists.
+
 ## 2026-08-01 — Instagram integration Option B: paste-a-link import
 
 - **Done:** Implemented Option B from `docs/14-instagram-integration.md` (client deferred Option

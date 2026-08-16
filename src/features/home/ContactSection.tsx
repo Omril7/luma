@@ -3,6 +3,7 @@
 import { motion } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { useUiStore } from '@/stores/uiStore'
+import { trackWhatsAppClick } from '@/lib/analytics'
 
 const DEFAULT_WHATSAPP_NUMBER = '972500000000'
 const DEFAULT_CONTACT_EMAIL = 'hello@luma.co.il'
@@ -96,6 +97,7 @@ export function ContactSection({ locale, whatsappNumber, email, content }: Conta
             href={`https://wa.me/${WHATSAPP_NUMBER}`}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackWhatsAppClick('home_contact')}
             className="inline-flex items-center gap-2.5 rounded-lg bg-primary px-7 py-3 text-base font-semibold text-surface shadow-sm hover:bg-primary-600 active:opacity-80 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <svg

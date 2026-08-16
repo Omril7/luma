@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { ShoppingBag, Heart, Minus, Plus, Check, MessageSquareQuote } from 'lucide-react'
 import { calculatePrice, PricingError, getStartingPrice } from '@/shared/pricing'
 import type { VariantTier, PricingRule, PriceResult } from '@/shared/pricing'
+import { trackViewItem, trackAddToCart } from '@/lib/analytics'
 import { useCartStore } from '@/stores/cartStore'
 import { useWishlistStore } from '@/stores/wishlistStore'
 import { useUiStore } from '@/stores/uiStore'
@@ -83,6 +84,17 @@ export function ProductDetail({
   const [offerOpen, setOfferOpen] = useState(false)
   const [stickyVisible, setStickyVisible] = useState(false)
   const ctaRef = useRef<HTMLButtonElement>(null)
+
+  // ── Analytics: view_item ─────────────────────────────────────────────────────
+  useEffect(() => {
+    trackViewItem({
+      item_id: product.id,
+      item_name: locale === 'he' ? product.name_he : product.name_en,
+      item_category: locale === 'he' ? product.category.name_he : product.category.name_en,
+      price: Math.round(getStartingPrice(product) * 100),
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id])
 
   // ── Sticky bar via IntersectionObserver ───────────────────────────────────────
   useEffect(() => {
@@ -258,6 +270,14 @@ export function ProductDetail({
       quantity,
       unitPrice: priceResult.unitPrice,
       totalPrice: priceResult.totalPrice,
+    })
+
+    trackAddToCart({
+      item_id: product.id,
+      item_name: locale === 'he' ? product.name_he : product.name_en,
+      item_category: locale === 'he' ? product.category.name_he : product.category.name_en,
+      price: priceResult.unitPrice,
+      quantity,
     })
 
     addToast({

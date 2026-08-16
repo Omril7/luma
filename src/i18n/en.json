@@ -346,6 +346,13 @@
       }
     }
   },
+  "cookieConsent": {
+    "title": "Cookies & Privacy",
+    "message": "We use cookies to improve your browsing experience and measure the effectiveness of our ad campaigns.",
+    "privacyLink": "Privacy Policy",
+    "accept": "Accept",
+    "essentialOnly": "Essential only"
+  },
   "privacy": {
     "title": "Privacy Policy",
     "updated": "Last updated: July 2026",
@@ -365,7 +372,7 @@
       },
       "3": {
         "heading": "Cookies",
-        "body": "The site uses cookies for essential functionality, such as remembering items in your cart and your language preference."
+        "body": "The site uses cookies for essential functionality, such as remembering items in your cart and your language preference. Subject to your consent, we also use analytics and marketing cookies (Google Analytics, Google Tag Manager, and Meta Pixel) to understand how the site is used and measure the effectiveness of ad campaigns. You can change your choice at any time via the banner shown at the bottom of the screen."
       },
       "4": {
         "heading": "Data security",
