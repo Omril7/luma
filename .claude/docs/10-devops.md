@@ -56,19 +56,17 @@ DIRECT_URL=postgresql://postgres.<ref>:<password>@<region>.pooler.supabase.com:5
 NODE_ENV=development
 JWT_SECRET=change-me
 JWT_EXPIRES_IN=30d
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX=100
 
-# --- admin seed user ---
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=change-me
-
-# --- payments (stub for now; provider TBD) ---
-PAYMENT_PROVIDER=stub
+# Admin login is not env-configurable today — prisma/seed.ts creates one fixed admin account
+# directly. Rate limiting and a real payment provider are planned (see 09-payments.md /
+# security baseline below) but not implemented in code yet — no env vars for either until
+# they're actually built; don't add RATE_LIMIT_*/PAYMENT_PROVIDER to Vercel, they're unused.
 
 # --- storage (Cloudinary primary; local = offline dev fallback) ---
 STORAGE_DRIVER=cloudinary
-CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
 UPLOAD_DIR=./uploads         # used only when STORAGE_DRIVER=local
 
 # --- email (Nodemailer SMTP) ---
@@ -86,10 +84,6 @@ OPENROUTESERVICE_API_KEY=            # free tier: openrouteservice.org — 2,000
 # Not required today — Meta's oEmbed endpoint currently accepts unauthenticated requests.
 # Only set this if imports start failing with an "access token required" error.
 INSTAGRAM_OEMBED_ACCESS_TOKEN=
-
-# --- business / frontend ---
-NEXT_PUBLIC_WHATSAPP_NUMBER=972500000000
-NEXT_PUBLIC_DEFAULT_LANGUAGE=he
 
 # --- analytics ---
 # GTM-XXXXXXX; GA4 + Meta Pixel are configured as tags inside this GTM container, not in code

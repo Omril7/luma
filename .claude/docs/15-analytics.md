@@ -1,31 +1,36 @@
-# 15 — Analytics: GA4 + GTM + Meta Pixel + WhatsApp click tracking
+# 15 — Analytics: GA4 + GTM + WhatsApp click tracking
 
 Planned 2026-08-16. Client runs Meta ad campaigns and only had Meta's own shallow "clicks to
-website" number. Wants real on-site analytics (GA4 + GTM, his own suggestion) and Meta Pixel
-wired in properly, plus tracking specifically on the WhatsApp CTA buttons. Since this is an
-e-commerce site with a real checkout, the bigger win for his ad spend is conversion tracking
-(add-to-cart / begin-checkout / purchase), not just visit counting — confirmed with him: build
-the full funnel, play it safe on consent (may get non-Israel visitors), Meta Pixel already
-exists, GA4 + GTM need to be created.
+website" number. Wants real on-site analytics (GA4 + GTM, his own suggestion), plus tracking
+specifically on the WhatsApp CTA buttons. Since this is an e-commerce site with a real
+checkout, the bigger win for his ad spend is conversion tracking (add-to-cart / begin-checkout
+/ purchase), not just visit counting — confirmed with him: build the full funnel, play it safe
+on consent (may get non-Israel visitors).
+
+**Meta Pixel dropped from scope 2026-08-16.** The client already had a Pixel running his ad
+campaigns and the plan was to reuse it inside GTM, but he couldn't locate the Pixel ID or get
+Data Sources access in Events Manager (likely owned by an agency/Business Manager he isn't an
+admin on) — not worth blocking the GA4 rollout on. Nothing in the architecture below is Meta
+Pixel-specific, so adding it back later is a pure GTM-dashboard change (one tag + a trigger per
+event), not a code change — see the mapping table further down for what it would look like.
 
 ## Architecture decision: GTM is the only loader
 
-Everything routes through **Google Tag Manager**. The Next.js code never loads `gtag.js` or
-`fbq()` directly — it only pushes structured events to `window.dataLayer`. GA4 and the Meta
-Pixel are configured as **tags inside the GTM container** (client's GTM dashboard, no code
-deploys needed to add/change tags later — matches the "modular and extensible" project rule).
+Everything routes through **Google Tag Manager**. The Next.js code never loads `gtag.js`
+directly — it only pushes structured events to `window.dataLayer`. GA4 is configured as a
+**tag inside the GTM container** (client's GTM dashboard, no code deploys needed to add/change
+tags later — matches the "modular and extensible" project rule).
 
-Why this beats loading GA4/Pixel scripts directly: the client can add, remove, or reconfigure
-tags (e.g. later add Meta Conversions API, LinkedIn Insight, Hotjar) from the GTM UI without
-touching the repo. It's also the standard, best-documented pattern for Consent Mode.
+Why this beats loading `gtag.js` directly: the client can add, remove, or reconfigure tags
+(e.g. later add the Meta Pixel, LinkedIn Insight, Hotjar) from the GTM UI without touching the
+repo. It's also the standard, best-documented pattern for Consent Mode.
 
 **IDs as env vars, not DB settings.** Precedent in this repo (`whatsappNumber`) is DB-backed
-admin content, but GTM/GA4/Pixel container IDs are deploy-time technical config (want them
-absent in dev/preview so we don't pollute production analytics with test traffic), read
-synchronously in a layout before any DB round trip. `NEXT_PUBLIC_GTM_ID` lives in
-`.env.example` / `10-devops.md`. GA4 Measurement ID and the Meta Pixel ID are **not** env vars
-at all — they live only inside the GTM container config, since the code never talks to them
-directly.
+admin content, but the GTM container ID is deploy-time technical config (want it absent in
+dev/preview so we don't pollute production analytics with test traffic), read synchronously in
+a layout before any DB round trip. `NEXT_PUBLIC_GTM_ID` lives in `.env.example` /
+`10-devops.md`. The GA4 Measurement ID is **not** an env var at all — it lives only inside the
+GTM container config, since the code never talks to it directly.
 
 **Scoped to storefront only.** The GTM script mounts in `StorefrontLayout.tsx` (server
 component, already reads `getSiteSettings()` once), not the root layout — so admin-panel usage
@@ -83,19 +88,23 @@ Payload shape (GA4 ecommerce standard, `currency: 'ILS'`):
 ```
 
 `CartItem.unitPrice/totalPrice` in `src/stores/cartStore.ts` — check whether stored in agorot
-or decimal ILS; divide by 100 for `value`/`price` fields if agorot, since GA4/Meta expect
-decimal currency amounts.
+or decimal ILS; divide by 100 for `value`/`price` fields if agorot, since GA4 expects decimal
+currency amounts.
 
-GTM fans each dataLayer event out to GA4 and the Meta Pixel tag (`fbq('track', ...)`) using
-this mapping (client's GTM setup, not code):
+GTM fans each dataLayer event out to a GA4 Event tag using this mapping (client's GTM setup,
+not code):
 
-| dataLayer event  | GA4 event                       | Meta Pixel event   |
-| ---------------- | ------------------------------- | ------------------ |
-| `view_item`      | `view_item`                     | `ViewContent`      |
-| `add_to_cart`    | `add_to_cart`                   | `AddToCart`        |
-| `begin_checkout` | `begin_checkout`                | `InitiateCheckout` |
-| `purchase`       | `purchase`                      | `Purchase`         |
-| `whatsapp_click` | `whatsapp_click` (custom event) | `Contact`          |
+| dataLayer event  | GA4 event                       |
+| ---------------- | ------------------------------- |
+| `view_item`      | `view_item`                     |
+| `add_to_cart`    | `add_to_cart`                   |
+| `begin_checkout` | `begin_checkout`                |
+| `purchase`       | `purchase`                      |
+| `whatsapp_click` | `whatsapp_click` (custom event) |
+
+If the Meta Pixel gets added back later: same triggers, one more tag per row (Meta Pixel
+"Track Event") mapped to `ViewContent`/`AddToCart`/`InitiateCheckout`/`Purchase`/`Contact`
+respectively.
 
 ## i18n
 
@@ -107,7 +116,7 @@ Analytics" section added to the existing `privacy` translation keys used by
 
 ```dotenv
 # --- analytics ---
-NEXT_PUBLIC_GTM_ID=            # GTM-XXXXXXX; GA4 + Meta Pixel are configured as tags inside this container
+NEXT_PUBLIC_GTM_ID=            # GTM-XXXXXXX; GA4 is configured as a tag inside this container
 ```
 
 ## Manual dashboard setup checklist (client-side, outside this repo)
@@ -118,14 +127,31 @@ NEXT_PUBLIC_GTM_ID=            # GTM-XXXXXXX; GA4 + Meta Pixel are configured as
 3. In GTM: add a **GA4 Configuration** tag with that Measurement ID, trigger "All Pages" +
    "Consent Initialization - All Pages"; keep its default Consent Settings (require
    `analytics_storage`).
-4. In GTM: add a **Meta Pixel** tag (custom HTML or the community template) using the
-   _existing_ Pixel ID, trigger "All Pages", plus one tag per event in the mapping table
-   above, each triggered by a Custom Event trigger matching the dataLayer `event` name.
-5. In GTM: enable **Consent Mode** overview (Admin → Container Settings), confirm each
-   tag's consent check is set correctly (Google tags: `analytics_storage`/`ad_storage`;
-   Meta tag: gate it behind the same custom trigger or an "Additional Consent Check").
-6. Test with GTM **Preview mode**, GA4 **DebugView**, and Meta **Pixel Helper** browser
-   extension before publishing the container version.
+4. In GTM: add one **GA4 Event** tag per event in the mapping table above, each triggered by a
+   Custom Event trigger matching the dataLayer `event` name.
+5. In GTM: add **Scroll Depth** and **Outbound Click** triggers (both GTM built-ins, no
+   code needed) — see the "Scroll depth & outbound clicks" section below. Skippable if GA4's
+   own Enhanced Measurement (Admin → Data Streams) already covers it well enough.
+6. In GTM: enable **Consent Mode** overview (Admin → Container Settings), confirm the GA4
+   Configuration tag's Consent Settings require `analytics_storage` (default).
+7. Test with GTM **Preview mode** and GA4 **DebugView** before publishing the container
+   version.
+
+### Scroll depth & outbound clicks
+
+Not sent from app code — these are generic signals GTM captures on its own via built-in
+trigger types, so they belong entirely in the dashboard setup, not the codebase:
+
+- **Scroll depth:** enable the `Scroll Depth Threshold` built-in variable → new **Scroll
+  Depth** trigger (25/50/75/90%, All Pages) → GA4 Event tag, event name `scroll_depth`,
+  parameter `percent_scrolled` = `{{Scroll Depth Threshold}}`.
+- **Outbound clicks:** enable the `Click URL` built-in variable → new **Just Links** trigger,
+  "Some Link Clicks" where `Click URL` does not contain the site's own domain → GA4 Event
+  tag, event name `click`, parameters `link_url` = `{{Click URL}}`, `outbound` = `true`.
+
+Note GA4's **Enhanced Measurement** (Admin → Data Streams → the web stream, on by default for
+new properties) already auto-tracks 90% scroll and outbound clicks with zero setup. The GTM
+triggers above are only worth building for custom thresholds.
 
 ## Verification
 

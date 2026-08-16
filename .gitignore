@@ -45,6 +45,9 @@ yarn-error.log*
 # Vercel
 .vercel/
 
+# Client-facing handoff docs (not part of the codebase)
+.claude/handoff/
+
 # OS / editor
 .DS_Store
 Thumbs.db
