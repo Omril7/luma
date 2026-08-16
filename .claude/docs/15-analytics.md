@@ -39,13 +39,25 @@ are already storefront-only.
 
 ## Consent (Google Consent Mode v2)
 
-A lightweight consent banner. Default state is **denied** for `analytics_storage`/
-`ad_storage`/`ad_user_data`/`ad_personalization`, pushed to `dataLayer` _before_ the GTM
-snippet loads, with `wait_for_update: 500` so GTM tags still fire (in a degraded/pinged,
-cookieless mode) if the user never interacts. Accepting updates consent to granted; declining
-keeps it denied. Choice persists in `localStorage` so the banner doesn't reappear. Mirrors the
-existing `THEME_INIT_SCRIPT` inline-script pattern in `src/app/layout.tsx` (synchronous,
-pre-paint, `dangerouslySetInnerHTML`).
+A lightweight consent banner, with a **region-scoped** default (added 2026-08-16 after GTM's
+Container Diagnostics flagged "0% consent rate outside the EEA" — a single global default:
+`'denied'` needlessly blocks ads measurement/personalization for the vast majority of traffic,
+which is Israel-based with no legal opt-in requirement). `GoogleTagManager.tsx` pushes two
+`consent default` calls: `denied`-by-default scoped to `region: [EEA + UK + CH]`, and
+`granted`-by-default for everywhere else. Either default is overridden by a prior explicit
+choice from `localStorage` (`'granted'` always wins in the EEA block; `'denied'` always wins in
+the rest-of-world block). The EEA block also sets `wait_for_update: 500` so GTM tags there
+still fire (degraded/cookieless) if the user never interacts. Accepting/declining in the banner
+pushes `gtag('consent','update', {...})` and persists the choice so it isn't re-prompted.
+Mirrors the existing `THEME_INIT_SCRIPT` inline-script pattern in `src/app/layout.tsx`
+(synchronous, pre-paint, `dangerouslySetInnerHTML`).
+
+**Decided:** the banner still shows to every visitor regardless of region (confirmed with the
+client 2026-08-16), even though non-EEA visitors are now granted by default and don't strictly
+need to be prompted. Deliberate choice for simplicity/transparency over building region
+detection (`ConsentBanner.tsx` has no region signal of its own — gtag's region matching happens
+inside Google's script, not exposed to our code) — a visitor could use "Essential only" to opt
+out of something they were never legally required to opt into, which is an acceptable tradeoff.
 
 Each GA4/Ads tag in GTM needs its built-in "Consent Settings" left at default (require
 `analytics_storage`/`ad_storage`) — a GTM dashboard setting, not code (see checklist below).
