@@ -467,7 +467,7 @@
     "formComment": "Your review (optional)",
     "formSubmit": "Submit review",
     "formSubmitting": "Submitting...",
-    "formPendingNotice": "Thank you! Your review has been received and will be published after approval.",
+    "formPendingNotice": "Thank you for your review!",
     "formError": "Something went wrong, please try again",
     "required": "This field is required",
     "ratingRequired": "Please select a rating"
