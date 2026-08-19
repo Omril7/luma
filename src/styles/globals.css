@@ -9,6 +9,7 @@
   --color-primary-600: #47543a; /* sage olive, darker — hover */
   --color-secondary: #e9dcc3; /* linen — alternate section bg */
   --color-accent: #c9a876; /* kraft tan — tertiary accent, dividers, stars */
+  --color-cta: #c1502e; /* terracotta — floating contact widget, attention-grabbing CTAs */
   --color-text: #4a2f1e; /* walnut brown — primary text */
   --color-text-muted: #7a6552; /* muted warm brown, derived from walnut */
   --color-bg: #faf5ea; /* soft linen-tinted cream — page background */
@@ -138,6 +139,7 @@ body {
   --color-primary: #ffff00;
   --color-primary-600: #cccc00;
   --color-accent: #ffff00;
+  --color-cta: #ffff00;
 }
 
 [data-underline-links='true'] a {
@@ -152,6 +154,7 @@ body {
   --color-primary-600: #b8945c;
   --color-secondary: #35302a;
   --color-accent: #a8835a;
+  --color-cta: #d97a53;
   --color-text: #e9dcc3;
   --color-text-muted: #a89a86;
   --color-bg: #201c17;

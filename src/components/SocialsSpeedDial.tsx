@@ -73,7 +73,7 @@ export function SocialsSpeedDial({
           key: 'facebook',
           href: facebookUrl,
           label: t('facebook'),
-          icon: <FacebookIcon size={20} aria-hidden="true" />,
+          icon: <FacebookIcon size={24} aria-hidden="true" />,
           bgClass: 'bg-[#1877F2]',
         }
       : null,
@@ -82,7 +82,7 @@ export function SocialsSpeedDial({
           key: 'instagram',
           href: instagramUrl,
           label: t('instagram'),
-          icon: <InstagramIcon size={20} aria-hidden="true" />,
+          icon: <InstagramIcon size={24} aria-hidden="true" />,
           bgClass: 'bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#8134af]',
         }
       : null,
@@ -90,7 +90,7 @@ export function SocialsSpeedDial({
       key: 'whatsapp',
       href: `https://wa.me/${whatsappNumber || DEFAULT_WHATSAPP_NUMBER}`,
       label: t('whatsapp'),
-      icon: <WhatsAppIcon size={20} aria-hidden="true" />,
+      icon: <WhatsAppIcon size={24} aria-hidden="true" />,
       bgClass: 'bg-[#25D366]',
       onClick: () => trackWhatsAppClick('floating'),
     },
@@ -99,7 +99,7 @@ export function SocialsSpeedDial({
           key: 'phone',
           href: `tel:${phone}`,
           label: t('phone'),
-          icon: <Phone size={18} aria-hidden="true" />,
+          icon: <Phone size={20} aria-hidden="true" />,
           bgClass: 'bg-primary',
         }
       : null,
@@ -108,7 +108,7 @@ export function SocialsSpeedDial({
           key: 'email',
           href: `mailto:${email}`,
           label: t('email'),
-          icon: <Mail size={18} aria-hidden="true" />,
+          icon: <Mail size={20} aria-hidden="true" />,
           bgClass: 'bg-primary',
         }
       : null,
@@ -141,7 +141,7 @@ export function SocialsSpeedDial({
                 }
                 whileHover={shouldAnimate ? { scale: 1.1 } : undefined}
                 whileTap={shouldAnimate ? { scale: 0.95 } : undefined}
-                className={`flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg ${link.bgClass}`}
+                className={`flex h-14 w-14 items-center justify-center rounded-full text-white shadow-[0_8px_24px_-4px_rgba(0,0,0,0.35)] ${link.bgClass}`}
               >
                 {link.icon}
               </motion.a>
@@ -155,7 +155,7 @@ export function SocialsSpeedDial({
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? t('close') : t('open')}
         aria-expanded={open}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-surface shadow-lg cursor-pointer"
+        className="flex h-16 w-16 items-center justify-center rounded-full bg-cta text-surface shadow-[0_8px_24px_-4px_rgba(0,0,0,0.35)] cursor-pointer"
         whileHover={shouldAnimate ? { scale: 1.1 } : undefined}
         whileTap={shouldAnimate ? { scale: 0.95 } : undefined}
         initial={shouldAnimate ? { scale: 0, opacity: 0 } : { scale: 1, opacity: 1 }}
@@ -176,9 +176,9 @@ export function SocialsSpeedDial({
             className="flex items-center justify-center"
           >
             {open ? (
-              <X size={26} aria-hidden="true" />
+              <X size={30} aria-hidden="true" />
             ) : (
-              <MessageCircle size={26} aria-hidden="true" />
+              <MessageCircle size={30} aria-hidden="true" />
             )}
           </motion.span>
         </AnimatePresence>

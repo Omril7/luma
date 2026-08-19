@@ -15,6 +15,7 @@ const config: Config = {
         },
         secondary: 'var(--color-secondary)',
         accent: 'var(--color-accent)',
+        cta: 'var(--color-cta)',
         'text-main': 'var(--color-text)',
         'text-muted': 'var(--color-text-muted)',
         bg: 'var(--color-bg)',
