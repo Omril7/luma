@@ -4,15 +4,21 @@ import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'motion/react'
-import { LogOut, ExternalLink, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react'
+import { LogOut, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, Menu, X } from 'lucide-react'
 import { isTokenExpired, useAdminStore } from '@/stores/adminStore'
-import { ADMIN_NAV_ITEMS } from './adminNav'
+import { ADMIN_NAV_ITEMS, ADMIN_NAV_CATEGORIES } from './adminNav'
 import { ContactUnreadBadge } from './contact/ContactUnreadBadge'
 
 const SIDEBAR_ITEMS = ADMIN_NAV_ITEMS.filter((item) => !item.external)
+const DASHBOARD_ITEM = SIDEBAR_ITEMS.find((item) => item.exact)!
+const NAV_GROUPS = ADMIN_NAV_CATEGORIES.map((category) => ({
+  category,
+  items: SIDEBAR_ITEMS.filter((item) => item.category === category.id),
+})).filter((group) => group.items.length > 0)
 const ORDERS_LINK = ADMIN_NAV_ITEMS.find((item) => item.external)!
 
 const COLLAPSED_KEY = 'luma-admin-collapsed'
+const NAV_OPEN_KEY = 'luma-admin-nav-open'
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -22,15 +28,51 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  // All groups open by default until the admin collapses one explicitly.
+  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     setHydrated(true)
     try {
       setCollapsed(localStorage.getItem(COLLAPSED_KEY) === 'true')
+      const savedOpen = localStorage.getItem(NAV_OPEN_KEY)
+      if (savedOpen) setOpenCategories(JSON.parse(savedOpen))
     } catch {
       /* localStorage unavailable */
     }
   }, [])
+
+  function isCategoryOpen(categoryId: string): boolean {
+    return openCategories[categoryId] !== false
+  }
+
+  function toggleCategory(categoryId: string) {
+    setOpenCategories((prev) => {
+      const next = { ...prev, [categoryId]: !isCategoryOpen(categoryId) }
+      try {
+        localStorage.setItem(NAV_OPEN_KEY, JSON.stringify(next))
+      } catch {
+        /* ignore */
+      }
+      return next
+    })
+  }
+
+  // Auto-expand whichever group contains the current page, so navigating
+  // there (e.g. via a link elsewhere) never lands inside a collapsed group.
+  useEffect(() => {
+    const activeGroup = NAV_GROUPS.find((g) =>
+      g.items.some((item) =>
+        item.exact
+          ? pathname === item.href
+          : pathname === item.href || pathname.startsWith(item.href + '/')
+      )
+    )
+    if (activeGroup && openCategories[activeGroup.category.id] === false) {
+      setOpenCategories((prev) => ({ ...prev, [activeGroup.category.id]: true }))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname])
 
   // Close mobile drawer on every navigation
   useEffect(() => {
@@ -86,6 +128,48 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const currentNav = SIDEBAR_ITEMS.find((n) =>
     n.exact ? pathname === n.href : pathname === n.href || pathname.startsWith(n.href + '/')
   )
+
+  function renderNavItem(item: (typeof SIDEBAR_ITEMS)[number]) {
+    const isActive = item.exact
+      ? pathname === item.href
+      : pathname === item.href || pathname.startsWith(item.href + '/')
+    const Icon = item.icon
+    return (
+      <li key={item.href}>
+        <Link
+          href={item.href}
+          aria-current={isActive ? 'page' : undefined}
+          title={collapsed ? item.label : undefined}
+          className={[
+            'flex items-center rounded-lg text-sm font-medium',
+            'transition-colors duration-150 min-h-[44px]',
+            collapsed ? 'justify-center px-0' : 'gap-3 px-3',
+            isActive
+              ? 'bg-secondary text-primary'
+              : 'text-text-muted hover:bg-secondary hover:text-text-main',
+          ].join(' ')}
+        >
+          <span className="relative flex items-center justify-center shrink-0">
+            <Icon size={18} aria-hidden={true} className="shrink-0" />
+            {item.href === '/admin/contact' && collapsed && <ContactUnreadBadge variant="dot" />}
+          </span>
+          {!collapsed && (
+            <>
+              <span className="flex-1 truncate">{item.label}</span>
+              {item.href === '/admin/contact' && <ContactUnreadBadge />}
+              {isActive && (
+                <motion.span
+                  layoutId="nav-dot"
+                  className="w-1.5 h-1.5 rounded-full bg-primary shrink-0"
+                  aria-hidden="true"
+                />
+              )}
+            </>
+          )}
+        </Link>
+      </li>
+    )
+  }
 
   return (
     <div className="min-h-dvh bg-bg" dir="rtl">
@@ -169,51 +253,56 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-3 px-2" aria-label="ניווט ראשי">
-          <ul className="space-y-0.5" role="list">
-            {SIDEBAR_ITEMS.map((item) => {
-              const isActive = item.exact
-                ? pathname === item.href
-                : pathname === item.href || pathname.startsWith(item.href + '/')
-              const Icon = item.icon
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    aria-current={isActive ? 'page' : undefined}
-                    title={collapsed ? item.label : undefined}
-                    className={[
-                      'flex items-center rounded-lg text-sm font-medium',
-                      'transition-colors duration-150 min-h-[44px]',
-                      collapsed ? 'justify-center px-0' : 'gap-3 px-3',
-                      isActive
-                        ? 'bg-secondary text-primary'
-                        : 'text-text-muted hover:bg-secondary hover:text-text-main',
-                    ].join(' ')}
-                  >
-                    <span className="relative flex items-center justify-center shrink-0">
-                      <Icon size={18} aria-hidden={true} className="shrink-0" />
-                      {item.href === '/admin/contact' && collapsed && (
-                        <ContactUnreadBadge variant="dot" />
+          {collapsed ? (
+            // Icon rail: no grouping, just the flat list (category headers add
+            // nothing when there are no labels to group).
+            <ul className="space-y-0.5" role="list">
+              {SIDEBAR_ITEMS.map((item) => renderNavItem(item))}
+            </ul>
+          ) : (
+            <div className="space-y-3">
+              <ul className="space-y-0.5" role="list">
+                {renderNavItem(DASHBOARD_ITEM)}
+              </ul>
+
+              {NAV_GROUPS.map(({ category, items }) => {
+                const open = isCategoryOpen(category.id)
+                const panelId = `nav-group-${category.id}`
+                return (
+                  <div key={category.id}>
+                    <button
+                      onClick={() => toggleCategory(category.id)}
+                      aria-expanded={open}
+                      aria-controls={panelId}
+                      className="flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-[11px] font-semibold uppercase tracking-wide text-text-muted hover:text-text-main transition-colors cursor-pointer"
+                    >
+                      <span>{category.label}</span>
+                      <ChevronDown
+                        size={13}
+                        aria-hidden="true"
+                        className={`shrink-0 transition-transform duration-200 ${open ? 'rotate-0' : '-rotate-90'}`}
+                      />
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {open && (
+                        <motion.ul
+                          id={panelId}
+                          role="list"
+                          className="space-y-0.5 overflow-hidden"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2, ease: 'easeInOut' }}
+                        >
+                          {items.map((item) => renderNavItem(item))}
+                        </motion.ul>
                       )}
-                    </span>
-                    {!collapsed && (
-                      <>
-                        <span className="flex-1 truncate">{item.label}</span>
-                        {item.href === '/admin/contact' && <ContactUnreadBadge />}
-                        {isActive && (
-                          <motion.span
-                            layoutId="nav-dot"
-                            className="w-1.5 h-1.5 rounded-full bg-primary shrink-0"
-                            aria-hidden="true"
-                          />
-                        )}
-                      </>
-                    )}
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
+                    </AnimatePresence>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </nav>
 
         {/* Footer: email + utility links */}

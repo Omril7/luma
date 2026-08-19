@@ -11,7 +11,7 @@ const QUICK_LINKS = ADMIN_NAV_ITEMS.filter((item) => item.href !== '/admin')
 
 export default function AdminDashboardPage() {
   return (
-    <div className="max-w-4xl">
+    <div>
       {/* Heading */}
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-text-main">שלום, עדן כהן</h2>
@@ -20,7 +20,7 @@ export default function AdminDashboardPage() {
 
       {/* Quick-link grid */}
       <ul
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
         role="list"
         aria-label="קישורים מהירים"
       >

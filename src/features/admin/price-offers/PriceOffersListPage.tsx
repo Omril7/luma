@@ -9,6 +9,9 @@ import {
   ChevronLeft,
   MessageSquareQuote,
   Phone,
+  Mail,
+  Eye,
+  X,
 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
@@ -68,6 +71,7 @@ export function PriceOffersListPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [viewRequest, setViewRequest] = useState<PriceOfferRequestDTO | null>(null)
 
   const fetchRequests = useCallback(async () => {
     if (!token) return
@@ -299,6 +303,15 @@ export function PriceOffersListPage() {
                     {/* פעולות */}
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setViewRequest(request)}
+                          title="צפייה בבקשה"
+                          aria-label="צפייה בבקשה"
+                          className="p-2 rounded-lg text-text-muted hover:bg-secondary hover:text-text-main transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
+                        >
+                          <Eye size={15} aria-hidden="true" />
+                        </button>
+
                         {request.status === 'HANDLED' ? (
                           <button
                             onClick={() => handleSetStatus(request, 'NEW')}
@@ -384,6 +397,105 @@ export function PriceOffersListPage() {
           </div>
         )}
       </div>
+
+      {/* View request dialog */}
+      {viewRequest && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="view-offer-dialog-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setViewRequest(null)
+          }}
+        >
+          <div className="bg-surface border border-border rounded-xl shadow-xl max-w-lg w-full max-h-[85vh] flex flex-col">
+            <div className="flex items-start justify-between gap-4 p-6 pb-4 border-b border-border">
+              <div>
+                <h3 id="view-offer-dialog-title" className="text-base font-semibold text-text-main">
+                  {viewRequest.customerName}
+                </h3>
+                <p className="text-xs text-text-muted mt-1">{formatDate(viewRequest.createdAt)}</p>
+              </div>
+              <button
+                onClick={() => setViewRequest(null)}
+                title="סגירה"
+                aria-label="סגירה"
+                className="p-2 -m-2 rounded-lg text-text-muted hover:bg-secondary hover:text-text-main transition-colors cursor-pointer"
+              >
+                <X size={16} aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 overflow-y-auto">
+              <div className="flex flex-wrap gap-4 text-sm">
+                <a
+                  href={`tel:${viewRequest.phone}`}
+                  className="flex items-center gap-1.5 text-text-muted hover:text-primary"
+                  dir="ltr"
+                >
+                  <Phone size={14} aria-hidden="true" className="shrink-0" />
+                  {viewRequest.phone}
+                </a>
+                {viewRequest.email && (
+                  <a
+                    href={`mailto:${viewRequest.email}`}
+                    className="flex items-center gap-1.5 text-text-muted hover:text-primary"
+                    dir="ltr"
+                  >
+                    <Mail size={14} aria-hidden="true" className="shrink-0" />
+                    {viewRequest.email}
+                  </a>
+                )}
+                {viewRequest.status === 'HANDLED' ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                    טופלה
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                    חדשה
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-1">
+                  מוצר
+                </p>
+                <p className="text-sm text-text-main">{viewRequest.productName_he}</p>
+                <p className="text-xs text-text-muted">{viewRequest.productName_en}</p>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-1">
+                  בחירה
+                </p>
+                <p className="text-sm text-text-main">{selectionSummary(viewRequest)}</p>
+              </div>
+
+              {viewRequest.quotedPrice != null && (
+                <div>
+                  <p className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-1">
+                    מחיר משוער
+                  </p>
+                  <p className="text-sm text-text-main tabular-nums">
+                    ₪{viewRequest.quotedPrice.toLocaleString('he-IL')}
+                  </p>
+                </div>
+              )}
+
+              <div>
+                <p className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-1">
+                  הודעה
+                </p>
+                <p className="text-sm text-text-main whitespace-pre-line">
+                  {viewRequest.message || '—'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete confirmation dialog */}
       {deleteId && (

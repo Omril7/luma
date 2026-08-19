@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Check, X, Trash2, ChevronRight, ChevronLeft, Star, Pencil } from 'lucide-react'
+import { Check, X, Trash2, ChevronRight, ChevronLeft, Star, Pencil, Eye } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import type { ReviewDTO } from '@/shared/types'
@@ -44,6 +44,7 @@ export function ReviewsListPage() {
   const [editingReview, setEditingReview] = useState<ReviewDTO | null>(null)
   const [editDraft, setEditDraft] = useState({ comment_he: '', comment_en: '' })
   const [savingComment, setSavingComment] = useState(false)
+  const [viewReview, setViewReview] = useState<ReviewDTO | null>(null)
 
   const fetchReviews = useCallback(async () => {
     if (!token) return
@@ -270,6 +271,15 @@ export function ReviewsListPage() {
                     {/* פעולות */}
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setViewReview(review)}
+                          title="צפייה בביקורת"
+                          aria-label="צפייה בביקורת"
+                          className="p-2 rounded-lg text-text-muted hover:bg-secondary hover:text-text-main transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
+                        >
+                          <Eye size={15} aria-hidden="true" />
+                        </button>
+
                         {review.isApproved ? (
                           <button
                             onClick={() => handleSetApproved(review, false)}
@@ -364,6 +374,95 @@ export function ReviewsListPage() {
           </div>
         )}
       </div>
+
+      {/* View review dialog */}
+      {viewReview && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="view-review-dialog-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setViewReview(null)
+          }}
+        >
+          <div className="bg-surface border border-border rounded-xl shadow-xl max-w-lg w-full max-h-[85vh] flex flex-col">
+            <div className="flex items-start justify-between gap-4 p-6 pb-4 border-b border-border">
+              <div>
+                <h3
+                  id="view-review-dialog-title"
+                  className="text-base font-semibold text-text-main"
+                >
+                  {viewReview.customerName}
+                </h3>
+                <p className="text-xs text-text-muted mt-1">{formatDate(viewReview.createdAt)}</p>
+              </div>
+              <button
+                onClick={() => setViewReview(null)}
+                title="סגירה"
+                aria-label="סגירה"
+                className="p-2 -m-2 rounded-lg text-text-muted hover:bg-secondary hover:text-text-main transition-colors cursor-pointer"
+              >
+                <X size={16} aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 overflow-y-auto">
+              <div className="flex flex-wrap items-center gap-4 text-sm">
+                <StarRating value={viewReview.rating} readonly size="sm" />
+                {viewReview.isApproved ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                    מאושר
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                    ממתין
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-1">
+                  מוצר
+                </p>
+                <p className="text-sm text-text-main">{viewReview.productName_he}</p>
+                <p className="text-xs text-text-muted">{viewReview.productName_en}</p>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-1">
+                  תגובה (עברית)
+                </p>
+                <p className="text-sm text-text-main whitespace-pre-line" dir="rtl">
+                  {viewReview.comment_he || '—'}
+                </p>
+              </div>
+
+              <div dir="ltr">
+                <p className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-1">
+                  Comment (English)
+                </p>
+                <p className="text-sm text-text-main whitespace-pre-line">
+                  {viewReview.comment_en || '—'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 p-6 pt-4 border-t border-border">
+              <button
+                onClick={() => {
+                  setViewReview(null)
+                  startEditComment(viewReview)
+                }}
+                className="px-4 py-2 text-sm rounded-lg border border-border text-text-muted hover:bg-bg transition-colors cursor-pointer inline-flex items-center gap-1.5"
+              >
+                <Pencil size={14} aria-hidden="true" />
+                עריכת תגובה
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete confirmation dialog */}
       {deleteId && (

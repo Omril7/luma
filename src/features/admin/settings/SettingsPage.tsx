@@ -314,348 +314,364 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="space-y-5 max-w-2xl">
+    <div className="space-y-5">
       <div>
         <h2 className="text-xl font-bold text-text-main">הגדרות</h2>
         <p className="text-sm text-text-muted mt-0.5">פרטי עסק, מידע יצירת קשר ועלויות משלוח</p>
       </div>
 
-      {/* ── Business Info ─────────────────────────────────────────────────────── */}
-      <section className="bg-surface border border-border rounded-lg p-5 space-y-4">
-        <div className="flex items-center gap-2">
-          <Building2 size={16} className="text-text-muted" aria-hidden="true" />
-          <h3 className="text-base font-semibold text-text-main">פרטי העסק</h3>
-        </div>
+      <div className="grid grid-cols-1 xl:grid-cols-[3fr_2fr] gap-5 items-start">
+        {/* ── Business Info ─────────────────────────────────────────────────────── */}
+        <section className="bg-surface border border-border rounded-lg p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <Building2 size={16} className="text-text-muted" aria-hidden="true" />
+            <h3 className="text-base font-semibold text-text-main">פרטי העסק</h3>
+          </div>
 
-        {/* Bilingual business name */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className={labelCls}>
-              שם העסק{' '}
-              <IsraelFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
-            </label>
-            <input
-              type="text"
-              value={biz.businessName_he}
-              onChange={(e) => setBizField('businessName_he', e.target.value)}
-              dir="rtl"
-              placeholder="לומה רהיטים"
-              className={inputCls}
-            />
+          {/* Bilingual business name */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>
+                שם העסק{' '}
+                <IsraelFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+              </label>
+              <input
+                type="text"
+                value={biz.businessName_he}
+                onChange={(e) => setBizField('businessName_he', e.target.value)}
+                dir="rtl"
+                placeholder="לומה רהיטים"
+                className={inputCls}
+              />
+            </div>
+            <div dir="ltr">
+              <label className={labelCls}>
+                Business name{' '}
+                <USAFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+              </label>
+              <input
+                type="text"
+                value={biz.businessName_en}
+                onChange={(e) => setBizField('businessName_en', e.target.value)}
+                dir="ltr"
+                placeholder="Luma Furniture"
+                className={inputCls}
+              />
+            </div>
           </div>
-          <div dir="ltr">
-            <label className={labelCls}>
-              Business name{' '}
-              <USAFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
-            </label>
-            <input
-              type="text"
-              value={biz.businessName_en}
-              onChange={(e) => setBizField('businessName_en', e.target.value)}
-              dir="ltr"
-              placeholder="Luma Furniture"
-              className={inputCls}
-            />
-          </div>
-        </div>
 
-        {/* Bilingual address */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className={labelCls}>
-              כתובת{' '}
-              <IsraelFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
-            </label>
-            <input
-              type="text"
-              value={biz.address_he}
-              onChange={(e) => setBizField('address_he', e.target.value)}
-              dir="rtl"
-              placeholder="תל אביב, ישראל"
-              className={inputCls}
-            />
+          {/* Bilingual address */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>
+                כתובת{' '}
+                <IsraelFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+              </label>
+              <input
+                type="text"
+                value={biz.address_he}
+                onChange={(e) => setBizField('address_he', e.target.value)}
+                dir="rtl"
+                placeholder="תל אביב, ישראל"
+                className={inputCls}
+              />
+            </div>
+            <div dir="ltr">
+              <label className={labelCls}>
+                Address{' '}
+                <USAFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+              </label>
+              <input
+                type="text"
+                value={biz.address_en}
+                onChange={(e) => setBizField('address_en', e.target.value)}
+                dir="ltr"
+                placeholder="Tel Aviv, Israel"
+                className={inputCls}
+              />
+            </div>
           </div>
-          <div dir="ltr">
-            <label className={labelCls}>
-              Address{' '}
-              <USAFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
-            </label>
-            <input
-              type="text"
-              value={biz.address_en}
-              onChange={(e) => setBizField('address_en', e.target.value)}
-              dir="ltr"
-              placeholder="Tel Aviv, Israel"
-              className={inputCls}
-            />
-          </div>
-        </div>
 
-        {/* Contact fields */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Contact fields */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>טלפון</label>
+              <input
+                type="tel"
+                value={biz.phone}
+                onChange={(e) => setBizField('phone', e.target.value)}
+                dir="ltr"
+                placeholder="050-0000000"
+                className={inputCls}
+                autoComplete="tel"
+              />
+            </div>
+            <div>
+              <label className={labelCls}>מספר WhatsApp</label>
+              <input
+                type="tel"
+                value={biz.whatsappNumber}
+                onChange={(e) => setBizField('whatsappNumber', e.target.value)}
+                dir="ltr"
+                placeholder="972500000000"
+                className={inputCls}
+                autoComplete="tel"
+              />
+              <p className="text-xs text-text-muted mt-1">
+                כולל קידומת מדינה, ללא + (לדוגמה: 972501234567)
+              </p>
+            </div>
+          </div>
+
           <div>
-            <label className={labelCls}>טלפון</label>
+            <label className={labelCls}>אימייל</label>
             <input
-              type="tel"
-              value={biz.phone}
-              onChange={(e) => setBizField('phone', e.target.value)}
+              type="email"
+              value={biz.email}
+              onChange={(e) => setBizField('email', e.target.value)}
               dir="ltr"
-              placeholder="050-0000000"
+              placeholder="info@luma.co.il"
               className={inputCls}
-              autoComplete="tel"
+              autoComplete="email"
             />
           </div>
-          <div>
-            <label className={labelCls}>מספר WhatsApp</label>
-            <input
-              type="tel"
-              value={biz.whatsappNumber}
-              onChange={(e) => setBizField('whatsappNumber', e.target.value)}
-              dir="ltr"
-              placeholder="972500000000"
-              className={inputCls}
-              autoComplete="tel"
+
+          {/* Bilingual working hours */}
+          <div className="flex items-center gap-2 pt-2">
+            <Clock size={14} className="text-text-muted" aria-hidden="true" />
+            <span className="text-xs font-medium text-text-muted">שעות פעילות</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>
+                שעות פעילות{' '}
+                <IsraelFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+              </label>
+              <input
+                type="text"
+                value={biz.hours_he}
+                onChange={(e) => setBizField('hours_he', e.target.value)}
+                dir="rtl"
+                placeholder="א׳-ה׳: 9:00-18:00, ו׳: 9:00-13:00"
+                className={inputCls}
+              />
+            </div>
+            <div dir="ltr">
+              <label className={labelCls}>
+                Working hours{' '}
+                <USAFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
+              </label>
+              <input
+                type="text"
+                value={biz.hours_en}
+                onChange={(e) => setBizField('hours_en', e.target.value)}
+                dir="ltr"
+                placeholder="Sun-Thu: 9AM-6PM, Fri: 9AM-1PM"
+                className={inputCls}
+              />
+            </div>
+          </div>
+
+          {/* Social links */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div dir="ltr">
+              <label className={labelCls}>Instagram</label>
+              <input
+                type="url"
+                value={biz.instagramUrl}
+                onChange={(e) => setBizField('instagramUrl', e.target.value)}
+                dir="ltr"
+                placeholder="https://instagram.com/luma.furniture"
+                className={inputCls}
+              />
+            </div>
+            <div dir="ltr">
+              <label className={labelCls}>Facebook</label>
+              <input
+                type="url"
+                value={biz.facebookUrl}
+                onChange={(e) => setBizField('facebookUrl', e.target.value)}
+                dir="ltr"
+                placeholder="https://facebook.com/luma.furniture"
+                className={inputCls}
+              />
+            </div>
+          </div>
+
+          <SaveButton
+            onClick={handleSaveBiz}
+            saving={bizSaving}
+            success={bizSuccess}
+            error={bizError}
+          />
+        </section>
+
+        <div className="space-y-5">
+          {/* ── Shipping Costs ────────────────────────────────────────────────────── */}
+          <section className="bg-surface border border-border rounded-lg p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <Truck size={16} className="text-text-muted" aria-hidden="true" />
+              <h3 className="text-base font-semibold text-text-main">עלויות משלוח</h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className={labelCls}>עלות משלוח ארצי (₪)</label>
+                <div className="relative">
+                  <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
+                    ₪
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={ship.shippingCostNational}
+                    onChange={(e) =>
+                      setShip((s) => ({
+                        ...s,
+                        shippingCostNational: parseFloat(e.target.value) || 0,
+                      }))
+                    }
+                    dir="rtl"
+                    className={`${inputCls} ps-8`}
+                  />
+                </div>
+                <p className="text-xs text-text-muted mt-1">עלות משלוח סטנדרטי לכל הארץ</p>
+              </div>
+
+              <div>
+                <label className={labelCls}>סף משלוח חינם (₪, אופציונלי)</label>
+                <div className="relative">
+                  <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
+                    ₪
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={ship.freeShippingAbove}
+                    onChange={(e) => setShip((s) => ({ ...s, freeShippingAbove: e.target.value }))}
+                    dir="rtl"
+                    placeholder="ריק = אין משלוח חינם"
+                    className={`${inputCls} ps-8`}
+                  />
+                </div>
+                <p className="text-xs text-text-muted mt-1">השאר ריק אם אין הטבת משלוח חינם</p>
+              </div>
+            </div>
+
+            <SaveButton
+              onClick={handleSaveShip}
+              saving={shipSaving}
+              success={shipSuccess}
+              error={shipError}
             />
-            <p className="text-xs text-text-muted mt-1">
-              כולל קידומת מדינה, ללא + (לדוגמה: 972501234567)
+          </section>
+
+          {/* ── Delivery Distance ─────────────────────────────────────────────────── */}
+          <section className="bg-surface border border-border rounded-lg p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <MapPin size={16} className="text-text-muted" aria-hidden="true" />
+              <h3 className="text-base font-semibold text-text-main">משלוח לפי מרחק (ORS)</h3>
+            </div>
+            <p className="text-xs text-text-muted">
+              עלות המשלוח מחושבת לפי מרחק כביש ממיקום הסטודיו לכתובת הלקוח.
             </p>
-          </div>
-        </div>
 
-        <div>
-          <label className={labelCls}>אימייל</label>
-          <input
-            type="email"
-            value={biz.email}
-            onChange={(e) => setBizField('email', e.target.value)}
-            dir="ltr"
-            placeholder="info@luma.co.il"
-            className={inputCls}
-            autoComplete="email"
-          />
-        </div>
+            <div>
+              <label className={labelCls}>כתובת הסטודיו (נקודת מוצא)</label>
+              <input
+                type="text"
+                value={delivery.studioAddress}
+                onChange={(e) => setDelivery((s) => ({ ...s, studioAddress: e.target.value }))}
+                placeholder="רחוב המלאכה 5, תל אביב"
+                className={inputCls}
+                dir="rtl"
+              />
+              <p className="text-xs text-text-muted mt-1">
+                תיאוחל לקואורדינטות בשמירה — ודאו שהכתובת מדויקת
+              </p>
+            </div>
 
-        {/* Bilingual working hours */}
-        <div className="flex items-center gap-2 pt-2">
-          <Clock size={14} className="text-text-muted" aria-hidden="true" />
-          <span className="text-xs font-medium text-text-muted">שעות פעילות</span>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className={labelCls}>
-              שעות פעילות{' '}
-              <IsraelFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
-            </label>
-            <input
-              type="text"
-              value={biz.hours_he}
-              onChange={(e) => setBizField('hours_he', e.target.value)}
-              dir="rtl"
-              placeholder="א׳-ה׳: 9:00-18:00, ו׳: 9:00-13:00"
-              className={inputCls}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className={labelCls}>{'תעריף (₪ לק"מ)'}</label>
+                <div className="relative">
+                  <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
+                    ₪
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={delivery.deliveryRatePerKm}
+                    onChange={(e) =>
+                      setDelivery((s) => ({
+                        ...s,
+                        deliveryRatePerKm: parseFloat(e.target.value) || 0,
+                      }))
+                    }
+                    dir="rtl"
+                    className={`${inputCls} ps-8`}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className={labelCls}>מינימום חיוב (₪)</label>
+                <div className="relative">
+                  <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
+                    ₪
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={delivery.minDeliveryFee}
+                    onChange={(e) =>
+                      setDelivery((s) => ({
+                        ...s,
+                        minDeliveryFee: parseFloat(e.target.value) || 0,
+                      }))
+                    }
+                    dir="rtl"
+                    className={`${inputCls} ps-8`}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className={labelCls}>מקסימום חיוב (₪, 0 = ללא הגבלה)</label>
+                <div className="relative">
+                  <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
+                    ₪
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={delivery.maxDeliveryFee}
+                    onChange={(e) =>
+                      setDelivery((s) => ({
+                        ...s,
+                        maxDeliveryFee: parseFloat(e.target.value) || 0,
+                      }))
+                    }
+                    dir="rtl"
+                    className={`${inputCls} ps-8`}
+                  />
+                </div>
+                <p className="text-xs text-text-muted mt-1">0 = ללא תקרה</p>
+              </div>
+            </div>
+
+            <SaveButton
+              onClick={handleSaveDelivery}
+              saving={deliverySaving}
+              success={deliverySuccess}
+              error={deliveryError}
             />
-          </div>
-          <div dir="ltr">
-            <label className={labelCls}>
-              Working hours{' '}
-              <USAFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
-            </label>
-            <input
-              type="text"
-              value={biz.hours_en}
-              onChange={(e) => setBizField('hours_en', e.target.value)}
-              dir="ltr"
-              placeholder="Sun-Thu: 9AM-6PM, Fri: 9AM-1PM"
-              className={inputCls}
-            />
-          </div>
+          </section>
         </div>
-
-        {/* Social links */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div dir="ltr">
-            <label className={labelCls}>Instagram</label>
-            <input
-              type="url"
-              value={biz.instagramUrl}
-              onChange={(e) => setBizField('instagramUrl', e.target.value)}
-              dir="ltr"
-              placeholder="https://instagram.com/luma.furniture"
-              className={inputCls}
-            />
-          </div>
-          <div dir="ltr">
-            <label className={labelCls}>Facebook</label>
-            <input
-              type="url"
-              value={biz.facebookUrl}
-              onChange={(e) => setBizField('facebookUrl', e.target.value)}
-              dir="ltr"
-              placeholder="https://facebook.com/luma.furniture"
-              className={inputCls}
-            />
-          </div>
-        </div>
-
-        <SaveButton
-          onClick={handleSaveBiz}
-          saving={bizSaving}
-          success={bizSuccess}
-          error={bizError}
-        />
-      </section>
-
-      {/* ── Shipping Costs ────────────────────────────────────────────────────── */}
-      <section className="bg-surface border border-border rounded-lg p-5 space-y-4">
-        <div className="flex items-center gap-2">
-          <Truck size={16} className="text-text-muted" aria-hidden="true" />
-          <h3 className="text-base font-semibold text-text-main">עלויות משלוח</h3>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className={labelCls}>עלות משלוח ארצי (₪)</label>
-            <div className="relative">
-              <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
-                ₪
-              </span>
-              <input
-                type="number"
-                min="0"
-                step="1"
-                value={ship.shippingCostNational}
-                onChange={(e) =>
-                  setShip((s) => ({ ...s, shippingCostNational: parseFloat(e.target.value) || 0 }))
-                }
-                dir="rtl"
-                className={`${inputCls} ps-8`}
-              />
-            </div>
-            <p className="text-xs text-text-muted mt-1">עלות משלוח סטנדרטי לכל הארץ</p>
-          </div>
-
-          <div>
-            <label className={labelCls}>סף משלוח חינם (₪, אופציונלי)</label>
-            <div className="relative">
-              <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
-                ₪
-              </span>
-              <input
-                type="number"
-                min="0"
-                step="1"
-                value={ship.freeShippingAbove}
-                onChange={(e) => setShip((s) => ({ ...s, freeShippingAbove: e.target.value }))}
-                dir="rtl"
-                placeholder="ריק = אין משלוח חינם"
-                className={`${inputCls} ps-8`}
-              />
-            </div>
-            <p className="text-xs text-text-muted mt-1">השאר ריק אם אין הטבת משלוח חינם</p>
-          </div>
-        </div>
-
-        <SaveButton
-          onClick={handleSaveShip}
-          saving={shipSaving}
-          success={shipSuccess}
-          error={shipError}
-        />
-      </section>
-
-      {/* ── Delivery Distance ─────────────────────────────────────────────────── */}
-      <section className="bg-surface border border-border rounded-lg p-5 space-y-4">
-        <div className="flex items-center gap-2">
-          <MapPin size={16} className="text-text-muted" aria-hidden="true" />
-          <h3 className="text-base font-semibold text-text-main">משלוח לפי מרחק (ORS)</h3>
-        </div>
-        <p className="text-xs text-text-muted">
-          עלות המשלוח מחושבת לפי מרחק כביש ממיקום הסטודיו לכתובת הלקוח.
-        </p>
-
-        <div>
-          <label className={labelCls}>כתובת הסטודיו (נקודת מוצא)</label>
-          <input
-            type="text"
-            value={delivery.studioAddress}
-            onChange={(e) => setDelivery((s) => ({ ...s, studioAddress: e.target.value }))}
-            placeholder="רחוב המלאכה 5, תל אביב"
-            className={inputCls}
-            dir="rtl"
-          />
-          <p className="text-xs text-text-muted mt-1">
-            תיאוחל לקואורדינטות בשמירה — ודאו שהכתובת מדויקת
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className={labelCls}>{'תעריף (₪ לק"מ)'}</label>
-            <div className="relative">
-              <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
-                ₪
-              </span>
-              <input
-                type="number"
-                min="0"
-                step="0.5"
-                value={delivery.deliveryRatePerKm}
-                onChange={(e) =>
-                  setDelivery((s) => ({ ...s, deliveryRatePerKm: parseFloat(e.target.value) || 0 }))
-                }
-                dir="rtl"
-                className={`${inputCls} ps-8`}
-              />
-            </div>
-          </div>
-          <div>
-            <label className={labelCls}>מינימום חיוב (₪)</label>
-            <div className="relative">
-              <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
-                ₪
-              </span>
-              <input
-                type="number"
-                min="0"
-                step="1"
-                value={delivery.minDeliveryFee}
-                onChange={(e) =>
-                  setDelivery((s) => ({ ...s, minDeliveryFee: parseFloat(e.target.value) || 0 }))
-                }
-                dir="rtl"
-                className={`${inputCls} ps-8`}
-              />
-            </div>
-          </div>
-          <div>
-            <label className={labelCls}>מקסימום חיוב (₪, 0 = ללא הגבלה)</label>
-            <div className="relative">
-              <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
-                ₪
-              </span>
-              <input
-                type="number"
-                min="0"
-                step="1"
-                value={delivery.maxDeliveryFee}
-                onChange={(e) =>
-                  setDelivery((s) => ({ ...s, maxDeliveryFee: parseFloat(e.target.value) || 0 }))
-                }
-                dir="rtl"
-                className={`${inputCls} ps-8`}
-              />
-            </div>
-            <p className="text-xs text-text-muted mt-1">0 = ללא תקרה</p>
-          </div>
-        </div>
-
-        <SaveButton
-          onClick={handleSaveDelivery}
-          saving={deliverySaving}
-          success={deliverySuccess}
-          error={deliveryError}
-        />
-      </section>
+      </div>
     </div>
   )
 }
