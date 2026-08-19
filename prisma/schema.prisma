@@ -47,12 +47,20 @@ enum Language {
 
 enum PriceOfferStatus {
   NEW
+  READ
   HANDLED
 }
 
 enum ContactMessageStatus {
   NEW
   READ
+}
+
+enum ReviewStatus {
+  NEW
+  READ
+  APPROVED
+  REJECTED
 }
 
 // ── Models ────────────────────────────────────────────────────────────────────
@@ -248,14 +256,14 @@ model NewsletterSend {
 
 // Phase-2 UI, model now
 model Review {
-  id           String   @id @default(cuid())
+  id           String       @id @default(cuid())
   productId    String
   customerName String
   rating       Int
   comment_he   String?
   comment_en   String?
-  isApproved   Boolean  @default(false)
-  createdAt    DateTime @default(now())
+  status       ReviewStatus @default(NEW)
+  createdAt    DateTime     @default(now())
 
   product Product @relation(fields: [productId], references: [id])
 }

@@ -1,9 +1,8 @@
 import 'server-only'
 import { prisma } from '@/server/prisma'
-import { getEmailProvider } from '@/server/providers/email'
-import { getEmailSettings } from '@/server/services/adminEmailSettingsService'
-import { getSiteSettings } from '@/server/services/adminSettingsService'
+import { sendAdminNotification } from '@/server/services/adminNotifyService'
 import { calculateProductPrice } from '@/server/services/pricingService'
+import { escapeHtml } from '@/server/lib/escapeHtml'
 import type { CreatePriceOfferInput } from '@/shared/schemas'
 
 // ── Create (public) ───────────────────────────────────────────────────────────
@@ -68,7 +67,7 @@ export async function createPriceOfferRequest(
   // Best-effort admin notification — the request is already saved, so an email
   // failure must never fail the submission.
   try {
-    await notifyAdmin({
+    await notifyAdminOfNewPriceOffer({
       requestId: created.id,
       productName: product.name_he,
       productSlug: product.slug,
@@ -112,24 +111,7 @@ interface NotifyAdminParams {
   quotedPrice?: number
 }
 
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-}
-
-async function notifyAdmin(params: NotifyAdminParams): Promise<void> {
-  const [settings, site] = await Promise.all([getEmailSettings(), getSiteSettings()])
-
-  // Prefer the business contact email; fall back to reply-to, then from-address.
-  const to = site.business.email || settings.replyTo || settings.fromAddress
-  if (!to) {
-    console.warn('[price-offer] no admin email configured — skipping notification')
-    return
-  }
-
+async function notifyAdminOfNewPriceOffer(params: NotifyAdminParams): Promise<void> {
   const dims = [params.customWidth, params.customHeight, params.customDepth]
     .filter((d) => d != null)
     .join('×')
@@ -173,12 +155,9 @@ async function notifyAdmin(params: NotifyAdminParams): Promise<void> {
       </p>
     </div>`
 
-  const provider = await getEmailProvider()
-  await provider.send({
-    to,
+  await sendAdminNotification({
     subject: `בקשת הצעת מחיר — ${params.productName} (${params.customerName})`,
     html,
-    from: { address: settings.fromAddress, name: settings.fromName_he },
     ...(params.email ? { replyTo: params.email } : {}),
   })
 }

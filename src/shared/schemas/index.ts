@@ -358,7 +358,7 @@ export const createReviewSchema = z.object({
 export type CreateReviewInput = z.infer<typeof createReviewSchema>
 
 export const updateReviewSchema = z.object({
-  isApproved: z.boolean().optional(),
+  status: z.enum(['NEW', 'READ', 'APPROVED', 'REJECTED']).optional(),
   comment_he: z.string().max(2000).nullable().optional(),
   comment_en: z.string().max(2000).nullable().optional(),
 })
@@ -390,7 +390,7 @@ export const createPriceOfferSchema = z.object({
 export type CreatePriceOfferInput = z.infer<typeof createPriceOfferSchema>
 
 export const updatePriceOfferSchema = z.object({
-  status: z.enum(['NEW', 'HANDLED']),
+  status: z.enum(['NEW', 'READ', 'HANDLED']),
 })
 
 export type UpdatePriceOfferInput = z.infer<typeof updatePriceOfferSchema>
@@ -404,9 +404,3 @@ export const siteContentValueSchema = z.object({
 })
 
 export type SiteContentValueInput = z.infer<typeof siteContentValueSchema>
-
-// ── Email settings test ───────────────────────────────────────────────────────
-
-export const testEmailSchema = z.object({
-  to: z.string().email(),
-})

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withApi, parseBody, checkRateLimit } from '@/server/http'
 import { contactSchema } from '@/shared/schemas'
-import { prisma } from '@/server/prisma'
+import { createContactMessage } from '@/server/services/contactMessageService'
 import { subscribeToNewsletter } from '@/server/services/newsletterService'
 
 export const POST = withApi(async (req: NextRequest) => {
@@ -11,17 +11,7 @@ export const POST = withApi(async (req: NextRequest) => {
   const body = await parseBody(req, contactSchema)
   if (body instanceof NextResponse) return body
 
-  await prisma.contactMessage.create({
-    data: {
-      name: body.name,
-      email: body.email,
-      phone: body.phone,
-      subject: body.subject,
-      message: body.message,
-      language: body.language ?? 'he',
-      subscribedToNewsletter: body.subscribeToNewsletter ?? false,
-    },
-  })
+  await createContactMessage(body)
 
   if (body.subscribeToNewsletter) {
     try {

@@ -64,7 +64,7 @@ export function PriceOffersListPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const [status, setStatus] = useState<'all' | 'NEW' | 'HANDLED'>('NEW')
+  const [status, setStatus] = useState<'all' | 'NEW' | 'READ' | 'HANDLED'>('NEW')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(25)
 
@@ -102,7 +102,10 @@ export function PriceOffersListPage() {
     setPage(1)
   }, [status, pageSize])
 
-  async function handleSetStatus(request: PriceOfferRequestDTO, newStatus: 'NEW' | 'HANDLED') {
+  async function handleSetStatus(
+    request: PriceOfferRequestDTO,
+    newStatus: 'NEW' | 'READ' | 'HANDLED'
+  ) {
     if (!token || updatingId) return
     setUpdatingId(request.id)
     setRequests((prev) => prev.map((r) => (r.id === request.id ? { ...r, status: newStatus } : r)))
@@ -148,10 +151,11 @@ export function PriceOffersListPage() {
       <div className="bg-surface border border-border rounded-lg p-4 flex flex-wrap gap-3">
         <Select
           value={status}
-          onChange={(v) => setStatus(v as 'all' | 'NEW' | 'HANDLED')}
+          onChange={(v) => setStatus(v as 'all' | 'NEW' | 'READ' | 'HANDLED')}
           aria-label="סינון לפי סטטוס"
           options={[
             { value: 'NEW', label: 'חדשות' },
+            { value: 'READ', label: 'נצפו' },
             { value: 'HANDLED', label: 'טופלו' },
             { value: 'all', label: 'הכל' },
           ]}
@@ -293,6 +297,10 @@ export function PriceOffersListPage() {
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
                           טופלה
                         </span>
+                      ) : request.status === 'READ' ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-text-muted">
+                          נצפתה
+                        </span>
                       ) : (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
                           חדשה
@@ -304,7 +312,10 @@ export function PriceOffersListPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <button
-                          onClick={() => setViewRequest(request)}
+                          onClick={() => {
+                            setViewRequest(request)
+                            if (request.status === 'NEW') handleSetStatus(request, 'READ')
+                          }}
                           title="צפייה בבקשה"
                           aria-label="צפייה בבקשה"
                           className="p-2 rounded-lg text-text-muted hover:bg-secondary hover:text-text-main transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
@@ -314,10 +325,10 @@ export function PriceOffersListPage() {
 
                         {request.status === 'HANDLED' ? (
                           <button
-                            onClick={() => handleSetStatus(request, 'NEW')}
+                            onClick={() => handleSetStatus(request, 'READ')}
                             disabled={updatingId === request.id}
-                            title="החזרה לחדשה"
-                            aria-label="החזרה לחדשה"
+                            title="החזרה לטיפול"
+                            aria-label="החזרה לטיפול"
                             className="p-2 rounded-lg text-text-muted hover:bg-secondary hover:text-text-main transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer disabled:opacity-40"
                           >
                             <RotateCcw size={15} aria-hidden="true" />
@@ -450,6 +461,10 @@ export function PriceOffersListPage() {
                 {viewRequest.status === 'HANDLED' ? (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
                     טופלה
+                  </span>
+                ) : viewRequest.status === 'READ' ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-text-muted">
+                    נצפתה
                   </span>
                 ) : (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">

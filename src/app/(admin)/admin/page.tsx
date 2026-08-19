@@ -2,7 +2,8 @@ import { type Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { ADMIN_NAV_ITEMS } from '@/features/admin/adminNav'
-import { ContactUnreadBadge } from '@/features/admin/contact/ContactUnreadBadge'
+import { AdminUnreadBadge } from '@/features/admin/shared/AdminUnreadBadge'
+import { UNREAD_BADGE_CONFIG } from '@/features/admin/shared/unreadBadgeConfig'
 
 export const metadata: Metadata = { title: 'לוח בקרה — Luma ניהול' }
 
@@ -71,9 +72,12 @@ export default function AdminDashboardPage() {
                 href={href}
                 className="group relative flex flex-col gap-3 bg-surface border border-border rounded-lg p-5 hover:border-primary hover:shadow-soft transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                {href === '/admin/contact' && (
+                {UNREAD_BADGE_CONFIG[href] && (
                   <span className="absolute top-3 end-3">
-                    <ContactUnreadBadge />
+                    <AdminUnreadBadge
+                      endpoint={UNREAD_BADGE_CONFIG[href].endpoint}
+                      label={UNREAD_BADGE_CONFIG[href].label}
+                    />
                   </span>
                 )}
                 <div className="flex items-start justify-between">

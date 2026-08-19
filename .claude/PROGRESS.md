@@ -19,6 +19,41 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-08-19 — Admin inbox: unread badges + notification emails (Contact/Price-Offer/Review)
+
+- **Done:** Client-ad-hoc request. Sidebar (+ dashboard quick-link tiles) now show a live
+  unread-count badge on Contact/Price-Offers/Reviews (`src/features/admin/shared/{useAdminUnreadCount,UnreadBadge,AdminUnreadBadge,unreadBadgeConfig}`,
+  new `unread-count` GET routes per section). Unified `NEW → READ` lifecycle: every row starts
+  `NEW`; opening it in the admin list auto-PATCHes it to `READ`; any further state (`HANDLED`
+  for price-offers, `APPROVED`/`REJECTED` for reviews) stays a manual action. `Review.isApproved`
+  (boolean) replaced with `Review.status` (`ReviewStatus` enum: NEW/READ/APPROVED/REJECTED) via a
+  hand-written migration (no dev Supabase project exists — `prisma migrate deploy` run directly
+  against production; empty table, zero data loss). `PriceOfferStatus` gained `READ`. All three
+  submission flows (`contactMessageService.ts` new, `priceOfferService.ts`, `reviewService.ts`)
+  now email the business address on new submissions through one shared
+  `sendAdminNotification` (`src/server/services/adminNotifyService.ts`) instead of duplicating
+  the settings-fetch/send boilerplate per type. Fixed `/admin/email-services` (re-linked in
+  `adminNav.ts` — was commented out): the GET handler returns `{ settings }` but the page read
+  fields off the response root, so the form never populated. Removed that page's "send test
+  email" section/route (`POST /api/admin/email-settings/test`, `testEmailSchema`) — asked-for
+  removal, was broken (payload field mismatch: page posted `toAddress`, route expected `to`) and
+  the client didn't want it. Also removed the "Provider Info" section (hardcoded, always said
+  "ConsoleEmailProvider" regardless of actual `EMAIL_PROVIDER`).
+- **Roadmap:** not a tracked milestone (client ad-hoc request). Note: `.claude/ROADMAP.md` M1.26
+  still claims Email Services has "send test email" — that's now stale, see Decisions.
+- **Decisions:**
+  - Reviews' `NEW/READ` unread state stores `NEW` (not `READ`) for legacy `isApproved: false`
+    rows during backfill — we don't actually know if an admin had seen them.
+  - Added `DEV_NOTIFICATION_EMAIL` env var (dev-only; `sendAdminNotification` only reads it when
+    `NODE_ENV !== 'production'`) so local testing never depends on / risks emailing the real
+    `business.email`. Not set in Vercel.
+  - Sender is `studiolumadesign3@gmail.com` via Gmail SMTP app password (`EMAIL_PROVIDER=nodemailer`);
+    `EmailSettings.fromAddress` in the DB must match the authenticated SMTP account or Gmail
+    rejects/rewrites the From header.
+- **Notes/blockers:** `.claude/ROADMAP.md` M1.26's "send test email; preview templates" line
+  should be corrected/removed to match current reality — left as a follow-up, not done as part of
+  this session.
+
 ## 2026-08-16 — Analytics: GA4 + GTM + Meta Pixel + WhatsApp click tracking
 
 - **Done:** Implemented `docs/15-analytics.md`. GTM is the only tag loader

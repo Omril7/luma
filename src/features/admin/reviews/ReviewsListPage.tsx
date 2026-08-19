@@ -33,7 +33,7 @@ export function ReviewsListPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const [status, setStatus] = useState<'all' | 'pending' | 'approved'>('pending')
+  const [status, setStatus] = useState<'all' | 'NEW' | 'READ' | 'APPROVED' | 'REJECTED'>('NEW')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(25)
 
@@ -54,8 +54,7 @@ export function ReviewsListPage() {
       const params = new URLSearchParams({
         page: String(page),
         pageSize: String(pageSize),
-        ...(status === 'pending' ? { isApproved: 'false' } : {}),
-        ...(status === 'approved' ? { isApproved: 'true' } : {}),
+        ...(status !== 'all' ? { status } : {}),
       })
       const data = await api.get<ReviewsResponse>(`/api/admin/reviews?${params}`, token)
       setReviews(data.data)
@@ -76,16 +75,19 @@ export function ReviewsListPage() {
     setPage(1)
   }, [status, pageSize])
 
-  async function handleSetApproved(review: ReviewDTO, isApproved: boolean) {
+  async function handleSetStatus(
+    review: ReviewDTO,
+    newStatus: 'NEW' | 'READ' | 'APPROVED' | 'REJECTED'
+  ) {
     if (!token || updatingId) return
     setUpdatingId(review.id)
-    setReviews((prev) => prev.map((r) => (r.id === review.id ? { ...r, isApproved } : r)))
+    setReviews((prev) => prev.map((r) => (r.id === review.id ? { ...r, status: newStatus } : r)))
     try {
-      await api.patch(`/api/admin/reviews/${review.id}`, { isApproved }, token)
+      await api.patch(`/api/admin/reviews/${review.id}`, { status: newStatus }, token)
       fetchReviews()
     } catch (e) {
       setReviews((prev) =>
-        prev.map((r) => (r.id === review.id ? { ...r, isApproved: review.isApproved } : r))
+        prev.map((r) => (r.id === review.id ? { ...r, status: review.status } : r))
       )
       alert(e instanceof Error ? e.message : 'שגיאה בעדכון הביקורת')
     } finally {
@@ -158,11 +160,13 @@ export function ReviewsListPage() {
       <div className="bg-surface border border-border rounded-lg p-4 flex flex-wrap gap-3">
         <Select
           value={status}
-          onChange={(v) => setStatus(v as 'all' | 'pending' | 'approved')}
+          onChange={(v) => setStatus(v as 'all' | 'NEW' | 'READ' | 'APPROVED' | 'REJECTED')}
           aria-label="סינון לפי סטטוס"
           options={[
-            { value: 'pending', label: 'ממתינות לאישור' },
-            { value: 'approved', label: 'מאושרות' },
+            { value: 'NEW', label: 'חדשות' },
+            { value: 'READ', label: 'נצפו' },
+            { value: 'APPROVED', label: 'מאושרות' },
+            { value: 'REJECTED', label: 'נדחו' },
             { value: 'all', label: 'הכל' },
           ]}
         />
@@ -213,9 +217,7 @@ export function ReviewsListPage() {
                   <td colSpan={7} className="px-4 py-12 text-center text-text-muted">
                     <div className="flex flex-col items-center gap-2">
                       <Star size={28} className="text-text-muted" aria-hidden="true" />
-                      <span>
-                        {status === 'pending' ? 'אין ביקורות ממתינות לאישור' : 'לא נמצאו ביקורות'}
-                      </span>
+                      <span>{status === 'NEW' ? 'אין ביקורות חדשות' : 'לא נמצאו ביקורות'}</span>
                     </div>
                   </td>
                 </tr>
@@ -257,9 +259,17 @@ export function ReviewsListPage() {
 
                     {/* סטטוס */}
                     <td className="px-4 py-3 text-center">
-                      {review.isApproved ? (
+                      {review.status === 'APPROVED' ? (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
                           מאושר
+                        </span>
+                      ) : review.status === 'REJECTED' ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                          נדחה
+                        </span>
+                      ) : review.status === 'READ' ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-text-muted">
+                          נצפה
                         </span>
                       ) : (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
@@ -272,7 +282,10 @@ export function ReviewsListPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <button
-                          onClick={() => setViewReview(review)}
+                          onClick={() => {
+                            setViewReview(review)
+                            if (review.status === 'NEW') handleSetStatus(review, 'READ')
+                          }}
                           title="צפייה בביקורת"
                           aria-label="צפייה בביקורת"
                           className="p-2 rounded-lg text-text-muted hover:bg-secondary hover:text-text-main transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
@@ -280,25 +293,27 @@ export function ReviewsListPage() {
                           <Eye size={15} aria-hidden="true" />
                         </button>
 
-                        {review.isApproved ? (
+                        {review.status !== 'APPROVED' && (
                           <button
-                            onClick={() => handleSetApproved(review, false)}
-                            disabled={updatingId === review.id}
-                            title="הסרת פרסום"
-                            aria-label="הסרת פרסום"
-                            className="p-2 rounded-lg text-text-muted hover:bg-secondary hover:text-text-main transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer disabled:opacity-40"
-                          >
-                            <X size={15} aria-hidden="true" />
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleSetApproved(review, true)}
+                            onClick={() => handleSetStatus(review, 'APPROVED')}
                             disabled={updatingId === review.id}
                             title="אישור"
                             aria-label="אישור"
                             className="p-2 rounded-lg text-green-600 hover:bg-green-50 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer disabled:opacity-40"
                           >
                             <Check size={15} aria-hidden="true" />
+                          </button>
+                        )}
+
+                        {review.status !== 'REJECTED' && (
+                          <button
+                            onClick={() => handleSetStatus(review, 'REJECTED')}
+                            disabled={updatingId === review.id}
+                            title={review.status === 'APPROVED' ? 'הסרת פרסום' : 'דחייה'}
+                            aria-label={review.status === 'APPROVED' ? 'הסרת פרסום' : 'דחייה'}
+                            className="p-2 rounded-lg text-text-muted hover:bg-red-50 hover:text-red-600 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer disabled:opacity-40"
+                          >
+                            <X size={15} aria-hidden="true" />
                           </button>
                         )}
 
@@ -410,9 +425,17 @@ export function ReviewsListPage() {
             <div className="p-6 space-y-4 overflow-y-auto">
               <div className="flex flex-wrap items-center gap-4 text-sm">
                 <StarRating value={viewReview.rating} readonly size="sm" />
-                {viewReview.isApproved ? (
+                {viewReview.status === 'APPROVED' ? (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
                     מאושר
+                  </span>
+                ) : viewReview.status === 'REJECTED' ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                    נדחה
+                  </span>
+                ) : viewReview.status === 'READ' ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-text-muted">
+                    נצפה
                   </span>
                 ) : (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">

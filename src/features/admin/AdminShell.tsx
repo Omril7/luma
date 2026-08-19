@@ -7,7 +7,8 @@ import { motion, AnimatePresence } from 'motion/react'
 import { LogOut, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, Menu, X } from 'lucide-react'
 import { isTokenExpired, useAdminStore } from '@/stores/adminStore'
 import { ADMIN_NAV_ITEMS, ADMIN_NAV_CATEGORIES } from './adminNav'
-import { ContactUnreadBadge } from './contact/ContactUnreadBadge'
+import { AdminUnreadBadge } from './shared/AdminUnreadBadge'
+import { UNREAD_BADGE_CONFIG } from './shared/unreadBadgeConfig'
 
 const SIDEBAR_ITEMS = ADMIN_NAV_ITEMS.filter((item) => !item.external)
 const DASHBOARD_ITEM = SIDEBAR_ITEMS.find((item) => item.exact)!
@@ -134,6 +135,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       ? pathname === item.href
       : pathname === item.href || pathname.startsWith(item.href + '/')
     const Icon = item.icon
+    const badgeConfig = UNREAD_BADGE_CONFIG[item.href]
     return (
       <li key={item.href}>
         <Link
@@ -151,12 +153,20 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         >
           <span className="relative flex items-center justify-center shrink-0">
             <Icon size={18} aria-hidden={true} className="shrink-0" />
-            {item.href === '/admin/contact' && collapsed && <ContactUnreadBadge variant="dot" />}
+            {badgeConfig && collapsed && (
+              <AdminUnreadBadge
+                endpoint={badgeConfig.endpoint}
+                label={badgeConfig.label}
+                variant="dot"
+              />
+            )}
           </span>
           {!collapsed && (
             <>
               <span className="flex-1 truncate">{item.label}</span>
-              {item.href === '/admin/contact' && <ContactUnreadBadge />}
+              {badgeConfig && (
+                <AdminUnreadBadge endpoint={badgeConfig.endpoint} label={badgeConfig.label} />
+              )}
               {isActive && (
                 <motion.span
                   layoutId="nav-dot"

@@ -163,7 +163,7 @@ export interface ReviewDTO {
   rating: number
   comment_he?: string
   comment_en?: string
-  isApproved: boolean
+  status: 'NEW' | 'READ' | 'APPROVED' | 'REJECTED'
   createdAt: string
 }
 
@@ -200,7 +200,7 @@ export interface PriceOfferRequestDTO {
   /** Engine estimate in ₪ at request time, when the selection was priceable. */
   quotedPrice?: number
   language: string
-  status: 'NEW' | 'HANDLED'
+  status: 'NEW' | 'READ' | 'HANDLED'
   createdAt: string
 }
 

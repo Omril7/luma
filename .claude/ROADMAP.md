@@ -261,10 +261,12 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 ### M1.26 Site Content + Email Services ✅
 
 - [x] Site Content page: edit all storefront static sections (About, FAQ, gallery intro, contact) — bilingual _(home hero/story tabs were removed as dead inputs, see M1.28d)_
-- [x] Email Services page: view/edit from address, display name; send test email; preview templates
-- **Acceptance:** site content changes go live immediately; test email dispatches via the configured `EmailProvider` (Nodemailer in production, console stub in dev — see M1.28d). _(Nav entry also
-  currently commented out in `adminNav.ts`, same as Coupons — the route still works if visited
-  directly.)_
+- [x] Email Services page: view/edit from address, display name _(the "send test email" action
+      and a "provider info" panel existed briefly but were removed 2026-08-19 — broken/unwanted,
+      see PROGRESS.md)_
+- **Acceptance:** site content changes go live immediately; sender config drives the `EmailProvider`
+  (Nodemailer in production, console stub in dev — see M1.28d). _(Nav entry re-linked in
+  `adminNav.ts` 2026-08-19.)_
 
 ### M1.27 Newsletter ✅
 

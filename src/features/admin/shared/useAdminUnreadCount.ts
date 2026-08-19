@@ -6,8 +6,8 @@ import { useAdminStore } from '@/stores/adminStore'
 
 const POLL_INTERVAL_MS = 30_000
 
-/** Polls the count of unread ("NEW") contact messages for the admin sidebar/dashboard badges. */
-export function useUnreadContactCount(): number {
+/** Polls an admin "unread-count" endpoint for the sidebar/dashboard badges. */
+export function useAdminUnreadCount(endpoint: string): number {
   const { token } = useAdminStore()
   const [count, setCount] = useState(0)
 
@@ -17,10 +17,7 @@ export function useUnreadContactCount(): number {
 
     async function fetchCount() {
       try {
-        const data = await api.get<{ count: number }>(
-          '/api/admin/contact-messages/unread-count',
-          token ?? undefined
-        )
+        const data = await api.get<{ count: number }>(endpoint, token ?? undefined)
         if (!cancelled) setCount(data.count)
       } catch {
         // Best-effort — a failed poll just keeps showing the previous count.
@@ -33,7 +30,7 @@ export function useUnreadContactCount(): number {
       cancelled = true
       clearInterval(interval)
     }
-  }, [token])
+  }, [token, endpoint])
 
   return count
 }

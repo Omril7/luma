@@ -17,7 +17,7 @@ export const PATCH = withAdmin<Ctx>(async (req: NextRequest, _admin: AdminPayloa
   const review = await prisma.review.update({
     where: { id },
     data: {
-      ...(body.isApproved !== undefined && { isApproved: body.isApproved }),
+      ...(body.status !== undefined && { status: body.status }),
       ...(body.comment_he !== undefined && { comment_he: body.comment_he }),
       ...(body.comment_en !== undefined && { comment_en: body.comment_en }),
     },
@@ -35,7 +35,7 @@ export const PATCH = withAdmin<Ctx>(async (req: NextRequest, _admin: AdminPayloa
       rating: review.rating,
       comment_he: review.comment_he ?? undefined,
       comment_en: review.comment_en ?? undefined,
-      isApproved: review.isApproved,
+      status: review.status,
       createdAt: review.createdAt.toISOString(),
     },
   })

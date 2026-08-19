@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAdmin } from '@/server/http'
 import { prisma } from '@/server/prisma'
+import type { ReviewStatus } from '@prisma/client'
 
 export const GET = withAdmin(async (req: NextRequest, _admin, _ctx) => {
   const { searchParams } = new URL(req.url)
@@ -8,11 +9,17 @@ export const GET = withAdmin(async (req: NextRequest, _admin, _ctx) => {
   const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') ?? '25', 10)))
   const skip = (page - 1) * pageSize
 
-  const isApprovedParam = searchParams.get('isApproved')
-  const isApproved = isApprovedParam === null ? undefined : isApprovedParam === 'true'
+  const statusParam = searchParams.get('status')
+  const status: ReviewStatus | undefined =
+    statusParam === 'NEW' ||
+    statusParam === 'READ' ||
+    statusParam === 'APPROVED' ||
+    statusParam === 'REJECTED'
+      ? statusParam
+      : undefined
 
   const where = {
-    ...(isApproved !== undefined ? { isApproved } : {}),
+    ...(status !== undefined ? { status } : {}),
   }
 
   const [reviews, total] = await Promise.all([
@@ -36,7 +43,7 @@ export const GET = withAdmin(async (req: NextRequest, _admin, _ctx) => {
     rating: r.rating,
     comment_he: r.comment_he ?? undefined,
     comment_en: r.comment_en ?? undefined,
-    isApproved: r.isApproved,
+    status: r.status,
     createdAt: r.createdAt.toISOString(),
   }))
 

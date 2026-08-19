@@ -260,7 +260,10 @@ export function ContactMessagesListPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <button
-                          onClick={() => setViewMessage(message)}
+                          onClick={() => {
+                            setViewMessage(message)
+                            if (message.status === 'NEW') handleSetStatus(message, 'READ')
+                          }}
                           title="צפייה בהודעה"
                           aria-label="צפייה בהודעה"
                           className="p-2 rounded-lg text-text-muted hover:bg-secondary hover:text-text-main transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"

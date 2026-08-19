@@ -3,7 +3,7 @@ import {
   Package,
   // Tag,
   FileText,
-  // Mail,
+  Mail,
   Send,
   ImageIcon,
   Settings,
@@ -70,7 +70,13 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     desc: 'עריכת הטקסטים והתוכן הסטטי',
     category: 'content',
   },
-  // { href: '/admin/email-services', icon: Mail, label: 'שירותי דואר', desc: 'הגדרות שליחת מיילים', category: 'system' },
+  {
+    href: '/admin/email-services',
+    icon: Mail,
+    label: 'שירותי דואר',
+    desc: 'הגדרות שליחת מיילים',
+    category: 'system',
+  },
   {
     href: '/admin/newsletter',
     icon: Send,
