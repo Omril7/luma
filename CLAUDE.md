@@ -9,10 +9,12 @@ standard variants (S/M/L) **and** a custom-dimensions option with auto-calculate
 Bilingual **Hebrew (RTL, default) + English (LTR)**, warm/natural aesthetic, full cart +
 credit-card checkout. Evolving project — everything must be **modular and extensible**.
 
-**Admin scope:** this admin manages the e-commerce site (products, site content, coupons,
-newsletter sending, email services). Order fulfillment is handled by the companion
+**Admin scope:** this admin manages the e-commerce site — products, site content, coupons,
+newsletter sending, email services, **and order management** (`/admin/orders`: order status,
+payment status, Morning refunds/resends — see `.claude/docs/09-payments.md`). The companion
 **luma-manager** app (`C:\Users\omril\Projects\luma-manager`), which connects to the same
-Supabase database. Do not build order-management UI in this project.
+Supabase database, is a separate business/financial manager (income, expenses, VAT, pricing) —
+it does not do order management.
 
 Full brief (Next.js architecture): [`read/CLAUDE-CODE-PROMPT.md`](read/CLAUDE-CODE-PROMPT.md).
 
