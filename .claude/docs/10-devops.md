@@ -86,9 +86,12 @@ OPENROUTESERVICE_API_KEY=            # free tier: openrouteservice.org — 2,000
 INSTAGRAM_OEMBED_ACCESS_TOKEN=
 
 # --- analytics ---
-# GTM-XXXXXXX; GA4 + Meta Pixel are configured as tags inside this GTM container, not in code
+# GTM-XXXXXXX; GA4 is configured as a tag inside this GTM container, not in code
 # (see .claude/docs/15-analytics.md). Leave unset in dev/preview to avoid polluting prod analytics.
 NEXT_PUBLIC_GTM_ID=
+# Meta Pixel numeric ID (installed directly via src/components/analytics/MetaPixel.tsx,
+# not as a GTM tag — see .claude/docs/15-analytics.md). Leave unset in dev/preview.
+NEXT_PUBLIC_META_PIXEL_ID=
 ```
 
 ## Storage abstraction

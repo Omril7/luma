@@ -1,5 +1,6 @@
-// Loads the GTM container. GA4 + Meta Pixel are configured as tags *inside* that container
-// (see .claude/docs/15-analytics.md) — this component never talks to gtag.js/fbq directly.
+// Loads the GTM container. GA4 is configured as a tag *inside* that container
+// (see .claude/docs/15-analytics.md) — this component never talks to gtag.js directly.
+// Meta Pixel is installed separately, in MetaPixel.tsx (not routed through GTM).
 // Renders nothing if NEXT_PUBLIC_GTM_ID is unset (local/dev by default).
 
 const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID

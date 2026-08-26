@@ -7,23 +7,31 @@ checkout, the bigger win for his ad spend is conversion tracking (add-to-cart / 
 / purchase), not just visit counting — confirmed with him: build the full funnel, play it safe
 on consent (may get non-Israel visitors).
 
-**Meta Pixel dropped from scope 2026-08-16.** The client already had a Pixel running his ad
-campaigns and the plan was to reuse it inside GTM, but he couldn't locate the Pixel ID or get
-Data Sources access in Events Manager (likely owned by an agency/Business Manager he isn't an
-admin on) — not worth blocking the GA4 rollout on. Nothing in the architecture below is Meta
-Pixel-specific, so adding it back later is a pure GTM-dashboard change (one tag + a trigger per
-event), not a code change — see the mapping table further down for what it would look like.
+**Meta Pixel added 2026-08-26.** Originally dropped from scope on 2026-08-16 (client couldn't
+locate the Pixel ID / didn't have Data Sources access in Events Manager); he later found it and
+gave us the base pixel snippet (ID `949733331238493`). Installed as a **direct code component**
+(`src/components/analytics/MetaPixel.tsx`), not as a GTM tag — deliberate deviation from the
+"GTM is the only loader" rule below, made because the client found configuring GTM tags/triggers
+too much overhead for a one-off base-pixel install. Only the `PageView` event is wired up (the
+snippet the client provided); the ecommerce-event mapping table further down is aspirational,
+not yet implemented — no `fbq('track', ...)` calls exist yet for `add_to_cart`/`purchase`/etc.
 
-## Architecture decision: GTM is the only loader
+## Architecture decision: GTM is the only loader (Meta Pixel is the one exception)
 
-Everything routes through **Google Tag Manager**. The Next.js code never loads `gtag.js`
+Everything else routes through **Google Tag Manager**. The Next.js code never loads `gtag.js`
 directly — it only pushes structured events to `window.dataLayer`. GA4 is configured as a
 **tag inside the GTM container** (client's GTM dashboard, no code deploys needed to add/change
 tags later — matches the "modular and extensible" project rule).
 
 Why this beats loading `gtag.js` directly: the client can add, remove, or reconfigure tags
-(e.g. later add the Meta Pixel, LinkedIn Insight, Hotjar) from the GTM UI without touching the
-repo. It's also the standard, best-documented pattern for Consent Mode.
+(e.g. later add LinkedIn Insight, Hotjar) from the GTM UI without touching the repo. It's also
+the standard, best-documented pattern for Consent Mode.
+
+**Meta Pixel is installed directly in code instead** (`MetaPixel.tsx`), not as a GTM tag — see
+the "Meta Pixel added 2026-08-26" note above for why. Practical consequence: it doesn't get
+Google's server-side region-aware Consent Mode matching that GA4 gets via GTM; it's gated on the
+visitor's own explicit choice from `consentStore` only (skipped if `status === 'denied'`,
+loaded otherwise) — see `MetaPixel.tsx` for the exact logic.
 
 **IDs as env vars, not DB settings.** Precedent in this repo (`whatsappNumber`) is DB-backed
 admin content, but the GTM container ID is deploy-time technical config (want it absent in
@@ -73,6 +81,11 @@ Each GA4/Ads tag in GTM needs its built-in "Consent Settings" left at default (r
   `process.env.NEXT_PUBLIC_GTM_ID` is unset. Otherwise renders one inline `<script>` (dataLayer
   init + consent default, reading any prior choice from `localStorage` synchronously + the
   standard GTM loader snippet) and a `<noscript>` iframe fallback.
+- **`src/components/analytics/MetaPixel.tsx`** — server component, same inline-script pattern.
+  Renders nothing if `NEXT_PUBLIC_META_PIXEL_ID` is unset. Otherwise injects the base Facebook
+  Pixel snippet (`fbq('init', ...)` + `fbq('track', 'PageView')`) and a `<noscript>` `<img>`
+  fallback, gated on `localStorage['luma-consent']` not being `'denied'`. Not routed through GTM
+  — see the architecture note above.
 - **`src/components/analytics/ConsentBanner.tsx`** — `'use client'`. Bottom banner (Accept /
   Essential-only), i18n'd, RTL-safe, links to `/privacy`. On choice, updates `consentStore` and
   pushes `gtag('consent','update', {...})`.
@@ -114,9 +127,12 @@ not code):
 | `purchase`       | `purchase`                      |
 | `whatsapp_click` | `whatsapp_click` (custom event) |
 
-If the Meta Pixel gets added back later: same triggers, one more tag per row (Meta Pixel
-"Track Event") mapped to `ViewContent`/`AddToCart`/`InitiateCheckout`/`Purchase`/`Contact`
-respectively.
+If the ecommerce events get wired up for Meta Pixel too (not done yet — only `PageView` is live):
+since Pixel isn't routed through GTM, this means adding `fbq('track', ...)` calls at the same
+call sites as the table above (or a `trackMetaEvent` helper next to `analytics.ts`'s
+`pushEvent`), not a GTM-dashboard change. Event mapping would be
+`view_item`→`ViewContent`, `add_to_cart`→`AddToCart`, `begin_checkout`→`InitiateCheckout`,
+`purchase`→`Purchase`, `whatsapp_click`→`Contact`.
 
 ## i18n
 
@@ -129,9 +145,15 @@ Analytics" section added to the existing `privacy` translation keys used by
 ```dotenv
 # --- analytics ---
 NEXT_PUBLIC_GTM_ID=            # GTM-XXXXXXX; GA4 is configured as a tag inside this container
+NEXT_PUBLIC_META_PIXEL_ID=     # numeric Pixel ID; installed directly, not via GTM — MetaPixel.tsx
 ```
 
-## Manual dashboard setup checklist (client-side, outside this repo)
+## Manual setup checklist
+
+0. Meta Pixel: set `NEXT_PUBLIC_META_PIXEL_ID` (`949733331238493`) in Vercel env (Production +
+   Preview) and local `.env.local`. No dashboard config needed — it's a direct code install.
+
+### GTM/GA4 (client-side, outside this repo)
 
 1. Create the GTM container (web) → `GTM-XXXXXXX` → set as `NEXT_PUBLIC_GTM_ID` in Vercel env
    (Production + Preview) and local `.env.local`.
@@ -175,3 +197,7 @@ dev`, confirm via GTM Preview mode + browser devtools `window.dataLayer` that: c
   `whatsapp_click` with the correct `click_location`, and `page_view` fires on client-side
   route changes but isn't double-fired on first load.
 - Confirm admin routes (`/admin/**`) never load the GTM script.
+- Local: set a real `NEXT_PUBLIC_META_PIXEL_ID` in `.env.local`, `npm run dev`, confirm via
+  Meta's **Pixel Helper** browser extension that `PageView` fires on the storefront, does _not_
+  fire on `/admin/**`, and does not fire after declining consent in the banner (clear
+  `localStorage['luma-consent']`, decline, reload).

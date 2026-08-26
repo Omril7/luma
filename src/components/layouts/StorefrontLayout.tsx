@@ -7,6 +7,7 @@ import { A11yWidget } from '@/components/A11yWidget'
 import { ToastContainer } from '@/components/ToastContainer'
 import { CompareBar } from '@/features/compare/CompareBar'
 import { GoogleTagManager } from '@/components/analytics/GoogleTagManager'
+import { MetaPixel } from '@/components/analytics/MetaPixel'
 import { ConsentBanner } from '@/components/analytics/ConsentBanner'
 import { RouteChangeTracker } from '@/components/analytics/RouteChangeTracker'
 import { getSiteSettings } from '@/server/services/adminSettingsService'
@@ -36,6 +37,7 @@ export async function StorefrontLayout({
   return (
     <>
       <GoogleTagManager />
+      <MetaPixel />
       <RouteChangeTracker />
       <a
         href="#main-content"
