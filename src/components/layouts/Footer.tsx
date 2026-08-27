@@ -7,7 +7,7 @@ import { FEATURES } from '@/lib/featureFlags'
 import { useUiStore } from '@/stores/uiStore'
 import { InstagramIcon } from '@/components/icons/InstagramIcon'
 import { FacebookIcon } from '@/components/icons/FacebookIcon'
-import { NewsletterSignupForm } from '@/features/newsletter/NewsletterSignupForm'
+import { FooterContactForm } from '@/features/contact/FooterContactForm'
 
 interface FooterProps {
   instagramUrl?: string
@@ -130,14 +130,14 @@ export function Footer({ instagramUrl, facebookUrl, tagline }: FooterProps) {
           </div>
         </div>
 
-        {/* Newsletter signup */}
+        {/* Contact form */}
         <div className={`mt-10 border-t ${lineCls} pt-8`}>
-          <div className="mx-auto max-w-md text-center">
+          <div className="mx-auto max-w-3xl text-center">
             <h3 className={`mb-1 text-sm font-semibold uppercase tracking-wider ${headingCls}`}>
-              {t('newsletterHeading')}
+              {t('contactHeading')}
             </h3>
-            <NewsletterSignupForm
-              className="mt-3"
+            <FooterContactForm
+              className="mt-3 text-start"
               labelClassName={`mb-3 text-sm ${mutedCls}`}
               inputClassName={`min-h-[44px] w-full rounded-lg border px-3.5 py-2.5 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${
                 themeOverride

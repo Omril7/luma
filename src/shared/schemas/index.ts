@@ -94,7 +94,7 @@ export const contactSchema = z.object({
   email: z.string().email(),
   phone: z.string().max(20).optional(),
   subject: z.string().min(2).max(200),
-  message: z.string().min(10).max(2000),
+  message: z.string().max(2000).optional().default(''),
   language: z.enum(['he', 'en']).default('he'),
   subscribeToNewsletter: z.boolean().optional(),
 })

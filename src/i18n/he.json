@@ -240,7 +240,17 @@
     "infoLinks": "מידע",
     "instagramLabel": "עקבו אחרינו באינסטגרם",
     "facebookLabel": "עקבו אחרינו בפייסבוק",
-    "newsletterHeading": "הצטרפו לניוזלטר שלנו"
+    "newsletterHeading": "הצטרפו לניוזלטר שלנו",
+    "contactHeading": "שלחו לנו הודעה",
+    "contactNamePlaceholder": "שם",
+    "contactEmailPlaceholder": "כתובת אימייל",
+    "contactMessagePlaceholder": "ההודעה שלכם (רשות)",
+    "contactSubmit": "שליחה",
+    "contactSubject": "פנייה מהכותרת התחתית באתר",
+    "contactSuccess": "תודה! נחזור אליכם בהקדם.",
+    "contactError": "משהו השתבש, נסו שוב",
+    "contactInvalidEmail": "כתובת אימייל לא תקינה",
+    "contactNameRequired": "נא להזין שם"
   },
   "shop": {
     "title": "החנות",
@@ -423,7 +433,7 @@
     "formEmail": "דוא\"ל",
     "formPhone": "טלפון (אופציונלי)",
     "formSubject": "נושא",
-    "formMessage": "הודעה",
+    "formMessage": "הודעה (אופציונלי)",
     "formSubmit": "שליחת הודעה",
     "formSubmitting": "שולח...",
     "formSuccess": "ההודעה נשלחה בהצלחה! נחזור אליכם בהקדם.",

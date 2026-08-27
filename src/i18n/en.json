@@ -240,7 +240,17 @@
     "infoLinks": "Info",
     "instagramLabel": "Follow us on Instagram",
     "facebookLabel": "Follow us on Facebook",
-    "newsletterHeading": "Sign up for our newsletter"
+    "newsletterHeading": "Sign up for our newsletter",
+    "contactHeading": "Send us a message",
+    "contactNamePlaceholder": "Name",
+    "contactEmailPlaceholder": "Email address",
+    "contactMessagePlaceholder": "Your message (optional)",
+    "contactSubmit": "Send",
+    "contactSubject": "Message from the website footer",
+    "contactSuccess": "Thanks! We'll get back to you soon.",
+    "contactError": "Something went wrong, please try again",
+    "contactInvalidEmail": "Invalid email address",
+    "contactNameRequired": "Please enter your name"
   },
   "shop": {
     "title": "Shop",
@@ -423,7 +433,7 @@
     "formEmail": "Email",
     "formPhone": "Phone (optional)",
     "formSubject": "Subject",
-    "formMessage": "Message",
+    "formMessage": "Message (optional)",
     "formSubmit": "Send Message",
     "formSubmitting": "Sending...",
     "formSuccess": "Message sent successfully! We'll get back to you soon.",

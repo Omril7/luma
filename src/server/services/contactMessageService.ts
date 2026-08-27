@@ -7,15 +7,19 @@ import type { ContactInput } from '@/shared/schemas'
 // ── Create (public) ───────────────────────────────────────────────────────────
 
 export async function createContactMessage(
-  input: Omit<ContactInput, 'language'> & { language?: ContactInput['language'] }
+  input: Omit<ContactInput, 'language' | 'message'> & {
+    language?: ContactInput['language']
+    message?: string
+  }
 ) {
+  const message = input.message ?? ''
   const created = await prisma.contactMessage.create({
     data: {
       name: input.name,
       email: input.email,
       phone: input.phone,
       subject: input.subject,
-      message: input.message,
+      message,
       language: input.language ?? 'he',
       subscribedToNewsletter: input.subscribeToNewsletter ?? false,
     },
@@ -29,7 +33,7 @@ export async function createContactMessage(
       email: input.email,
       phone: input.phone,
       subject: input.subject,
-      message: input.message,
+      message,
       subscribedToNewsletter: input.subscribeToNewsletter ?? false,
     })
   } catch (err) {
@@ -70,8 +74,12 @@ async function notifyAdminOfNewContactMessage(params: NotifyAdminParams): Promis
     <div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;color:#333;max-width:560px">
       <h2 style="margin:0 0 12px">הודעה חדשה מטופס יצירת קשר</h2>
       <table style="border-collapse:collapse;background:#faf7f2;border-radius:8px">${tableRows}</table>
-      <p style="margin:16px 0 4px;font-weight:600">הודעה:</p>
-      <p style="margin:0;white-space:pre-wrap">${escapeHtml(params.message)}</p>
+      ${
+        params.message.trim()
+          ? `<p style="margin:16px 0 4px;font-weight:600">הודעה:</p>
+      <p style="margin:0;white-space:pre-wrap">${escapeHtml(params.message)}</p>`
+          : ''
+      }
       <p style="margin-top:20px;font-size:13px;color:#777">
         ניתן לצפות בכל ההודעות בעמוד "יצירת קשר" בממשק הניהול.
       </p>

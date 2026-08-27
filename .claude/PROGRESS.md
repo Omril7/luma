@@ -19,6 +19,22 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-08-27 — Contact form tweaks: optional message + footer contact form
+
+- **Done:** Client request. Contact-page message field is now optional — dropped the
+  min-10-char validation in `ContactClient.tsx`, `contactSchema.message` is
+  `z.string().max(2000).optional().default('')`, `createContactMessage` accepts `message?`
+  and defaults to `''`, admin notification email omits the "הודעה" block when empty.
+  Footer now shows a compact contact form (`src/features/contact/FooterContactForm.tsx`:
+  name + email + optional message → `POST /api/contact` with a fixed subject) in place of
+  the newsletter signup. Fields + send button sit on one row from `md` up (stack below),
+  footer block widened to `max-w-3xl`, message is a single-line input. New `footer.contact*`
+  i18n keys (he + en); `formMessage` labels now say "(optional)".
+- **Roadmap:** none (ad-hoc).
+- **Notes:** `NewsletterSignupForm` is no longer used by the footer but kept in the codebase.
+
+---
+
 ## 2026-08-19 — Admin inbox: unread badges + notification emails (Contact/Price-Offer/Review)
 
 - **Done:** Client-ad-hoc request. Sidebar (+ dashboard quick-link tiles) now show a live

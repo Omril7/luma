@@ -69,11 +69,10 @@ export function ContactClient({ locale, info }: ContactClientProps) {
     if (form.name.trim().length < 2) next.name = t('required')
     if (!EMAIL_RE.test(form.email.trim())) next.email = t('invalidEmail')
     if (form.subject.trim().length < 2) next.subject = t('required')
-    if (form.message.trim().length < 10) next.message = t('tooShortMessage')
     setErrors(next)
 
     if (Object.keys(next).length > 0) {
-      const firstKey = (['name', 'email', 'subject', 'message'] as const).find((k) => next[k])
+      const firstKey = (['name', 'email', 'subject'] as const).find((k) => next[k])
       if (firstKey) fieldRefs[firstKey].current?.focus()
       return false
     }
@@ -246,15 +245,8 @@ export function ContactClient({ locale, info }: ContactClientProps) {
                 rows={5}
                 value={form.message}
                 onChange={(e) => set('message', e.target.value)}
-                aria-invalid={!!errors.message}
-                aria-describedby={errors.message ? 'contact-message-error' : undefined}
-                className={`${inputCls} resize-none ${errors.message ? 'border-red-400' : 'border-border'}`}
+                className={`${inputCls} resize-none border-border`}
               />
-              {errors.message && (
-                <p id="contact-message-error" role="alert" className="mt-1 text-sm text-red-600">
-                  {errors.message}
-                </p>
-              )}
             </div>
 
             <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm text-text-main">
