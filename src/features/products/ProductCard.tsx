@@ -36,6 +36,7 @@ export function ProductCard({ product, locale }: ProductCardProps) {
   const isCompared = hasCompare(product.id)
   const productName = locale === 'he' ? product.name_he : product.name_en
   const primaryImage = product.images.find((img) => img.isPrimary) ?? product.images[0]
+  const secondaryImage = product.images.find((img) => img !== primaryImage)
   const price = getStartingPrice(product)
   const priceLabel = `${t('home.featured.from')}${formatPrice(price, locale)}`
 
@@ -62,17 +63,29 @@ export function ProductCard({ product, locale }: ProductCardProps) {
       whileTap={shouldAnimate ? { scale: 0.98 } : undefined}
       transition={{ duration: 0.2, ease: 'easeOut' }}
     >
-      <Link href={`/product/${product.slug}`} className="block">
-        {/* Image */}
+      <Link href={`/product/${product.slug}`} className="group block">
+        {/* Image — swaps to a second photo on hover */}
         <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg bg-secondary">
           {primaryImage ? (
-            <Image
-              src={primaryImage.url}
-              alt={locale === 'he' ? primaryImage.altText_he : primaryImage.altText_en}
-              fill
-              sizes="(max-width: 768px) 50vw, 33vw"
-              className="object-cover"
-            />
+            <>
+              <Image
+                src={primaryImage.url}
+                alt={locale === 'he' ? primaryImage.altText_he : primaryImage.altText_en}
+                fill
+                sizes="(max-width: 768px) 50vw, 33vw"
+                className="object-cover"
+              />
+              {secondaryImage && (
+                <Image
+                  src={secondaryImage.url}
+                  alt=""
+                  aria-hidden="true"
+                  fill
+                  sizes="(max-width: 768px) 50vw, 33vw"
+                  className="object-cover opacity-0 transition-opacity duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-[opacity] group-hover:opacity-100 motion-reduce:transition-none"
+                />
+              )}
+            </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center bg-secondary">
               <svg

@@ -19,6 +19,32 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-09-06 — Product gallery: full thumbnail carousel, zoom lightbox, hover-swap, variant prices
+
+- **Done:** Client request (4 items).
+  - `ImageGallery.tsx` rebuilt: main image is now a button that opens a full-screen
+    zoomable lightbox (click / tap toggles 2–2.5× magnify with cursor-tracked
+    transform-origin; Esc + arrow keys; body scroll-lock). Replaced the desktop
+    5-thumb grid + mobile dots with one horizontally-scrollable thumbnail carousel
+    showing **all** images on every viewport (active thumb auto-scrolls into view).
+  - `ProductCard.tsx`: product image cross-fades to the second image on hover
+    (`group-hover`, 900ms, `motion-reduce:transition-none`). No-op when a product
+    has only one image.
+  - `ProductDetail.tsx` variant comparison table: added a per-variant **price** row
+    (table + single-variant `dl`), always shown (client wants prices visible even
+    in showcase mode). Comment updated.
+  - i18n: added `product.zoomImage/lightbox*/imageCount` and `product.variantTable.price`
+    to `he.json` + `en.json`.
+- **Decisions:**
+  - No admin upload cap existed (no `.max()` in the product schema, no limit in
+    `handleImageFiles`) — nothing to change there; storefront just wasn't showing
+    images past the first 5.
+  - Variant price row is shown unconditionally (client asked for it even while
+    purchasing is off), unlike the rest of the price UI which honours showcase mode.
+- **Notes/blockers:** typecheck + lint + tests + prod build all green.
+
+---
+
 ## 2026-08-27 — Contact form tweaks: optional message + footer contact form
 
 - **Done:** Client request. Contact-page message field is now optional — dropped the

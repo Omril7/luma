@@ -95,6 +95,13 @@
     "prevImage": "תמונה קודמת",
     "nextImage": "תמונה הבאה",
     "imageN": "תמונה {n}",
+    "zoomImage": "הגדלת תמונה",
+    "lightboxClose": "סגירה",
+    "lightboxPrev": "תמונה קודמת",
+    "lightboxNext": "תמונה הבאה",
+    "lightboxZoomIn": "הגדלה",
+    "lightboxZoomOut": "הקטנה",
+    "imageCount": "תמונה {current} מתוך {total}",
     "enterDimensions": "יש להזין את המידות הרצויות",
     "priceErrorMin": "{dimension} {value} ס\"מ נמוך מהמינימום {limit} ס\"מ",
     "priceErrorMax": "{dimension} {value} ס\"מ גבוה מהמקסימום {limit} ס\"מ",
@@ -121,6 +128,7 @@
     "variantTable": {
       "title": "פירוט מידות",
       "size": "מידה",
+      "price": "מחיר",
       "contactTitle": "רוצים משהו אחר?",
       "contactBody": "מידות מותאמות אישית, גוון אחר, או כל דבר נוסף — נשמח להתאים בשבילכם.",
       "contactCta": "צרו קשר"

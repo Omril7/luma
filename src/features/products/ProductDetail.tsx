@@ -742,7 +742,7 @@ export function ProductDetail({
           </div>
         </div>
 
-        {/* Variant size comparison — dimensions only, never prices */}
+        {/* Variant comparison — dimensions and per-size prices */}
         {product.variants.length > 0 && (
           <motion.section
             className="mt-16 md:mt-24"
@@ -753,7 +753,7 @@ export function ProductDetail({
           >
             <h2 className="text-2xl font-bold text-text-main mb-6">{t('variantTable.title')}</h2>
 
-            {product.variants.length > 1 && dimensionKeys.length > 0 ? (
+            {product.variants.length > 1 ? (
               <div className="overflow-x-auto rounded-xl border border-border bg-surface">
                 <table className="w-full text-sm">
                   <thead>
@@ -787,10 +787,23 @@ export function ProductDetail({
                         ))}
                       </tr>
                     ))}
+                    <tr className="bg-secondary/40">
+                      <td className="px-4 py-3 text-start font-medium text-text-muted sm:px-6">
+                        {t('variantTable.price')}
+                      </td>
+                      {product.variants.map((v) => (
+                        <td
+                          key={v.id}
+                          className="px-4 py-3 text-start font-semibold text-primary tabular-nums sm:px-6"
+                        >
+                          {formatPrice(Math.round(v.price * 100), locale)}
+                        </td>
+                      ))}
+                    </tr>
                   </tbody>
                 </table>
               </div>
-            ) : dimensionKeys.length > 0 ? (
+            ) : (
               <dl className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
                 {dimensionKeys.map((key) => (
                   <div key={key} className="grid grid-cols-2 gap-4 px-4 py-3 sm:px-6">
@@ -800,8 +813,16 @@ export function ProductDetail({
                     </dd>
                   </div>
                 ))}
+                <div className="grid grid-cols-2 gap-4 bg-secondary/40 px-4 py-3 sm:px-6">
+                  <dt className="text-start text-sm font-medium text-text-muted">
+                    {t('variantTable.price')}
+                  </dt>
+                  <dd className="text-end text-sm font-semibold text-primary tabular-nums">
+                    {formatPrice(Math.round(product.variants[0].price * 100), locale)}
+                  </dd>
+                </div>
               </dl>
-            ) : null}
+            )}
 
             {/* Closing contact row */}
             <div className="mt-4 flex flex-col items-start gap-3 rounded-xl border border-dashed border-border bg-secondary/50 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">

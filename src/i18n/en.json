@@ -95,6 +95,13 @@
     "prevImage": "Previous image",
     "nextImage": "Next image",
     "imageN": "Image {n}",
+    "zoomImage": "Zoom image",
+    "lightboxClose": "Close",
+    "lightboxPrev": "Previous image",
+    "lightboxNext": "Next image",
+    "lightboxZoomIn": "Zoom in",
+    "lightboxZoomOut": "Zoom out",
+    "imageCount": "Image {current} of {total}",
     "enterDimensions": "Enter your desired dimensions",
     "priceErrorMin": "{dimension} {value} cm is below the minimum {limit} cm",
     "priceErrorMax": "{dimension} {value} cm exceeds the maximum {limit} cm",
@@ -121,6 +128,7 @@
     "variantTable": {
       "title": "Size Details",
       "size": "Size",
+      "price": "Price",
       "contactTitle": "Want something different?",
       "contactBody": "Custom dimensions, a different finish, or anything else — we'll make it happen.",
       "contactCta": "Contact us"
