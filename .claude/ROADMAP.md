@@ -434,10 +434,12 @@ maintenance window.
 - [ ] `src/app/maintenance/page.tsx` (static, DB-free, bilingual, env-sourced links) + `src/lib/maintenance.ts` + `src/middleware.ts` gate (admin/api already outside the matcher) + `?bypass=<secret>` cookie
 - [ ] Env: `MAINTENANCE_MODE`, `MAINTENANCE_BYPASS_SECRET`, public WhatsApp/IG vars; migration-day runbook in `storage.md` Part 3
 
-**Part 4 — SiteContent audit** (manual deletes by owner)
+**Part 4 — SiteContent audit** (verified against owner's 2026-09-09 prod export)
 
-- [ ] Delete dead rows: `faq` (+ remove the dead `adminFaqService.ts` / `/api/admin/faq/*` / `/api/faq` code + schemas), `contact.info` (+ seed block). `home.testimonials` deleted after M1.28i.
-- [ ] Fix/verify the stale `home.hero`/`home.story` note in M1.28d (tabs still exist and are read)
+- [ ] Delete dead row `contact.info` (stale placeholder contact info; real data is in `settings`) + remove the `seed.ts:651` block
+- [ ] Remove the dead FAQ code — `adminFaqService.ts`, `/api/admin/faq/*`, `/api/faq`, unused `createFaqItemSchema`/`updateFaqItemSchema` (the `faq` key was never even written to prod)
+- [ ] After M1.28i: owner re-enters the 3 real `home.testimonials` as global reviews (`APPROVED` + `featuredOnHome`; fix the corrupted eran/kfar-yona `quote_en`), then delete the `home.testimonials` row
+- [ ] Fix/verify the stale `home.hero`/`home.story` note in M1.28d (tabs still exist, are read, and hold real prod content)
 
 - **Acceptance:** 8 MB JPEG uploads (would 413 today), stored downscaled; 12 MB blocked client-side; non-admin can't get an admin ticket; public review uploader stays rate-limited; gallery renders identically off the new table with order preserved and orphan cleanup intact; `MAINTENANCE_MODE=1` shows the page on the storefront only, admin still usable, `?bypass` unlocks; no dead `SiteContent` keys or FAQ code remain; `typecheck + lint + test + build` green.
 

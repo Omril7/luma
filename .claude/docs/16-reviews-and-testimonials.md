@@ -365,8 +365,14 @@ change the item shape:
   component itself.
 - **`adminSiteContentService` / `getSiteContentByKey`** — no code change needed; the key
   just stops being read.
-- The stale `SiteContent` row with key `home.testimonials` can be left in the DB (inert) or
-  deleted manually via `db:studio` / a one-off — **not** part of the gated migration.
+- **Migrate the existing content first.** Production `home.testimonials` holds 3 real
+  customer testimonials (maya / pardes hanna, eran / kfar yona, yael zohar / zikhron
+  ya'akov). Before the switch goes live, the owner should re-enter them via the new admin
+  **"New review"** flow as global reviews, `APPROVED` + `featuredOnHome`, so the homepage
+  isn't empty on launch. ⚠️ The stored `quote_en` for the eran/kfar-yona entry is corrupted
+  ("Exactly what weWe ordered a bookshelf…wanted.") — retype it cleanly.
+- The stale `SiteContent` row with key `home.testimonials` is then deleted manually via
+  `db:studio` / SQL — **not** part of the gated migration.
 - Grep for `home.testimonials` and `TestimonialItem` after the change — expect zero hits
   outside this doc and `PROGRESS.md`.
 

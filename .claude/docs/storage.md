@@ -457,7 +457,7 @@ INSERT INTO "GalleryImage"
   ("id", "url", "title_he", "title_en", "subtitle_he", "subtitle_en",
    "altText_he", "altText_en", "sortOrder", "isActive", "createdAt", "updatedAt")
 SELECT
-  COALESCE(item->>'id', gen_random_uuid()::text),
+  item->>'id',                       -- all 10 prod rows have a gi_* id; no fallback needed
   item->>'url',
   COALESCE(item->>'title_he', ''),
   COALESCE(item->>'title_en', ''),
@@ -465,7 +465,7 @@ SELECT
   COALESCE(item->>'subtitle_en', ''),
   COALESCE(item->>'altText_he', ''),
   COALESCE(item->>'altText_en', ''),
-  COALESCE((item->>'sortOrder')::int, (ord - 1)),
+  (ord - 1),                         -- re-index by array position; stored sortOrder is inconsistent (three items at 1, two at 3)
   true,
   now(),
   now()
@@ -476,8 +476,10 @@ WHERE "key" = 'gallery'
   AND item->>'url' IS NOT NULL;
 ```
 
-(`gen_random_uuid()` needs `pgcrypto`, which Supabase enables by default; if not, keep the
-existing `gi_*` ids — they're all present in practice.)
+Verified against the owner's 2026-09-09 export: 10 items, every one has a `gi_*` `id`, a
+Cloudinary `url`, and `altText_he`/`altText_en` set (all `title`/`subtitle` empty). The
+stored `sortOrder` is `1,1,1,3,5,3,6,7,8,9` — meaningless ties — so the backfill re-indexes
+by array order.
 
 **Step C — verify, then drop the blob (manual, not in the migration).** After confirming
 `SELECT count(*) FROM "GalleryImage"` matches the blob length and the storefront renders:
@@ -660,38 +662,63 @@ SELECT key, pg_column_size(value) AS bytes, "updatedAt"
 FROM "SiteContent" ORDER BY key;
 ```
 
+### Actual production contents (owner's export, 2026-09-09)
+
+11 rows: `about.page`, `contact.info`, `faq.items`, `footer`, `gallery`, `gallery.intro`,
+`home.hero`, `home.story`, `home.testimonials`, `instagram.highlights`, `settings`.
+
+Notably **absent**: `faq` (the dead parallel key was never actually written) and
+`home.contact` (the storefront reads it but it's never been saved — the contact section
+runs entirely on `HOME_CONTACT_DEFAULTS` + i18n today).
+
 ### Keep — actively read by the storefront
 
-| key                    | read by                                          | notes                                                         |
-| ---------------------- | ------------------------------------------------ | ------------------------------------------------------------- |
-| `settings`             | `getSiteSettings()` — layout + most pages        | business / shipping / delivery config. **Critical.**          |
-| `footer`               | `StorefrontLayout.tsx`                           | footer copy                                                   |
-| `home.hero`            | `(storefront)/page.tsx` → `HeroSection`          | override, i18n fallback                                       |
-| `home.story`           | `(storefront)/page.tsx` → `StorySection`         | override + image, i18n fallback                               |
-| `home.contact`         | `(storefront)/page.tsx` **and** `shop/page.tsx`  | contact section copy                                          |
-| `about.page`           | `about/page.tsx`                                 | about copy + image                                            |
-| `faq.items`            | `faq/page.tsx` **and** `product/[slug]/page.tsx` | **the live FAQ**                                              |
-| `gallery`              | `adminGalleryService` / `/api/gallery`           | → **moves to `GalleryImage` in Part 2, then delete this row** |
-| `gallery.intro`        | `gallery/page.tsx`                               | page heading — stays in SiteContent                           |
-| `instagram.highlights` | `listActiveInstagramHighlights()`                | home Instagram tiles                                          |
+| key                    | read by                                          | notes                                                                         |
+| ---------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------- |
+| `settings`             | `getSiteSettings()` — layout + most pages        | business / shipping / delivery config. **Critical.** Holds the real biz info. |
+| `footer`               | `StorefrontLayout.tsx`                           | footer tagline only                                                           |
+| `home.hero`            | `(storefront)/page.tsx` → `HeroSection`          | override, i18n fallback. Real content set.                                    |
+| `home.story`           | `(storefront)/page.tsx` → `StorySection`         | override + image, i18n fallback. **Has stale sub-keys** — see below.          |
+| `about.page`           | `about/page.tsx`                                 | about copy + image. Real content set.                                         |
+| `faq.items`            | `faq/page.tsx` **and** `product/[slug]/page.tsx` | **the live FAQ** — 8 items, real content                                      |
+| `gallery`              | `adminGalleryService` / `/api/gallery`           | 10 images → **moves to `GalleryImage` in Part 2, then delete this row**       |
+| `gallery.intro`        | `gallery/page.tsx`                               | page heading — stays in SiteContent                                           |
+| `instagram.highlights` | `listActiveInstagramHighlights()`                | 6 permalinks                                                                  |
+
+`home.contact` — read by `(storefront)/page.tsx` and `shop/page.tsx` but **the row doesn't
+exist**; leave the reader in place (it's a valid "not configured yet" path). If doc 16's
+work touches the home footer/contact area, consider whether this section should exist at all.
 
 ### Delete — dead, nothing reads them
 
-| key                 | why it's dead                                                                                                                                                                                                                                                      | action                                                                                                                                                                                                                                                                                                                       |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `faq`               | Parallel FAQ system: `adminFaqService.ts`, `/api/admin/faq/*`, `GET /api/faq` — **no UI calls any of them**. The live FAQ is `faq.items`, edited via the generic site-content route and read directly by server components. Confirmed dead in `ROADMAP.md` M1.28g. | `DELETE FROM "SiteContent" WHERE key = 'faq';` **and** delete the dead code: `src/server/services/adminFaqService.ts`, `src/app/api/admin/faq/route.ts`, `src/app/api/admin/faq/[id]/route.ts`, `src/app/api/faq/route.ts`, and the `createFaqItemSchema`/`updateFaqItemSchema` in `src/shared/schemas` if unused elsewhere. |
-| `contact.info`      | Seeded by `prisma/seed.ts:651` but **never read by any code** — the live contact content is `home.contact` (which is _not_ seeded — created on first admin save).                                                                                                  | `DELETE FROM "SiteContent" WHERE key = 'contact.info';` + remove the `seed.ts:651` block.                                                                                                                                                                                                                                    |
-| `home.testimonials` | Becomes dead the moment [`16-reviews-and-testimonials.md`](16-reviews-and-testimonials.md) ships (home switches to the `Review` table).                                                                                                                            | Delete **after** doc 16 lands, together with the `TestimonialsTab` removal that plan already lists.                                                                                                                                                                                                                          |
+| key                 | status in prod | why it's dead                                                                                                                                                                                                                                                                                                                                                                       | action                                                                                                                                                                                                                                                                                                                             |
+| ------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `contact.info`      | **present**    | Never read by any code. Its values are **stale placeholders** (`hello@luma.co.il`, `050-123-4567`, `רחוב האומן 12 תל אביב`) — none match the real business in `settings` (`studiolumadesign3@gmail.com`, `054-2640194`, `עמל 33 חיפה`). Safe to drop.                                                                                                                               | `DELETE FROM "SiteContent" WHERE key = 'contact.info';` + remove the `seed.ts:651` block.                                                                                                                                                                                                                                          |
+| `home.testimonials` | **present**    | Goes dead the moment [`16-reviews-and-testimonials.md`](16-reviews-and-testimonials.md) ships. The 3 testimonials there are real customer quotes — **before deleting, the owner should re-enter them via the new admin "New review" flow** (as `APPROVED` + `featuredOnHome`). ⚠️ testimonial #2's `quote_en` is corrupted ("Exactly what weWe ordered…wanted.") — fix on re-entry. | Delete **after** doc 16 lands, with the `TestimonialsTab` removal that plan lists.                                                                                                                                                                                                                                                 |
+| `faq` (key)         | **absent**     | The parallel FAQ system (`adminFaqService.ts`, `/api/admin/faq/*`, `GET /api/faq`) was never wired to any UI and never wrote a row. Live FAQ is `faq.items`. Confirmed dead in `ROADMAP.md` M1.28g.                                                                                                                                                                                 | No row to delete. Just delete the dead code: `src/server/services/adminFaqService.ts`, `src/app/api/admin/faq/route.ts`, `src/app/api/admin/faq/[id]/route.ts`, `src/app/api/faq/route.ts`, and `createFaqItemSchema`/`updateFaqItemSchema` in `src/shared/schemas` if unused elsewhere. Rides along with the storage PR (Part 1). |
 
-> The owner deletes these rows manually via `db:studio` / SQL — they are **not** part of any
-> gated migration. The dead-code removal (for `faq`) can ride along with the storage PR.
+> The owner deletes `contact.info` (and later `home.testimonials`) manually via `db:studio`
+> / SQL — **not** part of any gated migration.
+
+### Blob cruft (optional — clean when next editing that section, no row deletion)
+
+- **`home.story`** carries stale sub-keys the current `StorySection` never reads:
+  `body_he` / `body_en` (superseded by `body1_*` / `body2_*`) and `title_he` / `title_en`
+  (the component reads `heading_*`). Harmless; the admin `HomeStoryTab` will drop them on
+  the next save if it only writes the current shape.
+- **`gallery`** `sortOrder` values are inconsistent — `1,1,1,3,5,3,6,7,8,9` (three items at
+  `1`, two at `3`). The Part 2 backfill uses `WITH ORDINALITY` (`ord - 1`) as a fallback,
+  but given how messy the stored values are, **prefer re-indexing by array position
+  outright** — change the backfill's `sortOrder` column to just `(ord - 1)` and drop the
+  `COALESCE`. The current storefront order is already whatever `.sort((a,b)=>a.sortOrder-b.sortOrder)`
+  makes of these ties, so array order is as good and more predictable.
 
 ### Side-note — stale ROADMAP entry
 
 `ROADMAP.md` M1.28d says the `home.hero` / `home.story` admin tabs were "removed as dead
 inputs". They are **not** removed — `SiteContentPage.tsx` still renders both tabs and
-`(storefront)/page.tsx` still reads both keys (with i18n fallback). Either re-remove them or
-fix the roadmap note; not urgent, just noted so it doesn't cause confusion.
+`(storefront)/page.tsx` still reads both keys (with i18n fallback), and prod has real
+content in both. Either re-remove the tabs or fix the roadmap note; not urgent.
 
 ---
 
