@@ -1,6 +1,26 @@
-# storage.md — Plan: signed direct-to-Cloudinary uploads
+# storage.md — Plan: storage & content-store cleanup
 
 > **Status:** planned, not implemented.
+>
+> This doc grew into the umbrella for a linked set of storage / content-store changes, best
+> shipped together (or back-to-back) because they share the upload call sites, the gallery
+> admin, and one downtime window:
+>
+> | Part  | What                                                                 | DB change?                  |
+> | ----- | -------------------------------------------------------------------- | --------------------------- |
+> | **1** | Signed direct-to-Cloudinary uploads (10 MB ceiling, drop `local.ts`) | no                          |
+> | **2** | Gallery: `SiteContent['gallery']` blob → `GalleryImage` table        | **yes** (create + backfill) |
+> | **3** | Maintenance-mode page + switch (for any gated migration)             | no                          |
+> | **4** | `SiteContent` audit — which rows are dead and safe to delete         | no (manual deletes)         |
+> | **5** | Why `EmailSettings` stays its own table (analysis, no action)        | no                          |
+>
+> **LIVE-site rule:** Parts 2's migration + backfill **must not run without the owner's
+> explicit go-ahead**, behind the Part 3 maintenance page.
+
+---
+
+# Part 1 — Signed direct-to-Cloudinary uploads
+
 > **Goal:** let admins upload product / gallery / site-content / Instagram / color images up to
 > **10 MB** (Cloudinary free-tier ceiling) by uploading straight to Cloudinary from the browser.
 > Keep a thin storage-provider abstraction (so a future swap to S3 / UploadThing / Supabase
@@ -332,3 +352,392 @@ Not part of this work — but the abstraction is kept specifically so this stays
    response shape (or a deterministic URL from the ticket).
 
 No call-site, component, or cleanup-service changes. Switch live via `STORAGE_PROVIDER`.
+
+---
+
+# Part 2 — Gallery: `SiteContent['gallery']` blob → `GalleryImage` table
+
+> **Status:** planned, not implemented.
+> **Why it lives here:** the gallery admin is one of the upload call sites this doc already
+> touches, and this migration + the maintenance-mode plan below are the reason the storage
+> work needs a downtime window. Do the table migration and the upload rework in the same PR
+> or back-to-back.
+> **LIVE-site rule:** this needs a real schema migration **and a data backfill**. It **must
+> not run without the owner's explicit go-ahead**, and it wants the maintenance page
+> ([Part 3](#part-3--maintenance-mode-for-migrations-that-need-a-downtime-window)) up while
+> the backfill runs.
+
+## Why move it out of `SiteContent`
+
+Today the whole gallery is one JSON array in `SiteContent` where `key = 'gallery'`
+(`adminGalleryService.ts`), shape per item:
+
+```ts
+{
+  ;(id, url, title_he, title_en, subtitle_he, subtitle_en, altText_he, altText_en, sortOrder)
+}
+```
+
+Problems, same class as the reviews-JSON problem in
+[`16-reviews-and-testimonials.md`](16-reviews-and-testimonials.md):
+
+- **Read-modify-write the entire array for every edit.** `GalleryPage.tsx` `persistOrder()`
+  fires one `PATCH` per row in `Promise.all` after a drag — each handler loads the full
+  array, mutates one item, writes the whole thing back. Concurrent writes (two fields saved
+  quickly, or a reorder mid-edit) silently clobber each other; there's no row-level
+  concurrency.
+- **No query / index.** Can't `where`, can't order in the DB, can't paginate, can't count.
+  Everything is "load all, sort in JS".
+- **No FK.** A gallery image can never reference a product / category without putting an
+  ID string in JSON and hoping it stays valid.
+- **Inconsistent with the rest of the catalog.** `ProductImage` is already a real table
+  with `url / altText_he / altText_en / sortOrder / isPrimary`. Gallery should match.
+- **Orphan cleanup is indirect.** `getAllDbImageUrls()` has to recurse every `SiteContent`
+  blob to find gallery URLs; a real column is a two-line `findMany`.
+
+`gallery.intro` (the page heading/subtitle shown above the grid) **stays in `SiteContent`** —
+it is genuine site-copy, exactly like `about.page`, and has none of the problems above.
+
+## Schema — `prisma/schema.prisma`
+
+```prisma
+model GalleryImage {
+  id          String   @id @default(cuid())
+  url         String
+  title_he    String   @default("")
+  title_en    String   @default("")
+  subtitle_he String   @default("")
+  subtitle_en String   @default("")
+  altText_he  String   @default("")
+  altText_en  String   @default("")
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)   // soft-hide without deleting the asset
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+```
+
+`title/subtitle/altText` default to `""` to match the current "older items simply lack the
+keys" tolerance in `adminGalleryService.ts`. `isActive` is new (the JSON shape had no
+hide flag) — default `true` keeps every backfilled row visible.
+
+### Migration + backfill (two steps, one deploy)
+
+**Step A — create the table** (`prisma migrate dev --name gallery_image_table`):
+
+```sql
+CREATE TABLE "GalleryImage" (
+  "id" TEXT NOT NULL,
+  "url" TEXT NOT NULL,
+  "title_he" TEXT NOT NULL DEFAULT '',
+  "title_en" TEXT NOT NULL DEFAULT '',
+  "subtitle_he" TEXT NOT NULL DEFAULT '',
+  "subtitle_en" TEXT NOT NULL DEFAULT '',
+  "altText_he" TEXT NOT NULL DEFAULT '',
+  "altText_en" TEXT NOT NULL DEFAULT '',
+  "sortOrder" INTEGER NOT NULL DEFAULT 0,
+  "isActive" BOOLEAN NOT NULL DEFAULT true,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "GalleryImage_pkey" PRIMARY KEY ("id")
+);
+CREATE INDEX "GalleryImage_sortOrder_idx" ON "GalleryImage"("sortOrder");
+```
+
+Pure `CREATE TABLE` — **zero risk to any existing table**, safe to run any time. luma-manager
+never touches it.
+
+**Step B — backfill from the blob.** Add it to the same migration file _after_ the
+`CREATE TABLE`, so `prisma migrate deploy` runs it atomically in production:
+
+```sql
+INSERT INTO "GalleryImage"
+  ("id", "url", "title_he", "title_en", "subtitle_he", "subtitle_en",
+   "altText_he", "altText_en", "sortOrder", "isActive", "createdAt", "updatedAt")
+SELECT
+  COALESCE(item->>'id', gen_random_uuid()::text),
+  item->>'url',
+  COALESCE(item->>'title_he', ''),
+  COALESCE(item->>'title_en', ''),
+  COALESCE(item->>'subtitle_he', ''),
+  COALESCE(item->>'subtitle_en', ''),
+  COALESCE(item->>'altText_he', ''),
+  COALESCE(item->>'altText_en', ''),
+  COALESCE((item->>'sortOrder')::int, (ord - 1)),
+  true,
+  now(),
+  now()
+FROM "SiteContent",
+     jsonb_array_elements("value") WITH ORDINALITY AS t(item, ord)
+WHERE "key" = 'gallery'
+  AND jsonb_typeof("value") = 'array'
+  AND item->>'url' IS NOT NULL;
+```
+
+(`gen_random_uuid()` needs `pgcrypto`, which Supabase enables by default; if not, keep the
+existing `gi_*` ids — they're all present in practice.)
+
+**Step C — verify, then drop the blob (manual, not in the migration).** After confirming
+`SELECT count(*) FROM "GalleryImage"` matches the blob length and the storefront renders:
+
+```sql
+DELETE FROM "SiteContent" WHERE key = 'gallery';
+```
+
+Leaving the `gallery` row in place is harmless (nothing reads it post-migration) — but
+delete it so it doesn't mislead later. It's on the
+[SiteContent cleanup list](#part-4--sitecontent-audit).
+
+## Code changes
+
+**`src/server/services/adminGalleryService.ts`** — swap the `loadItems`/`saveItems` JSON
+helpers for Prisma; **keep every exported function's name and signature identical** so no
+caller changes:
+
+- `listGalleryImages()` → `prisma.galleryImage.findMany({ orderBy: { sortOrder: 'asc' } })`
+  (public callers can add `where: { isActive: true }` — see below).
+- `createGalleryImage(data)` → `prisma.galleryImage.create`; `sortOrder` default = current
+  `max(sortOrder) + 1` (one `aggregate` call instead of loading all).
+- `updateGalleryImage(id, data)` → `prisma.galleryImage.update`; on `url` change,
+  `deleteIfOrphaned(oldUrl)` (unchanged behaviour — fetch the row first for the old url).
+- `deleteGalleryImage(id)` → `prisma.galleryImage.delete` + `deleteIfOrphaned`.
+- Reorder: `persistOrder` in `GalleryPage.tsx` can stay as-is (N patches), or — better, now
+  that it's a table — add a single `PATCH /api/admin/gallery/reorder` taking `string[]` of
+  ids and doing one `$transaction` of `update`s. Optional; the N-patch path is no longer
+  racy against a shared blob once each row is independent.
+
+**Public vs admin visibility** — `listGalleryImages()` currently serves both the admin
+(`/api/admin/gallery`) and the storefront (`/api/gallery`, `GallerySection`,
+`gallery/page.tsx`). Split: `listGalleryImages({ activeOnly }: { activeOnly?: boolean })` —
+storefront passes `activeOnly: true`, admin gets everything. Default `false` keeps the type
+change contained.
+
+**`src/app/api/gallery/route.ts`** — currently reads the `SiteContent` blob directly
+(`prisma.siteContent.findUnique({ where: { key: 'gallery' } })`). Repoint to
+`listGalleryImages({ activeOnly: true })`.
+
+**`src/server/services/cloudinaryCleanupService.ts`** — in `getAllDbImageUrls()` add
+`prisma.galleryImage.findMany({ select: { url: true } })`. The `SiteContent` recursion can
+stay (it'll just never find gallery urls there anymore).
+
+**`prisma/seed.ts`** — the seed doesn't currently create a `gallery` blob (images are
+admin-added only; only `gallery.intro` is seeded, at `seed.ts:700`). If you want seeded
+sample gallery images, add a `prisma.galleryImage.createMany` block; otherwise no change.
+
+**`src/features/admin/gallery/GalleryPage.tsx`** — no shape change (`GalleryImageDTO` is the
+same). Optionally surface the new `isActive` toggle per row.
+
+**Docs** — `.claude/docs/02-data-models.md` (add `GalleryImage`, note gallery left
+`SiteContent`), `.claude/docs/04-api-contract.md` (`/api/gallery` source), the "no dedicated
+GalleryImage model" note at the top of `adminGalleryService.ts` gets deleted.
+
+## Verification
+
+- `npm run typecheck && npm run lint && npm run test && npm run build` clean.
+- Dev DB: run the migration; `SELECT count(*)` on `GalleryImage` == blob length; every
+  `url`/`sortOrder` matches.
+- `/gallery` and the home `GallerySection` render identically before/after; lightbox
+  captions unchanged; order preserved.
+- Admin: add / edit text / reorder (drag) / delete an image → all persist; deleting removes
+  the Cloudinary asset via orphan cleanup; `isActive: false` hides it from the storefront
+  but not the admin.
+- `grep -rn "key: 'gallery'\|key = 'gallery'\|'gallery' }" src/` → only `gallery.intro`
+  remains.
+
+---
+
+# Part 3 — Maintenance mode (for migrations that need a downtime window)
+
+> **Status:** planned, not implemented. Small, reusable — every consent-gated migration in
+> `16-reviews-and-testimonials.md` and Part 2 above can put this up while it runs.
+
+## Goal
+
+A single switch that shows visitors a branded **"האתר בתחזוקה / We'll be back soon"** page
+on every storefront route, while **`/admin/*` and `/api/admin/*` stay fully usable** so work
+can continue, plus a private bypass so the owner can smoke-test the real site behind the
+curtain.
+
+## Mechanism
+
+The existing `src/middleware.ts` already gates routes (the `FEATURES.shop` block) and its
+`matcher` already excludes `api`, `admin`, `_next`, `_vercel`, and static files — so a
+maintenance check added there **cannot** touch the admin panel or admin API. That's the hook.
+
+**Toggle source — pick one:**
+
+| Option                                                      | Toggle speed                        | Notes                                                                                                                                                              |
+| ----------------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`MAINTENANCE_MODE` env var** (recommended for simplicity) | ~1 min (triggers a Vercel redeploy) | `process.env.MAINTENANCE_MODE === '1'`. Zero infra. The redeploy delay is fine — you're about to deploy migration code anyway.                                     |
+| **Vercel Edge Config**                                      | instant, no redeploy                | `@vercel/edge-config` read in middleware. Better if you expect to flip it on/off a few times during a long migration. Adds one dependency + the Edge Config store. |
+| ~~`SiteContent` flag~~                                      | —                                   | Rejected: needs a DB read in middleware (Prisma in edge middleware is painful) and the DB is the thing being migrated.                                             |
+
+**Bypass:** `?bypass=<MAINTENANCE_BYPASS_SECRET>` on any URL → middleware sets a
+`maint-bypass` cookie (httpOnly, `SameSite=Lax`, ~8 h) and redirects to the clean URL.
+Requests carrying a valid cookie skip the maintenance rewrite.
+
+## Implementation
+
+1. **`src/app/maintenance/page.tsx`** — a **static, DB-free, bilingual** page (its own tiny
+   route outside `[lang]`, so next-intl routing never touches it). Warm/natural aesthetic per
+   `07-design-system.md`; logo, one line he + one line en, and a WhatsApp + Instagram link
+   built from **`NEXT_PUBLIC_*` env vars** (not `getSiteSettings()` — the DB may be
+   mid-migration). `export const dynamic = 'force-static'`.
+
+2. **`src/lib/maintenance.ts`** — `export const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === '1'`
+   (or the Edge Config read), mirroring `src/lib/featureFlags.ts`.
+
+3. **`src/middleware.ts`** — at the very top of `middleware()`, before the intl handling:
+
+   ```ts
+   if (MAINTENANCE_MODE) {
+     const { pathname, searchParams } = request.nextUrl
+     const bypassOk =
+       request.cookies.get('maint-bypass')?.value === process.env.MAINTENANCE_BYPASS_SECRET
+     if (searchParams.get('bypass') === process.env.MAINTENANCE_BYPASS_SECRET) {
+       const url = request.nextUrl.clone()
+       url.searchParams.delete('bypass')
+       const res = NextResponse.redirect(url)
+       res.cookies.set('maint-bypass', process.env.MAINTENANCE_BYPASS_SECRET!, {
+         httpOnly: true,
+         sameSite: 'lax',
+         maxAge: 60 * 60 * 8,
+         path: '/',
+       })
+       return res
+     }
+     if (!bypassOk && pathname !== '/maintenance') {
+       return NextResponse.rewrite(new URL('/maintenance', request.url)) // 200, URL unchanged
+     }
+   }
+   ```
+
+   `admin` / `api` are already outside the `matcher`, so they're never affected. Add
+   `/maintenance` to the matcher's allow-through if needed, or just let the
+   `pathname !== '/maintenance'` guard handle the loop.
+
+4. **`next.config.ts`** — optionally send `Retry-After` + `503` for the maintenance route
+   (SEO-correct "temporary"). A `rewrite` keeps a `200`; to return `503` use a route handler
+   or `headers()` config on `/maintenance`. Nice-to-have, not required for a short window.
+
+5. **Env** (`.env.example`, Vercel, `.claude/docs/10-devops.md`):
+   `MAINTENANCE_MODE` (`0`/`1`), `MAINTENANCE_BYPASS_SECRET` (random string),
+   `NEXT_PUBLIC_WHATSAPP_NUMBER` / `NEXT_PUBLIC_INSTAGRAM_URL` if not already public.
+
+## Migration-day runbook (reused by any gated migration)
+
+1. Merge the migration + app-code PR to a deploy branch (don't promote yet).
+2. Set `MAINTENANCE_MODE=1` in Vercel → redeploy current prod (page goes up, admin still in).
+3. Take a Supabase backup / snapshot.
+4. Run the migration: `prisma migrate deploy` (via the deploy, or a one-off against
+   `DIRECT_URL`). Run any manual verify queries.
+5. Promote the app-code deploy.
+6. Smoke-test through `?bypass=<secret>`: storefront, the migrated feature, admin.
+7. Set `MAINTENANCE_MODE=0` → redeploy. Verify the site is public and healthy.
+8. Do the manual "drop the old blob / SiteContent row" cleanups (Part 2 Step C, doc 16's
+   testimonials row).
+
+## Verification
+
+- `MAINTENANCE_MODE=1` locally → every storefront route shows `/maintenance`, URL unchanged;
+  `/admin` and `/api/admin/*` work normally; `?bypass=<secret>` unlocks the real site for
+  that browser; wrong secret does nothing.
+- `MAINTENANCE_MODE=0` → site normal, no `maint-bypass` cookie needed.
+- The maintenance page renders with the DB unreachable (kill the dev DB connection and load
+  it).
+
+---
+
+# Part 4 — SiteContent audit
+
+Snapshot of what every `SiteContent.key` is, from a full code read (2026-09-09). Run this to
+see what's actually in the DB:
+
+```sql
+SELECT key, pg_column_size(value) AS bytes, "updatedAt"
+FROM "SiteContent" ORDER BY key;
+```
+
+### Keep — actively read by the storefront
+
+| key                    | read by                                          | notes                                                         |
+| ---------------------- | ------------------------------------------------ | ------------------------------------------------------------- |
+| `settings`             | `getSiteSettings()` — layout + most pages        | business / shipping / delivery config. **Critical.**          |
+| `footer`               | `StorefrontLayout.tsx`                           | footer copy                                                   |
+| `home.hero`            | `(storefront)/page.tsx` → `HeroSection`          | override, i18n fallback                                       |
+| `home.story`           | `(storefront)/page.tsx` → `StorySection`         | override + image, i18n fallback                               |
+| `home.contact`         | `(storefront)/page.tsx` **and** `shop/page.tsx`  | contact section copy                                          |
+| `about.page`           | `about/page.tsx`                                 | about copy + image                                            |
+| `faq.items`            | `faq/page.tsx` **and** `product/[slug]/page.tsx` | **the live FAQ**                                              |
+| `gallery`              | `adminGalleryService` / `/api/gallery`           | → **moves to `GalleryImage` in Part 2, then delete this row** |
+| `gallery.intro`        | `gallery/page.tsx`                               | page heading — stays in SiteContent                           |
+| `instagram.highlights` | `listActiveInstagramHighlights()`                | home Instagram tiles                                          |
+
+### Delete — dead, nothing reads them
+
+| key                 | why it's dead                                                                                                                                                                                                                                                      | action                                                                                                                                                                                                                                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `faq`               | Parallel FAQ system: `adminFaqService.ts`, `/api/admin/faq/*`, `GET /api/faq` — **no UI calls any of them**. The live FAQ is `faq.items`, edited via the generic site-content route and read directly by server components. Confirmed dead in `ROADMAP.md` M1.28g. | `DELETE FROM "SiteContent" WHERE key = 'faq';` **and** delete the dead code: `src/server/services/adminFaqService.ts`, `src/app/api/admin/faq/route.ts`, `src/app/api/admin/faq/[id]/route.ts`, `src/app/api/faq/route.ts`, and the `createFaqItemSchema`/`updateFaqItemSchema` in `src/shared/schemas` if unused elsewhere. |
+| `contact.info`      | Seeded by `prisma/seed.ts:651` but **never read by any code** — the live contact content is `home.contact` (which is _not_ seeded — created on first admin save).                                                                                                  | `DELETE FROM "SiteContent" WHERE key = 'contact.info';` + remove the `seed.ts:651` block.                                                                                                                                                                                                                                    |
+| `home.testimonials` | Becomes dead the moment [`16-reviews-and-testimonials.md`](16-reviews-and-testimonials.md) ships (home switches to the `Review` table).                                                                                                                            | Delete **after** doc 16 lands, together with the `TestimonialsTab` removal that plan already lists.                                                                                                                                                                                                                          |
+
+> The owner deletes these rows manually via `db:studio` / SQL — they are **not** part of any
+> gated migration. The dead-code removal (for `faq`) can ride along with the storage PR.
+
+### Side-note — stale ROADMAP entry
+
+`ROADMAP.md` M1.28d says the `home.hero` / `home.story` admin tabs were "removed as dead
+inputs". They are **not** removed — `SiteContentPage.tsx` still renders both tabs and
+`(storefront)/page.tsx` still reads both keys (with i18n fallback). Either re-remove them or
+fix the roadmap note; not urgent, just noted so it doesn't cause confusion.
+
+---
+
+# Part 5 — Does `EmailSettings` need to be its own table?
+
+**Short answer: no, not really — but the payoff for merging it is small and it's the one
+table `luma-manager` might also want. Leave it, and document why.**
+
+### What it holds
+
+`EmailSettings` (`id, fromAddress, fromName_he, fromName_en, replyTo?, updatedAt`) — a
+**single upserted row** (`adminEmailSettingsService.ts` does `findFirst()` then
+create-if-missing). Read by `adminNotifyService`, `adminNewsletterService`, and the
+email-settings route. That is _exactly_ the same "one JSON blob of config" access pattern as
+`SiteContent['settings']` (`getSiteSettings()` — `findUnique` then default-if-missing).
+
+### Why it's a separate table today
+
+Nothing principled. It was created in the initial schema (`ROADMAP.md` M1.1) as a peer of
+`SiteContent` and never revisited. `02-data-models.md:136` just describes the columns; there
+is no stated reason it isn't `SiteContent['email']`. Historically it predates most of the
+`SiteContent` keys.
+
+### The case for folding it into `SiteContent['email']`
+
+- One fewer table, one fewer service file, one fewer "findFirst + create default" dance.
+- Same shape as every other admin-editable config blob — consistent mental model.
+- The generic `PUT /api/admin/site-content/:key` could serve it (like `gallery.intro`),
+  though the dedicated `/api/admin/email-settings` route + `EmailServicesPage.tsx` UI would
+  still want a typed wrapper.
+
+### The case for leaving it
+
+- **`luma-manager` shares this database.** It sends its own emails (order-status updates).
+  A typed `EmailSettings` table is a cleaner shared contract than "reach into luma's
+  `SiteContent` JSON and hope the key/shape is stable". If cross-app email config is on the
+  horizon, the table is the right home.
+- It's **working and wired** (`ROADMAP.md` M1.28d fixed the "email sending ignored
+  EmailSettings" bug). Migrating config between stores on a live site is pure risk for a
+  cosmetic win.
+- `updatedAt` / future audit columns are first-class on a table; in a blob they're manual.
+
+### Recommendation
+
+**Keep `EmailSettings` as a table.** Add one line to `02-data-models.md` explaining the
+"why not `SiteContent`": _it's a typed config contract potentially shared with luma-manager,
+which sends its own transactional email_. If a future audit finds luma-manager will never
+touch it, folding it into `SiteContent['email']` is a safe, low-value cleanup to batch with
+other schema work — not worth a dedicated migration.

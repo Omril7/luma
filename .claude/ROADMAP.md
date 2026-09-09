@@ -386,6 +386,61 @@ from that file; check off as implemented.
 - Instagram integration (#11) is a separate, larger effort — see
   `.claude/docs/14-instagram-integration.md`, not scoped for this milestone.
 
+### M1.28i Reviews & testimonials — unified table, homepage reviews, global reviews, images ⭐ NEXT
+
+Full plan: [`.claude/docs/16-reviews-and-testimonials.md`](docs/16-reviews-and-testimonials.md).
+One `Review` table for everything; homepage `TestimonialsSection` shows admin-flagged
+approved reviews instead of `getSiteContentByKey('home.testimonials')`; per-product reviews
+unchanged; add "about the business" global reviews from the home page; one optional image
+per review (customer-uploadable + admin add/edit).
+
+- [ ] **Schema migration (consent-gated)** — `Review.productId` nullable, `+imageUrl`, `+featuredOnHome`, optional `product` relation; additive + one `NOT NULL` relax, no data rewrite. **Do not run without the owner's explicit go-ahead.**
+- [ ] Shared: `createReviewSchema`/`updateReviewSchema` updated, `adminCreateReviewSchema` new; `PublicReviewDTO.imageUrl`, `ReviewDTO` null-safe product + new fields, `HomeReviewDTO` new
+- [ ] Service: global-aware `createReview`; `getFeaturedHomeReviews`; `adminCreateReview`; image orphan-cleanup wired into `cloudinaryCleanupService`
+- [ ] `POST /api/reviews/upload` — new public, rate-limited, size/type/magic-byte-checked image upload (folds into `storage.md`'s ticket model later)
+- [ ] `POST /api/reviews` allows no `productId`; admin reviews `GET`/`PATCH` handle null product + `imageUrl` + `featuredOnHome`; new admin `POST /api/admin/reviews`
+- [ ] Home: drop `home.testimonials`, feed `TestimonialsSection`/`TestimonialsCarousel` from `getFeaturedHomeReviews` (`HomeReviewDTO`); keep the windowed-loop carousel engine
+- [ ] Home: "Write us a review" CTA → `GlobalReviewModal` (mirrors `PriceOfferModal`) wrapping `ReviewForm` with `productId={null}`
+- [ ] Product page: `ReviewsCarousel` + `ReviewForm` gain optional image (shared `PublicImageUpload`)
+- [ ] Admin `/admin/reviews`: global-review chip, "feature on homepage" star toggle (approved-only), image add/edit in edit+view dialogs, "+ New review" create dialog (global or product target, auto-`APPROVED`)
+- [ ] Retire the Site Content "המלצות לקוחות" tab + `TestimonialsTab` (types/state/hooks/render block)
+- [ ] i18n: new `reviews.*` keys (he + en); update `.claude/docs/02-data-models.md` `Review` section
+- **Acceptance:** a customer can leave a product review or a business review, each with an optional photo; the admin moderates, can add/replace/remove the image, and flags reviews for the homepage; the homepage carousel shows exactly the flagged approved reviews (hidden when none, CTA still visible); no `home.testimonials` reads remain; `typecheck + lint + test + build` green.
+
+### M1.28j Storage & content-store cleanup
+
+Full plan: [`.claude/docs/storage.md`](docs/storage.md) (now a 5-part umbrella). Sequenced
+**after M1.28i** so the new public review uploader folds into the ticket model in the same
+pass. Parts 1 + 3 + 4 (dead-code) can ship as one PR; Part 2's migration rides the Part 3
+maintenance window.
+
+**Part 1 — signed direct-to-Cloudinary uploads** (no DB change)
+
+- [ ] Reshape `src/server/providers/storage/` — `UploadTicket` + `createUploadTicket`/`deleteAsset`/`keyFromUrl`; `getStorageProvider()` switches on `STORAGE_PROVIDER`
+- [ ] `POST /api/admin/upload` → thin signed-ticket issuer; **`POST /api/reviews/upload`** → public rate-limited ticket issuer
+- [ ] `src/lib/uploadImage.ts` shared client helper (10 MB pre-check, provider-keyed response parser); swap `ImageUpload.tsx`, `ProductFormPage.tsx`, `PublicImageUpload.tsx` call sites
+- [ ] Cloudinary dashboard: signed `luma_signed` preset (folder `luma`, formats, 10 MB, incoming `c_limit,w_2500,h_2500,q_auto`)
+- [ ] Delete `src/server/providers/storage/local.ts` + `uploads/`; rewire `cloudinaryCleanupService` to `provider.keyFromUrl`/`deleteAsset`
+- [ ] Env: `STORAGE_DRIVER` → `STORAGE_PROVIDER`, drop `UPLOAD_DIR`, add optional `CLOUDINARY_UPLOAD_PRESET`; doc updates
+
+**Part 2 — Gallery → `GalleryImage` table** (consent-gated migration + backfill)
+
+- [ ] `GalleryImage` model; migration = `CREATE TABLE` + SQL backfill from `SiteContent['gallery']` (`jsonb_array_elements`); verify then `DELETE` the blob row. **Do not run without the owner's explicit go-ahead.**
+- [ ] Rewrite `adminGalleryService.ts` to Prisma (same exported signatures); `listGalleryImages({ activeOnly })`; repoint `GET /api/gallery`; add `Review`+`GalleryImage` urls to `cloudinaryCleanupService.getAllDbImageUrls`; seed via `createMany`
+- [ ] `gallery.intro` stays in `SiteContent`
+
+**Part 3 — Maintenance mode** (no DB change)
+
+- [ ] `src/app/maintenance/page.tsx` (static, DB-free, bilingual, env-sourced links) + `src/lib/maintenance.ts` + `src/middleware.ts` gate (admin/api already outside the matcher) + `?bypass=<secret>` cookie
+- [ ] Env: `MAINTENANCE_MODE`, `MAINTENANCE_BYPASS_SECRET`, public WhatsApp/IG vars; migration-day runbook in `storage.md` Part 3
+
+**Part 4 — SiteContent audit** (manual deletes by owner)
+
+- [ ] Delete dead rows: `faq` (+ remove the dead `adminFaqService.ts` / `/api/admin/faq/*` / `/api/faq` code + schemas), `contact.info` (+ seed block). `home.testimonials` deleted after M1.28i.
+- [ ] Fix/verify the stale `home.hero`/`home.story` note in M1.28d (tabs still exist and are read)
+
+- **Acceptance:** 8 MB JPEG uploads (would 413 today), stored downscaled; 12 MB blocked client-side; non-admin can't get an admin ticket; public review uploader stays rate-limited; gallery renders identically off the new table with order preserved and orphan cleanup intact; `MAINTENANCE_MODE=1` shows the page on the storefront only, admin still usable, `?bypass` unlocks; no dead `SiteContent` keys or FAQ code remain; `typecheck + lint + test + build` green.
+
 ---
 
 ## Phase 1 — Hardening / launch readiness
