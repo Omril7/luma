@@ -443,6 +443,64 @@ maintenance window.
 
 - **Acceptance:** 8 MB JPEG uploads (would 413 today), stored downscaled; 12 MB blocked client-side; non-admin can't get an admin ticket; public review uploader stays rate-limited; gallery renders identically off the new table with order preserved and orphan cleanup intact; `MAINTENANCE_MODE=1` shows the page on the storefront only, admin still usable, `?bypass` unlocks; no dead `SiteContent` keys or FAQ code remain; `typecheck + lint + test + build` green.
 
+### M1.28k `/shop` — client-side filter/sort/paginate + admin product ordering
+
+**No DB change.** Two problems, one fix. `Product.sortOrder Int @default(0)` already exists,
+`create`/`updateProductSchema` accept it, `ProductDTO.sortOrder` is populated, and
+`listAdminProducts` already orders by `[{ sortOrder: 'asc' }, { createdAt: 'desc' }]` — only the
+admin drag UI and the storefront read are missing. Separately, **`/shop` filtering/sorting is
+slow** because every filter click is a full server navigation.
+
+**Why `/shop` is slow** (`shop/page.tsx` + `ShopClient.tsx`):
+
+- `shop/page.tsx` does `await searchParams` → the route is fully dynamic, no ISR. Every
+  filter/sort/page click → `ShopClient.setParam()` → bare `router.push()` → new RSC request.
+- Per click the server runs `Promise.all` of 4 fetches. Products + categories are
+  `unstable_cache`d, but **`getSiteSettings()` and `getSiteContentByKey('home.contact')` hit
+  Supabase every time** (React `cache()` only dedupes within a request) — a cloud round-trip
+  each click, worse in dev.
+- No `useTransition`, so Next renders `loading.tsx` — the whole grid **unmounts to a skeleton
+  and remounts** on every click.
+- `ShopClient` then replays the entrance animation: `AnimatePresence mode="popLayout"` +
+  `layout` on every card + staggered `delay: i * 0.05` (last card ~0.55 s). `popLayout` is the
+  expensive part. Each of 12 `ProductCard`s remounts + re-subscribes to 4 Zustand stores +
+  `useTranslations()` with no namespace.
+- Dev mode multiplies all of the above (on-demand compile, no real caching, remote Supabase).
+
+**Fix — move filter/sort/paginate to the client** (catalog is small — ~10–50 products):
+
+- [ ] `shop/page.tsx` stops reading `searchParams`; fetches the **full active catalog once**
+      (trimmed list DTO) + categories → route goes static/ISR (`export const revalidate`).
+- [ ] `ShopClient` receives all products; reads initial filter/sort/page from `useSearchParams`;
+      computes the visible slice in a `useMemo` (filter → sort → paginate); writes URL changes via
+      `window.history.replaceState` (shareable link, **zero navigation, zero refetch**).
+- [ ] Move `<ContactSection>` + its `getSiteSettings`/`getSiteContentByKey` out of the filter
+      path (own slot, or `unstable_cache` those calls).
+- [ ] Animations: stagger on **first mount only**; on filter change drop `mode="popLayout"` /
+      exit anims — `layout` + a short fade is enough.
+- [ ] Guard: cap the client list at ~150; if the catalog ever exceeds that, fall back to server
+      pagination (realistically N/A for this business).
+
+**Product ordering (rides the same `ShopClient` rewrite):**
+
+- [ ] **Storefront** — client sort gains a `curated` key = order by `sortOrder` then `createdAt
+    desc`; make it the **default** on `/shop`. Keep price/name/newest as explicit user choices.
+      i18n `shop.sort.curated` ("הסדר שלנו" / "Our order"). (Server `SORT_MAP` also gets `curated`
+      for `/api/products` + related-products consistency.)
+- [ ] **Bulk reorder endpoint** — `POST /api/admin/products/reorder` (`withAdmin`), body
+      `{ ids: string[] }`, one `$transaction` setting `sortOrder = index`.
+- [ ] **Admin UI** — `ProductsListPage.tsx`: a "סידור תצוגה" toggle that swaps the paginated
+      filtered table for a `Reorder.Group` drag-list of **all** products (fetch `limit=200`, no
+      pagination/filter while reordering), drag handle + `GripVertical`, `persistOrder` → the bulk
+      endpoint, "saving…" indicator. Exit toggle returns to the normal table. Mirrors
+      `CategoriesListPage.tsx` / `GalleryPage.tsx`.
+- [ ] Optional: read-only `sortOrder` column in the normal table.
+
+- **Acceptance:** changing a filter/sort/page on `/shop` is instant (no skeleton flash, no
+  refetch, URL still updates and is shareable); dragging products in the admin persists an order
+  that `/shop` shows by default (RTL/LTR correct), with price/name/newest still overriding it;
+  `typecheck + lint + test + build` green.
+
 ---
 
 ## Phase 1 — Hardening / launch readiness
