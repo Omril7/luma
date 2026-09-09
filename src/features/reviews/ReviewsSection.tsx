@@ -26,6 +26,7 @@ export function ReviewsSection({
   const t = useTranslations('reviews')
   const { a11y } = useUiStore()
   const shouldAnimate = !a11y.noMotion
+  const isEmbedded = variant === 'embedded'
 
   const average =
     reviews.length > 0
@@ -35,7 +36,9 @@ export function ReviewsSection({
   return (
     <section className={variant === 'embedded' ? '' : 'mt-16 md:mt-24'}>
       <motion.div
-        className="mb-6 flex flex-wrap items-center justify-between gap-3"
+        className={`mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 ${
+          isEmbedded ? '' : 'justify-between'
+        }`}
         initial={shouldAnimate ? { opacity: 0, y: 16 } : false}
         whileInView={shouldAnimate ? { opacity: 1, y: 0 } : undefined}
         viewport={{ once: true, margin: '-60px' }}
@@ -53,7 +56,11 @@ export function ReviewsSection({
       </motion.div>
 
       {reviews.length > 0 ? (
-        <ReviewsCarousel reviews={reviews} locale={locale} />
+        <ReviewsCarousel
+          reviews={reviews}
+          locale={locale}
+          perView={isEmbedded ? 'single' : 'responsive'}
+        />
       ) : (
         <p className="mb-8 text-sm text-text-muted">{t('empty')}</p>
       )}

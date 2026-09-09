@@ -19,6 +19,7 @@
       "Bash(git log:*)"
     ],
     "ask": [
+      "Bash(git commit *)",
       "Bash(git push:*)",
       "Bash(npm run db:*)",
       "Bash(npx prisma migrate:*)",

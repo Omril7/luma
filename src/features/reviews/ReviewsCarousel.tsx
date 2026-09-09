@@ -10,6 +10,9 @@ import type { PublicReviewDTO } from '@/shared/types'
 interface ReviewsCarouselProps {
   reviews: PublicReviewDTO[]
   locale: string
+  /** 'responsive' = 1/2/3 cards per view by viewport (full-width placement).
+   *  'single' = one card per view — for narrow/embedded columns where 3 cards would be unreadable. */
+  perView?: 'responsive' | 'single'
 }
 
 function formatDate(dateStr: string, locale: string): string {
@@ -19,7 +22,7 @@ function formatDate(dateStr: string, locale: string): string {
   }).format(new Date(dateStr))
 }
 
-export function ReviewsCarousel({ reviews, locale }: ReviewsCarouselProps) {
+export function ReviewsCarousel({ reviews, locale, perView = 'responsive' }: ReviewsCarouselProps) {
   const t = useTranslations('reviews')
   const isRtl = locale === 'he'
 
@@ -60,7 +63,11 @@ export function ReviewsCarousel({ reviews, locale }: ReviewsCarouselProps) {
             return (
               <div
                 key={review.id}
-                className="min-w-0 shrink-0 grow-0 basis-full sm:basis-1/2 lg:basis-1/3"
+                className={
+                  perView === 'single'
+                    ? 'min-w-0 shrink-0 grow-0 basis-full'
+                    : 'min-w-0 shrink-0 grow-0 basis-full sm:basis-1/2 lg:basis-1/3'
+                }
               >
                 <div className="h-full bg-surface rounded-lg border border-border p-6 shadow-soft flex flex-col gap-3">
                   <StarRating value={review.rating} readonly size="sm" />
