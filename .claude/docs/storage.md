@@ -545,8 +545,9 @@ GalleryImage model" note at the top of `adminGalleryService.ts` gets deleted.
 ## Verification
 
 - `npm run typecheck && npm run lint && npm run test && npm run build` clean.
-- Dev DB: run the migration; `SELECT count(*)` on `GalleryImage` == blob length; every
-  `url`/`sortOrder` matches.
+- Run the migration (there is only the production Supabase DB — this is a
+  consent-gated, data-moving migration, so do it with the owner watching); `SELECT count(*)`
+  on `GalleryImage` == blob length; every `url`/`sortOrder` matches.
 - `/gallery` and the home `GallerySection` render identically before/after; lightbox
   captions unchanged; order preserved.
 - Admin: add / edit text / reorder (drag) / delete an image → all persist; deleting removes
@@ -654,8 +655,8 @@ Requests carrying a valid cookie skip the maintenance rewrite.
   `/admin` and `/api/admin/*` work normally; `?bypass=<secret>` unlocks the real site for
   that browser; wrong secret does nothing.
 - `MAINTENANCE_MODE=0` → site normal, no `maint-bypass` cookie needed.
-- The maintenance page renders with the DB unreachable (kill the dev DB connection and load
-  it).
+- The maintenance page renders with the DB unreachable (temporarily point `DATABASE_URL` at a
+  bad host and load it — don't touch the real Supabase project).
 
 ---
 

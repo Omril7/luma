@@ -9,12 +9,16 @@ Check items off as you complete them and I'll update future plans accordingly.
 
 ### Supabase (database)
 
+> **One project only.** This single Supabase project **is** production; there is no separate
+> dev/staging DB. Local dev, `db:migrate` and `db:seed` all run against it. Credentials live
+> in `.env` (Prisma reads `.env`, not `.env.local`).
+
 - [x] Create a Supabase project at https://supabase.com → New Project (Luma studio organization)
 - [x] Go to **Project Settings → Database** and copy:
   - **Connection string (Transaction mode, port 6543)** → `DATABASE_URL` (add `?pgbouncer=true` at the end)
   - **Connection string (Session mode, port 5432)** → `DIRECT_URL`
-- [x] Copy `.env.example` → `.env.local` and fill in `DATABASE_URL` and `DIRECT_URL`
-- [x] Run `npm run db:migrate` to apply the schema to your Supabase dev project
+- [x] Copy `.env.example` → `.env` and fill in `DATABASE_URL` and `DIRECT_URL`
+- [x] Run `npm run db:migrate` to apply the schema to the (production, only) Supabase project
 - [x] Run `npm run db:seed` to seed sample products (after M1.2 seed is implemented)
 
 ### Cloudinary (image storage)

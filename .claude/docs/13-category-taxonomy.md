@@ -51,7 +51,8 @@ pattern already shipped for colors (`/api/admin/colors` GET+POST, inline "add ne
 project. If luma-manager reads `Product.category` anywhere (e.g. an order-detail view showing
 the product's category), dropping the `Category` enum and renaming the column will break it.
 **This wasn't checked as part of this plan** — confirm in luma-manager's own codebase/schema
-before running the migration in any shared environment (Supabase dev/staging/prod).
+before running the migration. (There is only one Supabase project — production — so the
+migration runs against live data; treat it accordingly.)
 
 ## Migration steps
 
@@ -186,8 +187,8 @@ never lived in i18n files. Keeping both would let them drift out of sync again (
 
 ## Rollout / testing checklist
 
-- Migration A + backfill + Migration B run cleanly against the dev Supabase project; `prisma
-studio` shows 9 `Category` rows and every `Product.categoryId` populated.
+- Migration A + backfill + Migration B run cleanly against the (production, only) Supabase
+  project; `prisma studio` shows 9 `Category` rows and every `Product.categoryId` populated.
 - `/shop` filter pills render the same 9 categories with the same labels as today, in both `he`
   and `en`.
 - `/product/[slug]` category badge renders correctly.

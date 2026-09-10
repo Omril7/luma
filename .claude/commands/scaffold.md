@@ -1,10 +1,10 @@
 ---
-description: Stand up the single-root Next.js app skeleton (App Router, configs, src/shared pricing engine, Prisma-ready, Docker) per the docs.
+description: Stand up the single-root Next.js app skeleton (App Router, configs, src/shared pricing engine, Prisma-ready, no Docker) per the docs.
 ---
 
 You are scaffolding the Luma — a **single Next.js app at the repo root** (no
 workspaces). Follow the docs as the source of truth: `.claude/docs/01-architecture.md` (layout),
-`.claude/docs/10-devops.md` (scripts, env, docker), `.claude/docs/02-data-models.md` (schema),
+`.claude/docs/10-devops.md` (scripts, env — one Supabase project, production only, no Docker), `.claude/docs/02-data-models.md` (schema),
 `.claude/docs/03-pricing-engine.md` (shared engine).
 
 Work through **Phase 0** of `.claude/ROADMAP.md` (M0.1, M0.2) and stop for review before
@@ -19,14 +19,15 @@ Steps:
    `prisma/`, `public/`).
 3. Root config: `package.json` scripts (from `10-devops.md`), `tsconfig.json` (strict),
    `next.config.ts`, ESLint + Prettier + lint-staged + pre-commit, `.gitignore` (Next-aware),
-   `.env.example` (every var), `README.md`, `docker-compose.yml`.
+   `.env.example` (every var), `README.md`. **No Docker** — the DB is a single hosted Supabase
+   project (production; there is no dev/staging DB), so no `docker-compose.yml`.
 4. Build `src/shared/`: `constants.ts`, `types.ts`, `pricing.ts` (implement the algorithm
    exactly), `schemas/`, and `pricing.test.ts` with the full case list from
    `11-testing-quality.md`. Add a minimal `src/app/layout.tsx`, `page.tsx`, and
    `src/app/api/health/route.ts` that imports from `@/shared` (proves wiring).
 5. Verify: `npm install` clean, pricing tests pass (Vitest), `npm run typecheck` + `npm run lint`
-   clean, `next build` succeeds. (`docker compose up` boots Postgres — note if Docker is
-   unavailable locally.)
+   clean, `next build` succeeds. (DB access needs `DATABASE_URL`/`DIRECT_URL` in `.env` pointed
+   at the Supabase project — the only one, which is production.)
 
 Rules: respect every golden rule in `CLAUDE.md`. `src/shared/` stays **framework-free** (no
 React/Next/Prisma imports). Do not start Phase 1 backend/frontend features in this command —

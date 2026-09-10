@@ -277,7 +277,7 @@ width, html }`. Scraping `og:image` off the post page directly also failed (clie
   revert.
 - **Decisions:** Dropped the DB column rather than leaving it unused (5 dev rows lost, all test
   data, confirmed acceptable). Rebuilt the migration folder that had been deleted mid-session
-  once `prisma migrate status` showed it was already applied to the Supabase dev DB, then added a
+  once `prisma migrate status` showed it was already applied to the Supabase DB, then added a
   proper drop migration on top rather than rewriting history.
 - **Notes/blockers:** `CHANGES.md` tracks the remaining 9 items from this feedback round; working
   through them in order this session.

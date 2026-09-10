@@ -44,7 +44,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 ### M1.1 Database schema ✅
 
 - [x] `prisma/schema.prisma` with **all** models (incl. Bundle, Review, SiteContent, EmailSettings, NewsletterSend) per `docs/02-data-models.md`
-- [x] First migration; Postgres running via docker or Supabase
+- [x] First migration against the (single, production) Supabase project — no local Docker Postgres
 - [x] Prisma client generated
 - **Acceptance:** `npm run db:migrate` succeeds; `db:studio` shows all tables.
 
@@ -485,7 +485,7 @@ slow** because every filter click is a full server navigation.
 **Product ordering (rides the same `ShopClient` rewrite):**
 
 - [x] **Storefront** — sort gains a `recommended` key = order by `sortOrder` then `createdAt
-    desc`; it's the **default** on `/shop`. Price/name/newest still override it. i18n
+  desc`; it's the **default** on `/shop`. Price/name/newest still override it. i18n
       `shop.sort.recommended` ("מומלץ" / "Recommended"). Server `SORT_MAP` gets `recommended`
       too (`/api/products` + related-products).
 - [x] **Bulk reorder endpoint** — `POST /api/admin/products/reorder` (`withAdmin`), body
@@ -502,7 +502,7 @@ slow** because every filter click is a full server navigation.
 
 - [x] **Schema + migration** — `Review.sortOrder Int @default(0)`;
       `prisma/migrations/20260910130000_review_sort_order/` (idempotent `ADD COLUMN IF NOT
-    EXISTS`). Applied to **prod** via `db:migrate` (single-DB project — `.env` is prod).
+  EXISTS`). Applied to **prod** via `db:migrate` (single-DB project — `.env` is prod).
       Additive + safe, no reset. No further prod step.
 - [x] `getFeaturedHomeReviews` orders by `[{ sortOrder: 'asc' }, { createdAt: 'desc' }]`;
       `updateReviewSchema` + `updateReview` accept `sortOrder`; `ReviewDTO.sortOrder` populated.

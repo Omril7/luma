@@ -128,14 +128,16 @@ ALTER TABLE "Review" ADD COLUMN "featuredOnHome" BOOLEAN NOT NULL DEFAULT false;
 
 ### Rollout
 
+> There is only one Supabase project — production — so there is no "dev first" step; the
+> migration lands on live data. That's why owner approval is required up front.
+
 1. Get explicit owner approval for the migration.
-2. `npm run db:migrate` against the Supabase **dev** project first; verify with `db:studio`.
-3. Apply to production behind the maintenance page — follow the **migration-day runbook** in
+2. Apply to production behind the maintenance page — follow the **migration-day runbook** in
    [`storage.md` Part 3](storage.md#part-3--maintenance-mode-for-migrations-that-need-a-downtime-window)
-   (`prisma migrate deploy`, app code in the same deploy). This migration is fast and
-   non-locking, so the window is short, but the page removes any risk of a visitor hitting a
-   half-migrated state.
-4. **App code is backwards-compatible with the pre-migration DB** except the two new
+   (`npm run db:migrate` / `prisma migrate deploy`, app code in the same deploy); verify with
+   `db:studio`. This migration is fast and non-locking, so the window is short, but the page
+   removes any risk of a visitor hitting a half-migrated state.
+3. **App code is backwards-compatible with the pre-migration DB** except the two new
    columns — so if the migration is delayed, hold the whole feature branch; don't half-ship.
 
 ---
@@ -449,8 +451,8 @@ Under `reviews`:
 ## 9. Verification
 
 - `npm run typecheck && npm run lint && npm run test && npm run build` clean.
-- **Migration (dev DB):** `npm run db:migrate`; `db:studio` shows `imageUrl`,
-  `featuredOnHome`, nullable `productId`; existing reviews unchanged.
+- **Migration:** `npm run db:migrate` (there is only the production Supabase DB); `db:studio`
+  shows `imageUrl`, `featuredOnHome`, nullable `productId`; existing reviews unchanged.
 - **Product review + image:** submit a review with a photo on a product page → toast +
   pending notice; appears in `/admin/reviews` with a thumbnail; approve → shows on the
   product carousel with the image and lightbox; `he` RTL + `en` LTR both correct.
