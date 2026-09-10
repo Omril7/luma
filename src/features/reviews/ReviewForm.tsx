@@ -7,10 +7,14 @@ import { Loader2, CheckCircle2 } from 'lucide-react'
 import { useUiStore } from '@/stores/uiStore'
 import { api } from '@/lib/api'
 import { StarRating } from '@/components/ui/StarRating'
+import { PublicImageUpload } from '@/components/ui/PublicImageUpload'
 
 interface ReviewFormProps {
-  productId: string
+  /** A product id ties the review to that product; null / omitted = global business review. */
+  productId?: string | null
   locale: string
+  /** Overrides the form heading; pass `null` to hide it (e.g. inside a titled modal). */
+  heading?: string | null
 }
 
 interface FormState {
@@ -21,12 +25,13 @@ interface FormState {
 
 const EMPTY_FORM: FormState = { customerName: '', rating: 0, comment: '' }
 
-export function ReviewForm({ productId, locale }: ReviewFormProps) {
+export function ReviewForm({ productId = null, locale, heading }: ReviewFormProps) {
   const t = useTranslations('reviews')
   const { a11y, addToast } = useUiStore()
   const shouldAnimate = !a11y.noMotion
 
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [errors, setErrors] = useState<Partial<Record<'customerName' | 'rating', string>>>({})
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -53,14 +58,16 @@ export function ReviewForm({ productId, locale }: ReviewFormProps) {
     setSubmitting(true)
     try {
       await api.post('/api/reviews', {
-        productId,
+        productId: productId ?? undefined,
         customerName: form.customerName.trim(),
         rating: form.rating,
         comment_he: locale === 'he' ? form.comment.trim() || undefined : undefined,
         comment_en: locale === 'en' ? form.comment.trim() || undefined : undefined,
+        imageUrl: imageUrl ?? undefined,
       })
       setSubmitted(true)
       setForm(EMPTY_FORM)
+      setImageUrl(null)
     } catch {
       addToast({ type: 'error', message: t('formError') })
     } finally {
@@ -95,7 +102,11 @@ export function ReviewForm({ productId, locale }: ReviewFormProps) {
       viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
-      <h3 className="font-heading text-lg font-semibold text-text-main">{t('formHeading')}</h3>
+      {heading !== null && (
+        <h3 className="font-heading text-lg font-semibold text-text-main">
+          {heading ?? t('formHeading')}
+        </h3>
+      )}
 
       <div>
         <span className="mb-1.5 block text-sm font-medium text-text-main">{t('formRating')}</span>
@@ -151,6 +162,8 @@ export function ReviewForm({ productId, locale }: ReviewFormProps) {
           className={`${inputCls} resize-none border-border`}
         />
       </div>
+
+      <PublicImageUpload value={imageUrl} onChange={setImageUrl} />
 
       <button
         type="submit"

@@ -256,16 +256,18 @@ model NewsletterSend {
 
 // Phase-2 UI, model now
 model Review {
-  id           String       @id @default(cuid())
-  productId    String
-  customerName String
-  rating       Int
-  comment_he   String?
-  comment_en   String?
-  status       ReviewStatus @default(NEW)
-  createdAt    DateTime     @default(now())
+  id             String       @id @default(cuid())
+  productId      String? // null = global "about the business" review
+  customerName   String
+  rating         Int
+  comment_he     String?
+  comment_en     String?
+  imageUrl       String? // optional single customer/admin image (Cloudinary URL)
+  status         ReviewStatus @default(NEW)
+  featuredOnHome Boolean      @default(false) // admin flag → homepage TestimonialsSection
+  createdAt      DateTime     @default(now())
 
-  product Product @relation(fields: [productId], references: [id])
+  product Product? @relation(fields: [productId], references: [id])
 }
 
 // Customer "request a price offer" inquiries from the product page.

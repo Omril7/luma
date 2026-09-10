@@ -19,6 +19,57 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-09-10 — M1.28i: unified Review table, homepage reviews, global reviews, review images
+
+- **Done:** Full M1.28i app code on branch `m1.28i-reviews-unified` (per plan
+  `.claude/docs/16-reviews-and-testimonials.md`). Migration written, **not run**.
+  - **Schema:** `prisma/schema.prisma` `Review` — `productId` now `String?`, `+imageUrl`,
+    `+featuredOnHome Boolean @default(false)`, `product` relation optional. Migration
+    `prisma/migrations/20260910120000_review_global_and_image/migration.sql` (2 ADD COLUMN
+    - 1 DROP NOT NULL). `prisma generate` run so types are live.
+  - **Shared:** `createReviewSchema` (nullable `productId`, `+imageUrl`), `updateReviewSchema`
+    (`+rating/imageUrl/featuredOnHome`), new `adminCreateReviewSchema`. `types.ts` —
+    `PublicReviewDTO.imageUrl`, `ReviewDTO` null-safe product fields + `imageUrl`/`featuredOnHome`,
+    new `HomeReviewDTO`.
+  - **Service** (`reviewService.ts` rewritten): `toReviewDTO` mapper, global-aware `createReview`
+    (result union: ok / product_not_found / empty), `getFeaturedHomeReviews`, `adminCreateReview`,
+    `updateReview` (featuredOnHome only on APPROVED; de-approve auto-unfeatures), `deleteReview`.
+    Image orphan-cleanup on image change + delete. `cloudinaryCleanupService.getAllDbImageUrls`
+    scans `Review.imageUrl`.
+  - **Routes:** `POST /api/reviews` (no productId ok, 422 on empty), new `POST /api/reviews/upload`
+    (public, 8/hr rate limit, jpeg/png/webp, ≤5 MB, magic-byte sniff, 201 `{url}`),
+    `GET /api/admin/reviews` (null-safe + `imageUrl`/`featuredOnHome` + `?scope=global|product`),
+    new `POST /api/admin/reviews`, `PATCH`/`DELETE [id]` via service.
+  - **Storefront:** home `page.tsx` drops `getSiteContentByKey('home.testimonials')` →
+    `getFeaturedHomeReviews(12)`. `TestimonialsSection` always renders heading + "Write us a
+    review" CTA (carousel conditional); `TestimonialsCarousel` `Card` rebuilt from `HomeReviewDTO`
+    (comment + fallback, `customerName`, "on <product>" sub-line, optional image) — windowed-loop
+    engine untouched. New `GlobalReviewModal` (mirrors `PriceOfferModal`). `ReviewForm` gains
+    `productId?: string|null` + `heading?: string|null` + optional image via new shared
+    `PublicImageUpload`. `ReviewsCarousel` renders `imageUrl` thumbnail + Esc-closable lightbox.
+  - **Admin:** `ReviewsListPage` rebuilt — global "ביקורת כללית" chip, homepage star toggle
+    (APPROVED-only, optimistic), row/view image thumbnails, edit dialog gains rating + `ImageUpload`,
+    view dialog gains feature toggle, "+ ביקורת חדשה" create dialog (global/product target,
+    auto-APPROVED, optional feature checkbox), scope filter.
+  - **Site Content:** `home.testimonials` tab + `TestimonialsTab` + all its
+    types/state/hooks/render fully removed from `SiteContentPage.tsx`.
+  - **i18n:** `reviews.formImage*`, `reviews.imageAlt/imageClose`, `reviews.writeAboutUsCta`,
+    `reviews.globalFormHeading`, `home.testimonials.onProduct` (he + en). Docs: `02-data-models.md`
+    Review section rewritten; `16-…md` status; `storage.md` §4 public-uploader line; ROADMAP + this log.
+- **Roadmap:** M1.28i 🟡 code-complete — migration pending owner go-ahead.
+- **Decisions:**
+  - Owner chose "write migration, don't run" + single branch for the whole milestone.
+  - `adminCreateReviewSchema` uses plain `.optional()` (no `.default()`) for `status`/`featuredOnHome`
+    — zod `.default()` broke `parseBody<T>` inference (input vs output type). Defaults applied in the service.
+  - `POST /api/reviews/upload` keeps the current `storage.save()` proxy pattern; it folds into
+    `storage.md` Part 1's signed-ticket model later (checklist line added there).
+- **Notes/blockers:** `npm run build` **compiles + typechecks + lints + tests green**, but static
+  prerender of `/he` fails with `P2022 Review.imageUrl does not exist` until the migration runs
+  against the dev DB. Run `npm run db:migrate` to unblock the build. Existing prod
+  `home.testimonials` SiteContent row (3 testimonials) should be re-entered via the admin
+  "+ ביקורת חדשה" flow as APPROVED + featured before the switch goes live, then the stale row
+  deleted manually.
+
 ## 2026-09-06 — Product gallery: full thumbnail carousel, zoom lightbox, hover-swap, variant prices
 
 - **Done:** Client request (4 items).

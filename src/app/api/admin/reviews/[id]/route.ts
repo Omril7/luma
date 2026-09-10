@@ -1,52 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAdmin, parseBody, errorResponse, type AdminPayload } from '@/server/http'
 import { updateReviewSchema } from '@/shared/schemas'
-import { prisma } from '@/server/prisma'
+import { updateReview, deleteReview } from '@/server/services/reviewService'
 
 type Ctx = { params: Promise<{ id: string }> }
 
 export const PATCH = withAdmin<Ctx>(async (req: NextRequest, _admin: AdminPayload, { params }) => {
   const { id } = await params
 
-  const existing = await prisma.review.findUnique({ where: { id } })
-  if (!existing) return errorResponse('Review not found', 404)
-
   const body = await parseBody(req, updateReviewSchema)
   if (body instanceof NextResponse) return body
 
-  const review = await prisma.review.update({
-    where: { id },
-    data: {
-      ...(body.status !== undefined && { status: body.status }),
-      ...(body.comment_he !== undefined && { comment_he: body.comment_he }),
-      ...(body.comment_en !== undefined && { comment_en: body.comment_en }),
-    },
-    include: { product: { select: { id: true, name_he: true, name_en: true, slug: true } } },
-  })
+  const result = await updateReview(id, body)
+  if (!result.ok) {
+    if (result.reason === 'not_found') return errorResponse('Review not found', 404)
+    return errorResponse('Only an approved review can be featured on the homepage', 422)
+  }
 
-  return NextResponse.json({
-    review: {
-      id: review.id,
-      productId: review.productId,
-      productName_he: review.product.name_he,
-      productName_en: review.product.name_en,
-      productSlug: review.product.slug,
-      customerName: review.customerName,
-      rating: review.rating,
-      comment_he: review.comment_he ?? undefined,
-      comment_en: review.comment_en ?? undefined,
-      status: review.status,
-      createdAt: review.createdAt.toISOString(),
-    },
-  })
+  return NextResponse.json({ review: result.review })
 })
 
 export const DELETE = withAdmin<Ctx>(async (_req, _admin: AdminPayload, { params }) => {
   const { id } = await params
 
-  const existing = await prisma.review.findUnique({ where: { id } })
-  if (!existing) return errorResponse('Review not found', 404)
+  const deleted = await deleteReview(id)
+  if (!deleted) return errorResponse('Review not found', 404)
 
-  await prisma.review.delete({ where: { id } })
   return NextResponse.json({ success: true })
 })

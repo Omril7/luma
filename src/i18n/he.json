@@ -488,7 +488,15 @@
     "formPendingNotice": "תודה על הביקורת!",
     "formError": "אירעה שגיאה בשליחה, נסו שוב",
     "required": "שדה חובה",
-    "ratingRequired": "יש לבחור דירוג"
+    "ratingRequired": "יש לבחור דירוג",
+    "formImageLabel": "הוספת תמונה (לא חובה)",
+    "formImageHint": "JPG, PNG או WebP · עד 5MB",
+    "formImageRemove": "הסרת התמונה",
+    "formImageError": "העלאת התמונה נכשלה, נסו שוב",
+    "imageAlt": "תמונה מאת {name}",
+    "imageClose": "סגירת התמונה",
+    "writeAboutUsCta": "כתבו לנו ביקורת",
+    "globalFormHeading": "כתבו ביקורת על העסק"
   },
   "home": {
     "hero": {
@@ -521,6 +529,7 @@
     },
     "testimonials": {
       "heading": "לקוחות מספרים",
+      "onProduct": "על {product}",
       "carouselPrev": "המלצה קודמת",
       "carouselNext": "המלצה הבאה",
       "carouselDot": "מעבר להמלצה {index}"

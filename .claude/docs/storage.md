@@ -240,6 +240,13 @@ Optional enhancement: use `XMLHttpRequest` for the `ticket.endpoint` POST to get
 - No change needed in `GalleryPage`, `InstagramPage`, `SiteContentPage`, `ColorsListPage` — they
   all go through `ImageUpload`.
 - `ProductFormPage.tsx:1155` copy: `עד 5MB` → `עד 10MB` (and the same in any other helper text).
+- **Public review uploader** (added in M1.28i): `src/components/ui/PublicImageUpload.tsx` posts to
+  `POST /api/reviews/upload` (currently the old proxy pattern, byte-validated server-side). Fold it
+  into the ticket model here — it becomes a **public, rate-limited** ticket issuer
+  (`storage.createUploadTicket()` keeping its own `checkRateLimit`); `PublicImageUpload` switches to
+  the shared `uploadImage()` helper (no token). It's the only non-admin upload path, so the ticket
+  endpoint's rate limit + the preset's size/format cap stay load-bearing. Update `reviews.formImageHint`
+  copy `עד 5MB` → `עד 10MB` too.
 
 ### 5. Cloudinary dashboard setup (one-time, manual)
 

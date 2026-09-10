@@ -6,7 +6,6 @@ import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import { ImageUpload } from '@/components/ui/ImageUpload'
 import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
-import { StarRating } from '@/components/ui/StarRating'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -66,25 +65,10 @@ interface FaqItems {
   items: FaqItem[]
 }
 
-interface TestimonialItem {
-  quote_he: string
-  quote_en: string
-  author_he: string
-  author_en: string
-  location_he: string
-  location_en: string
-  rating: number
-}
-
-interface TestimonialsData {
-  items: TestimonialItem[]
-}
-
 type SiteContentMap = {
   'home.hero': HomeHero
   'home.story': HomeStory
   'home.contact': HomeContact
-  'home.testimonials': TestimonialsData
   'about.page': AboutPage
   'faq.items': FaqItems
   footer: FooterContent
@@ -136,9 +120,6 @@ function defaultFooter(): FooterContent {
   return { tagline_he: '', tagline_en: '' }
 }
 function defaultFaq(): FaqItems {
-  return { items: [] }
-}
-function defaultTestimonials(): TestimonialsData {
   return { items: [] }
 }
 
@@ -230,7 +211,6 @@ function useSaveSection(key: ContentKey, token: string | null) {
 const TABS: { key: ContentKey; label: string }[] = [
   { key: 'home.hero', label: 'דף הבית — הירו' },
   { key: 'home.story', label: 'דף הבית — הסיפור שלנו' },
-  { key: 'home.testimonials', label: 'דף הבית — המלצות לקוחות' },
   { key: 'home.contact', label: 'דף הבית — יצירת קשר' },
   { key: 'about.page', label: 'אודות' },
   { key: 'faq.items', label: 'שאלות נפוצות' },
@@ -907,205 +887,6 @@ function FooterTab({ data, onChange, onSave, saving, success, error }: FooterTab
   )
 }
 
-interface TestimonialsTabProps {
-  data: TestimonialsData
-  onChange: (d: TestimonialsData) => void
-  onSave: () => void
-  saving: boolean
-  success: boolean
-  error: string | null
-}
-
-function TestimonialsTab({ data, onChange, onSave, saving, success, error }: TestimonialsTabProps) {
-  function setItems(items: TestimonialItem[]) {
-    onChange({ items })
-  }
-
-  function addItem() {
-    setItems([
-      ...data.items,
-      {
-        quote_he: '',
-        quote_en: '',
-        author_he: '',
-        author_en: '',
-        location_he: '',
-        location_en: '',
-        rating: 5,
-      },
-    ])
-  }
-
-  function removeItem(idx: number) {
-    setItems(data.items.filter((_, i) => i !== idx))
-  }
-
-  function updateItem(idx: number, field: keyof TestimonialItem, value: string | number) {
-    setItems(data.items.map((item, i) => (i === idx ? { ...item, [field]: value } : item)))
-  }
-
-  function moveUp(idx: number) {
-    if (idx === 0) return
-    const next = [...data.items]
-    ;[next[idx - 1], next[idx]] = [next[idx], next[idx - 1]]
-    setItems(next)
-  }
-
-  function moveDown(idx: number) {
-    if (idx === data.items.length - 1) return
-    const next = [...data.items]
-    ;[next[idx], next[idx + 1]] = [next[idx + 1], next[idx]]
-    setItems(next)
-  }
-
-  return (
-    <div className="space-y-4">
-      <h3 className="text-base font-semibold text-text-main mb-4">דף הבית — המלצות לקוחות</h3>
-
-      {data.items.length === 0 && (
-        <p className="text-sm text-text-muted py-4 text-center">
-          אין המלצות עדיין. לחץ על &quot;הוסף המלצה&quot; להתחיל.
-        </p>
-      )}
-
-      {data.items.map((item, idx) => (
-        <div key={idx} className="border border-border rounded-lg p-4 space-y-3 bg-bg">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-semibold text-text-muted">המלצה {idx + 1}</span>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => moveUp(idx)}
-                disabled={idx === 0}
-                aria-label="הזז למעלה"
-                className="p-1.5 rounded text-text-muted hover:bg-secondary hover:text-text-main disabled:opacity-30 transition-colors cursor-pointer min-w-[32px] min-h-[32px] flex items-center justify-center"
-              >
-                <ArrowUp size={14} aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                onClick={() => moveDown(idx)}
-                disabled={idx === data.items.length - 1}
-                aria-label="הזז למטה"
-                className="p-1.5 rounded text-text-muted hover:bg-secondary hover:text-text-main disabled:opacity-30 transition-colors cursor-pointer min-w-[32px] min-h-[32px] flex items-center justify-center"
-              >
-                <ArrowDown size={14} aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                onClick={() => removeItem(idx)}
-                aria-label="מחק המלצה"
-                className="p-1.5 rounded text-text-muted hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer min-w-[32px] min-h-[32px] flex items-center justify-center"
-              >
-                <Trash2 size={14} aria-hidden="true" />
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className={labelCls}>דירוג</label>
-            <StarRating
-              value={item.rating}
-              onChange={(rating) => updateItem(idx, 'rating', rating)}
-              size="sm"
-              aria-label="דירוג"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls}>ציטוט {badgeHe}</label>
-              <textarea
-                rows={3}
-                value={item.quote_he}
-                onChange={(e) => updateItem(idx, 'quote_he', e.target.value)}
-                dir="rtl"
-                placeholder="הציטוט בעברית"
-                className={`${textareaCls} min-h-[80px]`}
-              />
-            </div>
-            <div dir="ltr">
-              <label className={labelCls}>Quote {badgeEn}</label>
-              <textarea
-                rows={3}
-                value={item.quote_en}
-                onChange={(e) => updateItem(idx, 'quote_en', e.target.value)}
-                dir="ltr"
-                placeholder="Quote in English"
-                className={`${textareaCls} min-h-[80px]`}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls}>שם הלקוח {badgeHe}</label>
-              <input
-                type="text"
-                value={item.author_he}
-                onChange={(e) => updateItem(idx, 'author_he', e.target.value)}
-                dir="rtl"
-                placeholder="מיכל כהן"
-                className={inputCls}
-              />
-            </div>
-            <div dir="ltr">
-              <label className={labelCls}>Customer name {badgeEn}</label>
-              <input
-                type="text"
-                value={item.author_en}
-                onChange={(e) => updateItem(idx, 'author_en', e.target.value)}
-                dir="ltr"
-                placeholder="Michal Cohen"
-                className={inputCls}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls}>עיר {badgeHe}</label>
-              <input
-                type="text"
-                value={item.location_he}
-                onChange={(e) => updateItem(idx, 'location_he', e.target.value)}
-                dir="rtl"
-                placeholder="תל אביב"
-                className={inputCls}
-              />
-            </div>
-            <div dir="ltr">
-              <label className={labelCls}>City {badgeEn}</label>
-              <input
-                type="text"
-                value={item.location_en}
-                onChange={(e) => updateItem(idx, 'location_en', e.target.value)}
-                dir="ltr"
-                placeholder="Tel Aviv"
-                className={inputCls}
-              />
-            </div>
-          </div>
-        </div>
-      ))}
-
-      <button
-        type="button"
-        onClick={addItem}
-        className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-medium transition-colors min-h-[44px] cursor-pointer"
-      >
-        <Plus size={16} aria-hidden="true" />
-        הוסף המלצה
-      </button>
-
-      <div className="flex items-center justify-between pt-2">
-        <SaveStatus success={success} error={error} />
-        <SaveButton saving={saving} onClick={onSave} />
-      </div>
-    </div>
-  )
-}
-
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export function SiteContentPage() {
@@ -1115,7 +896,6 @@ export function SiteContentPage() {
   const [homeHero, setHomeHero] = useState<HomeHero>(defaultHomeHero())
   const [homeStory, setHomeStory] = useState<HomeStory>(defaultHomeStory())
   const [homeContact, setHomeContact] = useState<HomeContact>(defaultHomeContact())
-  const [testimonials, setTestimonials] = useState<TestimonialsData>(defaultTestimonials())
   const [about, setAbout] = useState<AboutPage>(defaultAbout())
   const [faq, setFaq] = useState<FaqItems>(defaultFaq())
   const [footer, setFooter] = useState<FooterContent>(defaultFooter())
@@ -1126,7 +906,6 @@ export function SiteContentPage() {
   const homeHeroSave = useSaveSection('home.hero', token)
   const homeStorySave = useSaveSection('home.story', token)
   const homeContactSave = useSaveSection('home.contact', token)
-  const testimonialsSave = useSaveSection('home.testimonials', token)
   const aboutSave = useSaveSection('about.page', token)
   const faqSave = useSaveSection('faq.items', token)
   const footerSave = useSaveSection('footer', token)
@@ -1143,8 +922,6 @@ export function SiteContentPage() {
       if (content['home.hero']) setHomeHero(content['home.hero'] as HomeHero)
       if (content['home.story']) setHomeStory(content['home.story'] as HomeStory)
       if (content['home.contact']) setHomeContact(content['home.contact'] as HomeContact)
-      if (content['home.testimonials'])
-        setTestimonials(content['home.testimonials'] as TestimonialsData)
       if (content['about.page']) setAbout(content['about.page'] as AboutPage)
       if (content['faq.items']) setFaq(content['faq.items'] as FaqItems)
       if (content['footer']) setFooter(content['footer'] as FooterContent)
@@ -1233,16 +1010,6 @@ export function SiteContentPage() {
                 success={homeStorySave.success}
                 error={homeStorySave.error}
                 token={token ?? ''}
-              />
-            )}
-            {activeTab === 'home.testimonials' && (
-              <TestimonialsTab
-                data={testimonials}
-                onChange={setTestimonials}
-                onSave={() => testimonialsSave.save(testimonials)}
-                saving={testimonialsSave.saving}
-                success={testimonialsSave.success}
-                error={testimonialsSave.error}
               />
             )}
             {activeTab === 'home.contact' && (

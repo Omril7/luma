@@ -1,9 +1,10 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Image from 'next/image'
 import useEmblaCarousel from 'embla-carousel-react'
 import { useTranslations } from 'next-intl'
-import { ChevronRight, ChevronLeft } from 'lucide-react'
+import { ChevronRight, ChevronLeft, X } from 'lucide-react'
 import { StarRating } from '@/components/ui/StarRating'
 import type { PublicReviewDTO } from '@/shared/types'
 
@@ -35,6 +36,16 @@ export function ReviewsCarousel({ reviews, locale, perView = 'responsive' }: Rev
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [canPrev, setCanPrev] = useState(false)
   const [canNext, setCanNext] = useState(false)
+  const [lightbox, setLightbox] = useState<{ url: string; name: string } | null>(null)
+
+  useEffect(() => {
+    if (!lightbox) return
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setLightbox(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [lightbox])
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return
@@ -71,6 +82,23 @@ export function ReviewsCarousel({ reviews, locale, perView = 'responsive' }: Rev
               >
                 <div className="h-full bg-surface rounded-lg border border-border p-6 shadow-soft flex flex-col gap-3">
                   <StarRating value={review.rating} readonly size="sm" />
+                  {review.imageUrl && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setLightbox({ url: review.imageUrl!, name: review.customerName })
+                      }
+                      className="relative block aspect-[4/3] w-full overflow-hidden rounded-md border border-border cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <Image
+                        src={review.imageUrl}
+                        alt={t('imageAlt', { name: review.customerName })}
+                        fill
+                        sizes="(max-width: 640px) 100vw, 33vw"
+                        className="object-cover"
+                      />
+                    </button>
+                  )}
                   {(comment || fallbackComment) && (
                     <blockquote className="text-text-main text-sm leading-relaxed flex-1">
                       {comment || fallbackComment}
@@ -133,6 +161,32 @@ export function ReviewsCarousel({ reviews, locale, perView = 'responsive' }: Rev
               <ChevronRight size={18} aria-hidden="true" />
             )}
           </button>
+        </div>
+      )}
+
+      {lightbox && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('imageAlt', { name: lightbox.name })}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setLightbox(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setLightbox(null)}
+            aria-label={t('imageClose')}
+            className="absolute end-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
+          >
+            <X size={20} aria-hidden="true" />
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={lightbox.url}
+            alt={t('imageAlt', { name: lightbox.name })}
+            className="max-h-[85vh] max-w-full rounded-lg object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>

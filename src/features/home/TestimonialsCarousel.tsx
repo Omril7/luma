@@ -8,10 +8,10 @@ import { motion } from 'motion/react'
 import { ChevronRight, ChevronLeft } from 'lucide-react'
 import { useUiStore } from '@/stores/uiStore'
 import { StarRating } from '@/components/ui/StarRating'
-import type { TestimonialItem } from './TestimonialsSection'
+import type { HomeReviewDTO } from '@/shared/types'
 
 interface TestimonialsCarouselProps {
-  items: TestimonialItem[]
+  items: HomeReviewDTO[]
   locale: string
 }
 
@@ -69,10 +69,12 @@ function useTweens(emblaApi: EmblaCarouselType | undefined, enabled: boolean) {
 
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
-function Card({ item, locale, isRtl }: { item: TestimonialItem; locale: string; isRtl: boolean }) {
-  const quote = locale === 'he' ? item.quote_he : item.quote_en
-  const author = locale === 'he' ? item.author_he : item.author_en
-  const location = locale === 'he' ? item.location_he : item.location_en
+function Card({ item, locale, isRtl }: { item: HomeReviewDTO; locale: string; isRtl: boolean }) {
+  const t = useTranslations('home.testimonials')
+  const comment = locale === 'he' ? item.comment_he : item.comment_en
+  const fallbackComment = locale === 'he' ? item.comment_en : item.comment_he
+  const body = comment || fallbackComment
+  const productName = locale === 'he' ? item.productName_he : item.productName_en
 
   return (
     // data-tween receives the JS-driven scale/opacity/parallax transforms; dir restores this
@@ -85,12 +87,27 @@ function Card({ item, locale, isRtl }: { item: TestimonialItem; locale: string; 
       <div className="mb-3">
         <StarRating value={item.rating} readonly size="sm" />
       </div>
-      <blockquote className="text-text-main italic text-sm leading-relaxed mb-4">
-        {quote}
-      </blockquote>
+      {item.imageUrl && (
+        <div className="mb-4 overflow-hidden rounded-md border border-border">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={item.imageUrl}
+            alt=""
+            loading="lazy"
+            className="aspect-[4/3] w-full object-cover"
+          />
+        </div>
+      )}
+      {body && (
+        <blockquote className="text-text-main italic text-sm leading-relaxed mb-4">
+          {body}
+        </blockquote>
+      )}
       <footer>
-        <p className="font-semibold text-text-main text-sm">{author}</p>
-        <p className="text-text-muted text-xs">{location}</p>
+        <p className="font-semibold text-text-main text-sm">{item.customerName}</p>
+        {productName && (
+          <p className="text-text-muted text-xs">{t('onProduct', { product: productName })}</p>
+        )}
       </footer>
     </div>
   )

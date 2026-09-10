@@ -123,10 +123,19 @@ These compose freely:
 `id`, `subject_he`, `subject_en`, `sentAt`, `recipientCount Int`,
 `targetLanguage Language?` (null = all). Append-only log.
 
-### Review _(phase 2 UI, model now)_
+### Review
 
-`id`, `productId`, `customerName`, `rating Int` (1–5), `comment_he?`, `comment_en?`,
-`isApproved Boolean @default(false)`, `createdAt`.
+Single source of truth for **all** customer feedback — per-product reviews **and**
+global "about the business" reviews (also feeds the homepage testimonials carousel).
+
+`id`, `productId String?` (null = global review), `customerName`, `rating Int` (1–5),
+`comment_he?`, `comment_en?`, `imageUrl?` (one optional Cloudinary image, customer- or
+admin-supplied), `status ReviewStatus @default(NEW)` (`NEW|READ|APPROVED|REJECTED`),
+`featuredOnHome Boolean @default(false)` (admin flag → homepage `TestimonialsSection`;
+only meaningful while `APPROVED`), `createdAt`. Relation `product Product?` (optional).
+
+Guard (service-enforced): a review must carry at least one of `comment_he` / `comment_en`
+/ `imageUrl`. Public submissions land as `NEW`; admin-authored ones default to `APPROVED`.
 
 ### SiteContent
 

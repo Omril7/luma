@@ -4,7 +4,6 @@ import { HeroSection, type HomeHeroContent } from '@/features/home/HeroSection'
 // import { FeaturedSection } from '@/features/home/FeaturedSection'
 import type { HomeStoryContent } from '@/features/home/StorySection'
 import type { HomeContactContent } from '@/features/home/ContactSection'
-import type { TestimonialItem } from '@/features/home/TestimonialsSection'
 
 // Below-the-fold sections: still server-rendered, but their client JS is split
 // into separate chunks so above-the-fold hydration isn't one long task.
@@ -27,6 +26,7 @@ import { getSiteContentByKey } from '@/server/services/adminSiteContentService'
 import { getSiteSettings } from '@/server/services/adminSettingsService'
 import { listActiveInstagramHighlights } from '@/server/services/adminInstagramService'
 import { listGalleryImages } from '@/server/services/adminGalleryService'
+import { getFeaturedHomeReviews } from '@/server/services/reviewService'
 import { setRequestLocale } from 'next-intl/server'
 
 export const revalidate = 300
@@ -82,17 +82,23 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
   const { lang } = await params
   setRequestLocale(lang)
 
-  const [row, heroRow, storyRow, contactRow, { business }, instagramHighlights, galleryImages] =
-    await Promise.all([
-      getSiteContentByKey('home.testimonials'),
-      getSiteContentByKey('home.hero'),
-      getSiteContentByKey('home.story'),
-      getSiteContentByKey('home.contact'),
-      getSiteSettings(),
-      listActiveInstagramHighlights(),
-      listGalleryImages(),
-    ])
-  const testimonials = (row?.value as { items?: TestimonialItem[] } | undefined)?.items ?? []
+  const [
+    homeReviews,
+    heroRow,
+    storyRow,
+    contactRow,
+    { business },
+    instagramHighlights,
+    galleryImages,
+  ] = await Promise.all([
+    getFeaturedHomeReviews(12),
+    getSiteContentByKey('home.hero'),
+    getSiteContentByKey('home.story'),
+    getSiteContentByKey('home.contact'),
+    getSiteSettings(),
+    listActiveInstagramHighlights(),
+    listGalleryImages(),
+  ])
   const heroContent: HomeHeroContent = {
     ...HOME_HERO_DEFAULTS,
     ...((heroRow?.value as Partial<HomeHeroContent>) ?? {}),
@@ -117,7 +123,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         <StorySection locale={lang} content={storyContent} />
       </div>
       <div className="bg-secondary">
-        <TestimonialsSection locale={lang} items={testimonials} />
+        <TestimonialsSection locale={lang} reviews={homeReviews} />
       </div>
       <div className="bg-bg">
         <InstagramSection

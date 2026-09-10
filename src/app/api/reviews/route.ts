@@ -10,8 +10,11 @@ export const POST = withApi(async (req: NextRequest) => {
   const body = await parseBody(req, createReviewSchema)
   if (body instanceof NextResponse) return body
 
-  const review = await createReview(body)
-  if (!review) return errorResponse('Product not found', 404)
+  const result = await createReview(body)
+  if (!result.ok) {
+    if (result.reason === 'product_not_found') return errorResponse('Product not found', 404)
+    return errorResponse('A review needs a comment or an image', 422)
+  }
 
   return NextResponse.json({ success: true }, { status: 201 })
 })

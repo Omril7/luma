@@ -488,7 +488,15 @@
     "formPendingNotice": "Thank you for your review!",
     "formError": "Something went wrong, please try again",
     "required": "This field is required",
-    "ratingRequired": "Please select a rating"
+    "ratingRequired": "Please select a rating",
+    "formImageLabel": "Add a photo (optional)",
+    "formImageHint": "JPG, PNG or WebP · up to 5MB",
+    "formImageRemove": "Remove photo",
+    "formImageError": "Photo upload failed, please try again",
+    "imageAlt": "Photo by {name}",
+    "imageClose": "Close photo",
+    "writeAboutUsCta": "Write us a review",
+    "globalFormHeading": "Review our business"
   },
   "home": {
     "hero": {
@@ -521,6 +529,7 @@
     },
     "testimonials": {
       "heading": "Customers Say",
+      "onProduct": "on {product}",
       "carouselPrev": "Previous testimonial",
       "carouselNext": "Next testimonial",
       "carouselDot": "Go to testimonial {index}"

@@ -348,11 +348,12 @@ export type UpdateSettingsInput = z.infer<typeof updateSettingsSchema>
 // ── Reviews ───────────────────────────────────────────────────────────────────
 
 export const createReviewSchema = z.object({
-  productId: z.string().min(1),
+  productId: z.string().min(1).nullish(), // omitted / null => global "about the business" review
   customerName: z.string().min(2).max(100),
   rating: z.number().int().min(1).max(5),
   comment_he: z.string().max(2000).optional(),
   comment_en: z.string().max(2000).optional(),
+  imageUrl: z.string().url().max(500).optional(), // set from POST /api/reviews/upload
 })
 
 export type CreateReviewInput = z.infer<typeof createReviewSchema>
@@ -361,9 +362,26 @@ export const updateReviewSchema = z.object({
   status: z.enum(['NEW', 'READ', 'APPROVED', 'REJECTED']).optional(),
   comment_he: z.string().max(2000).nullable().optional(),
   comment_en: z.string().max(2000).nullable().optional(),
+  rating: z.number().int().min(1).max(5).optional(),
+  imageUrl: z.string().url().max(500).nullable().optional(), // null => remove image
+  featuredOnHome: z.boolean().optional(),
 })
 
 export type UpdateReviewInput = z.infer<typeof updateReviewSchema>
+
+// Admin-authored review (moderation panel "+ New review"). Defaults to APPROVED.
+export const adminCreateReviewSchema = z.object({
+  productId: z.string().min(1).nullish(),
+  customerName: z.string().min(2).max(100),
+  rating: z.number().int().min(1).max(5),
+  comment_he: z.string().max(2000).optional(),
+  comment_en: z.string().max(2000).optional(),
+  imageUrl: z.string().url().max(500).optional(),
+  featuredOnHome: z.boolean().optional(),
+  status: z.enum(['NEW', 'READ', 'APPROVED', 'REJECTED']).optional(),
+})
+
+export type AdminCreateReviewInput = z.infer<typeof adminCreateReviewSchema>
 
 // ── Price offer request ───────────────────────────────────────────────────────
 

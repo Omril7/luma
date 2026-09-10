@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { withAdmin } from '@/server/http'
+import { withAdmin, parseBody, errorResponse } from '@/server/http'
 import { prisma } from '@/server/prisma'
-import type { ReviewStatus } from '@prisma/client'
+import { adminCreateReviewSchema } from '@/shared/schemas'
+import { adminCreateReview, toReviewDTO } from '@/server/services/reviewService'
+import type { Prisma, ReviewStatus } from '@prisma/client'
 
 export const GET = withAdmin(async (req: NextRequest, _admin, _ctx) => {
   const { searchParams } = new URL(req.url)
@@ -18,8 +20,12 @@ export const GET = withAdmin(async (req: NextRequest, _admin, _ctx) => {
       ? statusParam
       : undefined
 
-  const where = {
+  const scope = searchParams.get('scope') // 'global' | 'product'
+
+  const where: Prisma.ReviewWhereInput = {
     ...(status !== undefined ? { status } : {}),
+    ...(scope === 'global' ? { productId: null } : {}),
+    ...(scope === 'product' ? { productId: { not: null } } : {}),
   }
 
   const [reviews, total] = await Promise.all([
@@ -33,19 +39,18 @@ export const GET = withAdmin(async (req: NextRequest, _admin, _ctx) => {
     prisma.review.count({ where }),
   ])
 
-  const data = reviews.map((r) => ({
-    id: r.id,
-    productId: r.productId,
-    productName_he: r.product.name_he,
-    productName_en: r.product.name_en,
-    productSlug: r.product.slug,
-    customerName: r.customerName,
-    rating: r.rating,
-    comment_he: r.comment_he ?? undefined,
-    comment_en: r.comment_en ?? undefined,
-    status: r.status,
-    createdAt: r.createdAt.toISOString(),
-  }))
+  return NextResponse.json({ data: reviews.map(toReviewDTO), total, page, pageSize })
+})
 
-  return NextResponse.json({ data, total, page, pageSize })
+export const POST = withAdmin(async (req: NextRequest, _admin, _ctx) => {
+  const body = await parseBody(req, adminCreateReviewSchema)
+  if (body instanceof NextResponse) return body
+
+  const result = await adminCreateReview(body)
+  if (!result.ok) {
+    if (result.reason === 'product_not_found') return errorResponse('Product not found', 404)
+    return errorResponse('A review needs a comment or an image', 422)
+  }
+
+  return NextResponse.json({ review: result.review }, { status: 201 })
 })

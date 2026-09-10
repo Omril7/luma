@@ -155,15 +155,30 @@ export interface CouponDTO {
 
 export interface ReviewDTO {
   id: string
-  productId: string
-  productName_he: string
-  productName_en: string
-  productSlug: string
+  productId: string | null
+  productName_he: string | null
+  productName_en: string | null
+  productSlug: string | null
   customerName: string
   rating: number
   comment_he?: string
   comment_en?: string
+  imageUrl?: string
   status: 'NEW' | 'READ' | 'APPROVED' | 'REJECTED'
+  featuredOnHome: boolean
+  createdAt: string
+}
+
+/** What the homepage TestimonialsSection carousel consumes (approved + featuredOnHome). */
+export interface HomeReviewDTO {
+  id: string
+  customerName: string
+  rating: number
+  comment_he?: string
+  comment_en?: string
+  imageUrl?: string
+  productName_he?: string
+  productName_en?: string
   createdAt: string
 }
 
@@ -210,6 +225,7 @@ export interface PublicReviewDTO {
   rating: number
   comment_he?: string
   comment_en?: string
+  imageUrl?: string
   createdAt: string
 }
 

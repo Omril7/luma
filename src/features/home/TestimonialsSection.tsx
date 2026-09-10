@@ -1,31 +1,25 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'motion/react'
 import { useTranslations } from 'next-intl'
+import { PenLine } from 'lucide-react'
 import { useUiStore } from '@/stores/uiStore'
+import type { HomeReviewDTO } from '@/shared/types'
 import { TestimonialsCarousel } from './TestimonialsCarousel'
-
-export interface TestimonialItem {
-  quote_he: string
-  quote_en: string
-  author_he: string
-  author_en: string
-  location_he: string
-  location_en: string
-  rating: number
-}
+import { GlobalReviewModal } from './GlobalReviewModal'
 
 interface TestimonialsSectionProps {
   locale: string
-  items: TestimonialItem[]
+  reviews: HomeReviewDTO[]
 }
 
-export function TestimonialsSection({ locale, items }: TestimonialsSectionProps) {
+export function TestimonialsSection({ locale, reviews }: TestimonialsSectionProps) {
   const t = useTranslations('home.testimonials')
+  const tReviews = useTranslations('reviews')
   const { a11y } = useUiStore()
   const shouldAnimate = !a11y.noMotion
-
-  if (items.length === 0) return null
+  const [modalOpen, setModalOpen] = useState(false)
 
   return (
     <section className="py-16 md:py-24">
@@ -41,9 +35,22 @@ export function TestimonialsSection({ locale, items }: TestimonialsSectionProps)
           {t('heading')}
         </motion.h2>
 
-        {/* Carousel */}
-        <TestimonialsCarousel items={items} locale={locale} />
+        {reviews.length > 0 && <TestimonialsCarousel items={reviews} locale={locale} />}
+
+        {/* "Write us a review" CTA — always shown, even with an empty carousel */}
+        <div className={reviews.length > 0 ? 'mt-10 text-center' : 'text-center'}>
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-primary px-6 font-semibold text-primary transition-colors hover:bg-primary hover:text-surface cursor-pointer"
+          >
+            <PenLine size={18} aria-hidden="true" />
+            {tReviews('writeAboutUsCta')}
+          </button>
+        </div>
       </div>
+
+      <GlobalReviewModal open={modalOpen} onClose={() => setModalOpen(false)} locale={locale} />
     </section>
   )
 }

@@ -1,18 +1,36 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Check, X, Trash2, ChevronRight, ChevronLeft, Star, Pencil, Eye } from 'lucide-react'
+import {
+  Check,
+  X,
+  Trash2,
+  ChevronRight,
+  ChevronLeft,
+  Star,
+  Pencil,
+  Eye,
+  Plus,
+  Home,
+} from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import type { ReviewDTO } from '@/shared/types'
 import { Select } from '@/components/ui/Select'
 import { StarRating } from '@/components/ui/StarRating'
+import { ImageUpload } from '@/components/ui/ImageUpload'
 
 interface ReviewsResponse {
   data: ReviewDTO[]
   total: number
   page: number
   pageSize: number
+}
+
+interface ProductOption {
+  id: string
+  name_he: string
+  name_en: string
 }
 
 function formatDate(dateStr: string): string {
@@ -22,6 +40,50 @@ function formatDate(dateStr: string): string {
   const mm = String(d.getMonth() + 1).padStart(2, '0')
   const yyyy = d.getFullYear()
   return `${dd}/${mm}/${yyyy}`
+}
+
+const GLOBAL_CHIP = (
+  <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-text-muted">
+    <Home size={11} aria-hidden="true" />
+    ביקורת כללית
+  </span>
+)
+
+function StatusBadge({ status }: { status: ReviewDTO['status'] }) {
+  if (status === 'APPROVED')
+    return (
+      <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+        מאושר
+      </span>
+    )
+  if (status === 'REJECTED')
+    return (
+      <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+        נדחה
+      </span>
+    )
+  if (status === 'READ')
+    return (
+      <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-text-muted">
+        נצפה
+      </span>
+    )
+  return (
+    <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700">
+      ממתין
+    </span>
+  )
+}
+
+const EMPTY_CREATE = {
+  target: 'global' as 'global' | 'product',
+  productId: '',
+  customerName: '',
+  rating: 5,
+  comment_he: '',
+  comment_en: '',
+  imageUrl: null as string | null,
+  featuredOnHome: false,
 }
 
 export function ReviewsListPage() {
@@ -34,6 +96,7 @@ export function ReviewsListPage() {
   const [error, setError] = useState<string | null>(null)
 
   const [status, setStatus] = useState<'all' | 'NEW' | 'READ' | 'APPROVED' | 'REJECTED'>('NEW')
+  const [scope, setScope] = useState<'all' | 'global' | 'product'>('all')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(25)
 
@@ -42,9 +105,20 @@ export function ReviewsListPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null)
 
   const [editingReview, setEditingReview] = useState<ReviewDTO | null>(null)
-  const [editDraft, setEditDraft] = useState({ comment_he: '', comment_en: '' })
-  const [savingComment, setSavingComment] = useState(false)
+  const [editDraft, setEditDraft] = useState({
+    comment_he: '',
+    comment_en: '',
+    rating: 5,
+    imageUrl: null as string | null,
+  })
+  const [savingEdit, setSavingEdit] = useState(false)
   const [viewReview, setViewReview] = useState<ReviewDTO | null>(null)
+
+  const [products, setProducts] = useState<ProductOption[]>([])
+  const [creating, setCreating] = useState(false)
+  const [createDraft, setCreateDraft] = useState(EMPTY_CREATE)
+  const [savingCreate, setSavingCreate] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
 
   const fetchReviews = useCallback(async () => {
     if (!token) return
@@ -55,6 +129,7 @@ export function ReviewsListPage() {
         page: String(page),
         pageSize: String(pageSize),
         ...(status !== 'all' ? { status } : {}),
+        ...(scope !== 'all' ? { scope } : {}),
       })
       const data = await api.get<ReviewsResponse>(`/api/admin/reviews?${params}`, token)
       setReviews(data.data)
@@ -65,7 +140,7 @@ export function ReviewsListPage() {
     } finally {
       setLoading(false)
     }
-  }, [token, page, pageSize, status])
+  }, [token, page, pageSize, status, scope])
 
   useEffect(() => {
     fetchReviews()
@@ -73,7 +148,20 @@ export function ReviewsListPage() {
 
   useEffect(() => {
     setPage(1)
-  }, [status, pageSize])
+  }, [status, scope, pageSize])
+
+  // Products for the "new review" target picker (best-effort; up to 50).
+  useEffect(() => {
+    if (!token) return
+    api
+      .get<{ products: ProductOption[] }>('/api/admin/products?limit=50&isActive=true', token)
+      .then((d) => setProducts(d.products))
+      .catch(() => setProducts([]))
+  }, [token])
+
+  function patchLocal(id: string, patch: Partial<ReviewDTO>) {
+    setReviews((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)))
+  }
 
   async function handleSetStatus(
     review: ReviewDTO,
@@ -81,53 +169,64 @@ export function ReviewsListPage() {
   ) {
     if (!token || updatingId) return
     setUpdatingId(review.id)
-    setReviews((prev) => prev.map((r) => (r.id === review.id ? { ...r, status: newStatus } : r)))
+    const featuredAfter = newStatus === 'APPROVED' ? review.featuredOnHome : false
+    patchLocal(review.id, { status: newStatus, featuredOnHome: featuredAfter })
     try {
       await api.patch(`/api/admin/reviews/${review.id}`, { status: newStatus }, token)
       fetchReviews()
     } catch (e) {
-      setReviews((prev) =>
-        prev.map((r) => (r.id === review.id ? { ...r, status: review.status } : r))
-      )
+      patchLocal(review.id, { status: review.status, featuredOnHome: review.featuredOnHome })
       alert(e instanceof Error ? e.message : 'שגיאה בעדכון הביקורת')
     } finally {
       setUpdatingId(null)
     }
   }
 
-  function startEditComment(review: ReviewDTO) {
-    setEditingReview(review)
-    setEditDraft({ comment_he: review.comment_he ?? '', comment_en: review.comment_en ?? '' })
+  async function handleToggleFeatured(review: ReviewDTO) {
+    if (!token || updatingId || review.status !== 'APPROVED') return
+    setUpdatingId(review.id)
+    const next = !review.featuredOnHome
+    patchLocal(review.id, { featuredOnHome: next })
+    try {
+      await api.patch(`/api/admin/reviews/${review.id}`, { featuredOnHome: next }, token)
+    } catch (e) {
+      patchLocal(review.id, { featuredOnHome: review.featuredOnHome })
+      alert(e instanceof Error ? e.message : 'שגיאה בעדכון')
+    } finally {
+      setUpdatingId(null)
+    }
   }
 
-  async function saveComment() {
+  function startEdit(review: ReviewDTO) {
+    setEditingReview(review)
+    setEditDraft({
+      comment_he: review.comment_he ?? '',
+      comment_en: review.comment_en ?? '',
+      rating: review.rating,
+      imageUrl: review.imageUrl ?? null,
+    })
+  }
+
+  async function saveEdit() {
     if (!token || !editingReview) return
-    setSavingComment(true)
+    setSavingEdit(true)
     try {
-      await api.patch(
+      const { review } = await api.patch<{ review: ReviewDTO }>(
         `/api/admin/reviews/${editingReview.id}`,
         {
-          comment_he: editDraft.comment_he || undefined,
-          comment_en: editDraft.comment_en || undefined,
+          comment_he: editDraft.comment_he || null,
+          comment_en: editDraft.comment_en || null,
+          rating: editDraft.rating,
+          imageUrl: editDraft.imageUrl,
         },
         token
       )
-      setReviews((prev) =>
-        prev.map((r) =>
-          r.id === editingReview.id
-            ? {
-                ...r,
-                comment_he: editDraft.comment_he || undefined,
-                comment_en: editDraft.comment_en || undefined,
-              }
-            : r
-        )
-      )
+      patchLocal(editingReview.id, review)
       setEditingReview(null)
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'שגיאה בשמירת התגובה')
+      alert(e instanceof Error ? e.message : 'שגיאה בשמירה')
     } finally {
-      setSavingComment(false)
+      setSavingEdit(false)
     }
   }
 
@@ -145,15 +244,69 @@ export function ReviewsListPage() {
     }
   }
 
+  async function saveCreate() {
+    if (!token) return
+    if (createDraft.customerName.trim().length < 2) {
+      setCreateError('יש להזין שם לקוח')
+      return
+    }
+    if (createDraft.target === 'product' && !createDraft.productId) {
+      setCreateError('יש לבחור מוצר')
+      return
+    }
+    if (!createDraft.comment_he.trim() && !createDraft.comment_en.trim() && !createDraft.imageUrl) {
+      setCreateError('יש להזין תגובה או תמונה')
+      return
+    }
+    setSavingCreate(true)
+    setCreateError(null)
+    try {
+      await api.post(
+        '/api/admin/reviews',
+        {
+          productId: createDraft.target === 'product' ? createDraft.productId : null,
+          customerName: createDraft.customerName.trim(),
+          rating: createDraft.rating,
+          comment_he: createDraft.comment_he.trim() || undefined,
+          comment_en: createDraft.comment_en.trim() || undefined,
+          imageUrl: createDraft.imageUrl ?? undefined,
+          featuredOnHome: createDraft.featuredOnHome,
+          status: 'APPROVED',
+        },
+        token
+      )
+      setCreating(false)
+      setCreateDraft(EMPTY_CREATE)
+      fetchReviews()
+    } catch (e) {
+      setCreateError(e instanceof Error ? e.message : 'שגיאה ביצירת הביקורת')
+    } finally {
+      setSavingCreate(false)
+    }
+  }
+
   const start = total === 0 ? 0 : (page - 1) * pageSize + 1
   const end = Math.min(page * pageSize, total)
 
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div>
-        <h2 className="text-xl font-bold text-text-main">ביקורות</h2>
-        <p className="text-sm text-text-muted mt-0.5">{total} ביקורות סה&quot;כ</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-bold text-text-main">ביקורות</h2>
+          <p className="text-sm text-text-muted mt-0.5">{total} ביקורות סה&quot;כ</p>
+        </div>
+        <button
+          onClick={() => {
+            setCreateDraft(EMPTY_CREATE)
+            setCreateError(null)
+            setCreating(true)
+          }}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-sm font-medium text-white hover:bg-primary/90 transition-colors cursor-pointer min-h-[40px]"
+        >
+          <Plus size={15} aria-hidden="true" />
+          ביקורת חדשה
+        </button>
       </div>
 
       {/* Filters */}
@@ -167,7 +320,18 @@ export function ReviewsListPage() {
             { value: 'READ', label: 'נצפו' },
             { value: 'APPROVED', label: 'מאושרות' },
             { value: 'REJECTED', label: 'נדחו' },
-            { value: 'all', label: 'הכל' },
+            { value: 'all', label: 'כל הסטטוסים' },
+          ]}
+        />
+
+        <Select
+          value={scope}
+          onChange={(v) => setScope(v as 'all' | 'global' | 'product')}
+          aria-label="סינון לפי היקף"
+          options={[
+            { value: 'all', label: 'כל ההיקפים' },
+            { value: 'global', label: 'כלליות' },
+            { value: 'product', label: 'לפי מוצר' },
           ]}
         />
 
@@ -195,7 +359,7 @@ export function ReviewsListPage() {
                 <th className="px-4 py-3 text-start">תגובה</th>
                 <th className="px-4 py-3 text-start">תאריך</th>
                 <th className="px-4 py-3 text-center">סטטוס</th>
-                <th className="px-4 py-3 text-end w-32">פעולות</th>
+                <th className="px-4 py-3 text-end w-40">פעולות</th>
               </tr>
             </thead>
             <tbody>
@@ -229,16 +393,34 @@ export function ReviewsListPage() {
                   >
                     {/* מוצר */}
                     <td className="px-4 py-3">
-                      <p className="font-medium text-text-main truncate max-w-40">
-                        {review.productName_he}
-                      </p>
-                      <p className="text-xs text-text-muted truncate max-w-40">
-                        {review.productName_en}
-                      </p>
+                      {review.productId ? (
+                        <>
+                          <p className="font-medium text-text-main truncate max-w-40">
+                            {review.productName_he}
+                          </p>
+                          <p className="text-xs text-text-muted truncate max-w-40">
+                            {review.productName_en}
+                          </p>
+                        </>
+                      ) : (
+                        GLOBAL_CHIP
+                      )}
                     </td>
 
                     {/* לקוח */}
-                    <td className="px-4 py-3 text-text-main">{review.customerName}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        {review.imageUrl && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={review.imageUrl}
+                            alt=""
+                            className="h-8 w-8 shrink-0 rounded object-cover border border-border"
+                          />
+                        )}
+                        <span className="text-text-main">{review.customerName}</span>
+                      </div>
+                    </td>
 
                     {/* דירוג */}
                     <td className="px-4 py-3">
@@ -259,28 +441,37 @@ export function ReviewsListPage() {
 
                     {/* סטטוס */}
                     <td className="px-4 py-3 text-center">
-                      {review.status === 'APPROVED' ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                          מאושר
-                        </span>
-                      ) : review.status === 'REJECTED' ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                          נדחה
-                        </span>
-                      ) : review.status === 'READ' ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-text-muted">
-                          נצפה
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
-                          ממתין
-                        </span>
-                      )}
+                      <StatusBadge status={review.status} />
                     </td>
 
                     {/* פעולות */}
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => handleToggleFeatured(review)}
+                          disabled={review.status !== 'APPROVED' || updatingId === review.id}
+                          title={
+                            review.status !== 'APPROVED'
+                              ? 'יש לאשר את הביקורת תחילה'
+                              : review.featuredOnHome
+                                ? 'הסרה מעמוד הבית'
+                                : 'הצגה בעמוד הבית'
+                          }
+                          aria-label="הצגה בעמוד הבית"
+                          aria-pressed={review.featuredOnHome}
+                          className={`p-2 rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed ${
+                            review.featuredOnHome
+                              ? 'text-accent hover:bg-secondary'
+                              : 'text-text-muted hover:bg-secondary hover:text-text-main'
+                          }`}
+                        >
+                          <Star
+                            size={15}
+                            aria-hidden="true"
+                            className={review.featuredOnHome ? 'fill-accent' : ''}
+                          />
+                        </button>
+
                         <button
                           onClick={() => {
                             setViewReview(review)
@@ -318,9 +509,9 @@ export function ReviewsListPage() {
                         )}
 
                         <button
-                          onClick={() => startEditComment(review)}
-                          title="עריכת תגובה"
-                          aria-label="עריכת תגובה"
+                          onClick={() => startEdit(review)}
+                          title="עריכה"
+                          aria-label="עריכה"
                           className="p-2 rounded-lg text-text-muted hover:bg-secondary hover:text-text-main transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
                         >
                           <Pencil size={15} aria-hidden="true" />
@@ -423,23 +614,13 @@ export function ReviewsListPage() {
             </div>
 
             <div className="p-6 space-y-4 overflow-y-auto">
-              <div className="flex flex-wrap items-center gap-4 text-sm">
+              <div className="flex flex-wrap items-center gap-3 text-sm">
                 <StarRating value={viewReview.rating} readonly size="sm" />
-                {viewReview.status === 'APPROVED' ? (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                    מאושר
-                  </span>
-                ) : viewReview.status === 'REJECTED' ? (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                    נדחה
-                  </span>
-                ) : viewReview.status === 'READ' ? (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-text-muted">
-                    נצפה
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
-                    ממתין
+                <StatusBadge status={viewReview.status} />
+                {viewReview.featuredOnHome && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5 text-xs font-medium text-accent">
+                    <Star size={11} className="fill-accent" aria-hidden="true" />
+                    בעמוד הבית
                   </span>
                 )}
               </div>
@@ -448,9 +629,29 @@ export function ReviewsListPage() {
                 <p className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-1">
                   מוצר
                 </p>
-                <p className="text-sm text-text-main">{viewReview.productName_he}</p>
-                <p className="text-xs text-text-muted">{viewReview.productName_en}</p>
+                {viewReview.productId ? (
+                  <>
+                    <p className="text-sm text-text-main">{viewReview.productName_he}</p>
+                    <p className="text-xs text-text-muted">{viewReview.productName_en}</p>
+                  </>
+                ) : (
+                  GLOBAL_CHIP
+                )}
               </div>
+
+              {viewReview.imageUrl && (
+                <div>
+                  <p className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-1">
+                    תמונה
+                  </p>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={viewReview.imageUrl}
+                    alt=""
+                    className="max-h-64 rounded-lg border border-border object-contain"
+                  />
+                </div>
+              )}
 
               <div>
                 <p className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-1">
@@ -472,15 +673,32 @@ export function ReviewsListPage() {
             </div>
 
             <div className="flex justify-end gap-3 p-6 pt-4 border-t border-border">
+              {viewReview.status === 'APPROVED' && (
+                <button
+                  onClick={() => {
+                    handleToggleFeatured(viewReview)
+                    setViewReview((v) => (v ? { ...v, featuredOnHome: !v.featuredOnHome } : v))
+                  }}
+                  className="px-4 py-2 text-sm rounded-lg border border-border text-text-muted hover:bg-bg transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                >
+                  <Star
+                    size={14}
+                    aria-hidden="true"
+                    className={viewReview.featuredOnHome ? 'fill-accent text-accent' : ''}
+                  />
+                  {viewReview.featuredOnHome ? 'הסרה מעמוד הבית' : 'הצגה בעמוד הבית'}
+                </button>
+              )}
               <button
                 onClick={() => {
+                  const r = viewReview
                   setViewReview(null)
-                  startEditComment(viewReview)
+                  startEdit(r)
                 }}
                 className="px-4 py-2 text-sm rounded-lg border border-border text-text-muted hover:bg-bg transition-colors cursor-pointer inline-flex items-center gap-1.5"
               >
                 <Pencil size={14} aria-hidden="true" />
-                עריכת תגובה
+                עריכה
               </button>
             </div>
           </div>
@@ -526,25 +744,34 @@ export function ReviewsListPage() {
         </div>
       )}
 
-      {/* Edit comment dialog */}
+      {/* Edit dialog */}
       {editingReview && (
         <div
           role="dialog"
           aria-modal="true"
-          aria-labelledby="edit-comment-dialog-title"
+          aria-labelledby="edit-review-dialog-title"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
           onClick={(e) => {
             if (e.target === e.currentTarget) setEditingReview(null)
           }}
         >
-          <div className="bg-surface border border-border rounded-xl shadow-xl p-6 max-w-lg w-full">
+          <div className="bg-surface border border-border rounded-xl shadow-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <h3
-              id="edit-comment-dialog-title"
+              id="edit-review-dialog-title"
               className="text-base font-semibold text-text-main mb-4"
             >
-              עריכת תגובת ביקורת — {editingReview.customerName}
+              עריכת ביקורת — {editingReview.customerName}
             </h3>
             <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-text-muted mb-1">דירוג</label>
+                <StarRating
+                  value={editDraft.rating}
+                  onChange={(rating) => setEditDraft((d) => ({ ...d, rating }))}
+                  size="sm"
+                  aria-label="דירוג"
+                />
+              </div>
               <div>
                 <label className="block text-xs font-medium text-text-muted mb-1">
                   תגובה (עברית)
@@ -569,21 +796,167 @@ export function ReviewsListPage() {
                   className="w-full px-3 py-2 text-sm bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
                 />
               </div>
+              <ImageUpload
+                value={editDraft.imageUrl}
+                onChange={(url) => setEditDraft((d) => ({ ...d, imageUrl: url }))}
+                token={token ?? ''}
+                label="תמונת הביקורת"
+              />
             </div>
             <div className="flex gap-3 justify-end mt-6">
               <button
                 onClick={() => setEditingReview(null)}
-                disabled={savingComment}
+                disabled={savingEdit}
                 className="px-4 py-2 text-sm rounded-lg border border-border text-text-muted hover:bg-bg transition-colors cursor-pointer"
               >
                 ביטול
               </button>
               <button
-                onClick={saveComment}
-                disabled={savingComment}
+                onClick={saveEdit}
+                disabled={savingEdit}
                 className="px-4 py-2 text-sm rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-60 cursor-pointer"
               >
-                {savingComment ? 'שומר...' : 'שמירה'}
+                {savingEdit ? 'שומר...' : 'שמירה'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* New review dialog */}
+      {creating && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="create-review-dialog-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setCreating(false)
+          }}
+        >
+          <div className="bg-surface border border-border rounded-xl shadow-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <h3
+              id="create-review-dialog-title"
+              className="text-base font-semibold text-text-main mb-4"
+            >
+              ביקורת חדשה
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-text-muted mb-1">היקף</label>
+                <Select
+                  value={createDraft.target}
+                  onChange={(v) =>
+                    setCreateDraft((d) => ({ ...d, target: v as 'global' | 'product' }))
+                  }
+                  aria-label="היקף הביקורת"
+                  options={[
+                    { value: 'global', label: 'כללית (על העסק)' },
+                    { value: 'product', label: 'על מוצר' },
+                  ]}
+                />
+              </div>
+
+              {createDraft.target === 'product' && (
+                <div>
+                  <label className="block text-xs font-medium text-text-muted mb-1">מוצר</label>
+                  <Select
+                    value={createDraft.productId}
+                    onChange={(v) => setCreateDraft((d) => ({ ...d, productId: v }))}
+                    aria-label="בחירת מוצר"
+                    options={[
+                      { value: '', label: 'בחר/י מוצר…' },
+                      ...products.map((p) => ({ value: p.id, label: p.name_he })),
+                    ]}
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-medium text-text-muted mb-1">שם הלקוח</label>
+                <input
+                  type="text"
+                  value={createDraft.customerName}
+                  onChange={(e) => setCreateDraft((d) => ({ ...d, customerName: e.target.value }))}
+                  className="w-full h-10 px-3 text-sm bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-text-muted mb-1">דירוג</label>
+                <StarRating
+                  value={createDraft.rating}
+                  onChange={(rating) => setCreateDraft((d) => ({ ...d, rating }))}
+                  size="sm"
+                  aria-label="דירוג"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-text-muted mb-1">
+                  תגובה (עברית)
+                </label>
+                <textarea
+                  rows={3}
+                  value={createDraft.comment_he}
+                  onChange={(e) => setCreateDraft((d) => ({ ...d, comment_he: e.target.value }))}
+                  dir="rtl"
+                  className="w-full px-3 py-2 text-sm bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
+                />
+              </div>
+              <div dir="ltr">
+                <label className="block text-xs font-medium text-text-muted mb-1">
+                  Comment (English)
+                </label>
+                <textarea
+                  rows={3}
+                  value={createDraft.comment_en}
+                  onChange={(e) => setCreateDraft((d) => ({ ...d, comment_en: e.target.value }))}
+                  dir="ltr"
+                  className="w-full px-3 py-2 text-sm bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
+                />
+              </div>
+
+              <ImageUpload
+                value={createDraft.imageUrl}
+                onChange={(url) => setCreateDraft((d) => ({ ...d, imageUrl: url }))}
+                token={token ?? ''}
+                label="תמונה (לא חובה)"
+              />
+
+              <label className="flex items-center gap-2 text-sm text-text-main cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={createDraft.featuredOnHome}
+                  onChange={(e) =>
+                    setCreateDraft((d) => ({ ...d, featuredOnHome: e.target.checked }))
+                  }
+                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                />
+                הצגה בעמוד הבית
+              </label>
+
+              {createError && (
+                <p role="alert" className="text-sm text-red-600">
+                  {createError}
+                </p>
+              )}
+            </div>
+
+            <div className="flex gap-3 justify-end mt-6">
+              <button
+                onClick={() => setCreating(false)}
+                disabled={savingCreate}
+                className="px-4 py-2 text-sm rounded-lg border border-border text-text-muted hover:bg-bg transition-colors cursor-pointer"
+              >
+                ביטול
+              </button>
+              <button
+                onClick={saveCreate}
+                disabled={savingCreate}
+                className="px-4 py-2 text-sm rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-60 cursor-pointer"
+              >
+                {savingCreate ? 'שומר...' : 'יצירת ביקורת'}
               </button>
             </div>
           </div>
