@@ -1,9 +1,9 @@
 # 16 — Reviews & Testimonials — unified `Review` table, homepage reviews, global reviews, review images
 
-> **Status:** implemented (M1.28i, 2026-09-10) — **except the DB migration, which is
-> written (`prisma/migrations/20260910120000_review_global_and_image/`) but not yet run.**
-> App code is on the feature branch; the homepage/product review UI and admin panel are
-> live-code-complete and will work once the migration is applied.
+> **Status:** ✅ implemented and shipped (M1.28i, 2026-09-10). Migration
+> (`prisma/migrations/20260910120000_review_global_and_image/`) applied to prod via the
+> Supabase SQL Editor + `prisma migrate resolve`. Merged to `main` (`1191d55`).
+> One follow-up: delete the dead `SiteContent` row `key = home.testimonials`.
 > **Depends on:** nothing hard, but shares the upload path with
 > [`storage.md`](storage.md) — see [§7](#7-relationship-to-storagemd).
 > **LIVE-site rule:** the site is in production. The one required schema migration

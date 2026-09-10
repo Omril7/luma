@@ -56,19 +56,28 @@ Keep entries short and factual. One entry per working session (or per merged cha
   - **i18n:** `reviews.formImage*`, `reviews.imageAlt/imageClose`, `reviews.writeAboutUsCta`,
     `reviews.globalFormHeading`, `home.testimonials.onProduct` (he + en). Docs: `02-data-models.md`
     Review section rewritten; `16-…md` status; `storage.md` §4 public-uploader line; ROADMAP + this log.
-- **Roadmap:** M1.28i 🟡 code-complete — migration pending owner go-ahead.
+- **Migration:** applied to **prod** the same day — owner ran the 3 idempotent `ALTER`s in the
+  Supabase SQL Editor, then `prisma migrate resolve --applied 20260910120000_review_global_and_image`
+  synced Prisma's history (`migrate status` → up to date). Verified `Review.imageUrl` /
+  `featuredOnHome` present, `productId` nullable, existing review untouched.
+- **Rollout:** the 3 prior `home.testimonials` entries were re-entered via admin "+ ביקורת חדשה"
+  as APPROVED + `featuredOnHome` global reviews; homepage carousel verified. `npm run build`
+  now fully green (86/86). Merged to `main` (`1191d55`, fast-forward) and pushed. Migration is
+  already on prod, so the Vercel deploy's `migrate deploy` is a no-op — no new-code-vs-old-DB window.
+- **Roadmap:** M1.28i ✅.
 - **Decisions:**
-  - Owner chose "write migration, don't run" + single branch for the whole milestone.
+  - Owner chose "write migration, don't run via Prisma" (ran the SQL by hand on prod) + single
+    branch for the whole milestone.
+  - Migration SQL written idempotent (`ADD COLUMN IF NOT EXISTS`) so the manual run + a later
+    `prisma migrate deploy`/`dev` can't collide.
   - `adminCreateReviewSchema` uses plain `.optional()` (no `.default()`) for `status`/`featuredOnHome`
     — zod `.default()` broke `parseBody<T>` inference (input vs output type). Defaults applied in the service.
   - `POST /api/reviews/upload` keeps the current `storage.save()` proxy pattern; it folds into
     `storage.md` Part 1's signed-ticket model later (checklist line added there).
-- **Notes/blockers:** `npm run build` **compiles + typechecks + lints + tests green**, but static
-  prerender of `/he` fails with `P2022 Review.imageUrl does not exist` until the migration runs
-  against the dev DB. Run `npm run db:migrate` to unblock the build. Existing prod
-  `home.testimonials` SiteContent row (3 testimonials) should be re-entered via the admin
-  "+ ביקורת חדשה" flow as APPROVED + featured before the switch goes live, then the stale row
-  deleted manually.
+- **Notes/blockers:** one follow-up left — delete the now-dead `SiteContent` row
+  `key = home.testimonials` (nothing reads it; couldn't be done from here — run in Supabase SQL
+  Editor: `DELETE FROM "SiteContent" WHERE "key" = 'home.testimonials';`). Location field from the
+  old testimonials (city) is dropped — the new `Review` card shows name + optional product only.
 
 ## 2026-09-06 — Product gallery: full thumbnail carousel, zoom lightbox, hover-swap, variant prices
 

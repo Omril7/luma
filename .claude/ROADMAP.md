@@ -386,7 +386,7 @@ from that file; check off as implemented.
 - Instagram integration (#11) is a separate, larger effort — see
   `.claude/docs/14-instagram-integration.md`, not scoped for this milestone.
 
-### M1.28i Reviews & testimonials — unified table, homepage reviews, global reviews, images 🟡 CODE-COMPLETE (migration pending)
+### M1.28i Reviews & testimonials — unified table, homepage reviews, global reviews, images ✅
 
 Full plan: [`.claude/docs/16-reviews-and-testimonials.md`](docs/16-reviews-and-testimonials.md).
 One `Review` table for everything; homepage `TestimonialsSection` shows admin-flagged
@@ -394,7 +394,7 @@ approved reviews instead of `getSiteContentByKey('home.testimonials')`; per-prod
 unchanged; add "about the business" global reviews from the home page; one optional image
 per review (customer-uploadable + admin add/edit).
 
-- [ ] **Schema migration (consent-gated)** — written (`prisma/migrations/20260910120000_review_global_and_image/`) but **NOT RUN**. `Review.productId` nullable, `+imageUrl`, `+featuredOnHome`, optional `product` relation; additive + one `NOT NULL` relax, no data rewrite. Run `npm run db:migrate` (dev) then `prisma migrate deploy` (prod, behind maintenance page) when ready.
+- [x] **Schema migration** (`prisma/migrations/20260910120000_review_global_and_image/`) — `Review.productId` nullable, `+imageUrl`, `+featuredOnHome`, optional `product` relation. Applied to **prod** via Supabase SQL Editor (2026-09-10) + `prisma migrate resolve --applied`; additive + one `NOT NULL` relax, no data rewrite.
 - [x] Shared: `createReviewSchema`/`updateReviewSchema` updated, `adminCreateReviewSchema` new; `PublicReviewDTO.imageUrl`, `ReviewDTO` null-safe product + new fields, `HomeReviewDTO` new
 - [x] Service: global-aware `createReview`; `getFeaturedHomeReviews`; `adminCreateReview`; `updateReview`/`deleteReview` with image orphan-cleanup wired into `cloudinaryCleanupService`
 - [x] `POST /api/reviews/upload` — new public, rate-limited (8/hr), size/type/magic-byte-checked image upload (folds into `storage.md`'s ticket model later)
@@ -405,7 +405,7 @@ per review (customer-uploadable + admin add/edit).
 - [x] Admin `/admin/reviews`: global-review chip, "feature on homepage" star toggle (approved-only), image + rating in edit dialog, image in view dialog + row, "+ New review" create dialog (global or product target, auto-`APPROVED`), scope filter
 - [x] Retire the Site Content "המלצות לקוחות" tab + `TestimonialsTab` (types/state/hooks/render block)
 - [x] i18n: new `reviews.*` keys (he + en); updated `.claude/docs/02-data-models.md` `Review` section
-- **Acceptance:** a customer can leave a product review or a business review, each with an optional photo; the admin moderates, can add/replace/remove the image, and flags reviews for the homepage; the homepage carousel shows exactly the flagged approved reviews (hidden when none, CTA still visible); no `home.testimonials` reads remain; `typecheck + lint + test + build` green.
+- **Acceptance:** a customer can leave a product review or a business review, each with an optional photo; the admin moderates, can add/replace/remove the image, and flags reviews for the homepage; the homepage carousel shows exactly the flagged approved reviews (hidden when none, CTA still visible); no `home.testimonials` reads remain; `typecheck + lint + test + build` green. ✅ Verified 2026-09-10 — migration live on prod, 3 prior testimonials re-entered as featured global reviews, build 86/86 green. **Follow-up:** delete the now-dead `SiteContent` row `key = home.testimonials` (nothing reads it).
 
 ### M1.28j Storage & content-store cleanup
 
@@ -484,7 +484,7 @@ slow** because every filter click is a full server navigation.
 **Product ordering (rides the same `ShopClient` rewrite):**
 
 - [ ] **Storefront** — client sort gains a `curated` key = order by `sortOrder` then `createdAt
-  desc`; make it the **default** on `/shop`. Keep price/name/newest as explicit user choices.
+desc`; make it the **default** on `/shop`. Keep price/name/newest as explicit user choices.
       i18n `shop.sort.curated` ("הסדר שלנו" / "Our order"). (Server `SORT_MAP` also gets `curated`
       for `/api/products` + related-products consistency.)
 - [ ] **Bulk reorder endpoint** — `POST /api/admin/products/reorder` (`withAdmin`), body
