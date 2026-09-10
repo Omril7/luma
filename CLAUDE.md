@@ -34,13 +34,15 @@ Full brief (Next.js architecture): [`read/CLAUDE-CODE-PROMPT.md`](read/CLAUDE-CO
 | Animations   | `motion/react` (Framer Motion v11+) — subtle UI animations throughout      |
 | File storage | **Cloudinary** (primary); local disk fallback for offline dev              |
 | Email        | **Nodemailer** (SMTP) — `ConsoleEmailProvider` stub in dev                 |
-| Deploy       | **Vercel** (production + staging, Next-native; no Docker needed)           |
+| Deploy       | **Vercel** (production + preview builds, Next-native; no Docker needed)    |
 
 > **Stack note:** chosen over a Vite SPA + separate Express API specifically for e-commerce —
 > server-rendered product/catalog pages for SEO, Vercel-native deploy, `next/image`, and
 > built-in i18n routing. The backend lives in Route Handlers, not a standalone server. It's a
 > **single Next.js app at the repo root** — no monorepo/workspaces (it's always one website).
-> No Docker — local dev points at a Supabase dev project; production deploys to Vercel.
+> No Docker. **There is only one database — the production Supabase project.** There is no
+> dev/staging DB; local dev and `npm run db:migrate` both run against production (`.env`).
+> Production deploys to Vercel.
 
 ## Project structure (single root Next.js app)
 
@@ -103,8 +105,8 @@ npm run dev             # Next.js dev server — UI + /api on :3000
 npm run typecheck       # tsc --noEmit
 npm run lint            # eslint
 npm run test            # vitest run (incl. pricing unit tests)
-npm run db:migrate      # prisma migrate dev (runs against Supabase dev project)
-npm run db:seed         # seed sample products, coupons, admin user
+npm run db:migrate      # prisma migrate dev — ⚠ runs against the PRODUCTION DB (only additive/safe migrations; check `prisma migrate status` first)
+npm run db:seed         # seed sample products, coupons, admin user — ⚠ also the production DB
 npm run db:studio       # prisma studio
 npm run build           # next build
 ```

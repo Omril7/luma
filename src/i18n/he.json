@@ -265,6 +265,7 @@
     "allCategories": "הכל",
     "sortLabel": "מיון",
     "sort": {
+      "recommended": "מומלץ",
       "newest": "חדש ביותר",
       "price_asc": "מחיר: נמוך לגבוה",
       "price_desc": "מחיר: גבוה לנמוך",

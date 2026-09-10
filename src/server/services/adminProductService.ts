@@ -163,6 +163,19 @@ export async function listAdminProducts(opts: ListProductsOptions = {}) {
   return { products: products.map(toProductDTO), total, page, pages: Math.ceil(total / limit) }
 }
 
+// ── Bulk reorder ──────────────────────────────────────────────────────────────
+
+/**
+ * Persist the storefront display order: each id's `sortOrder` becomes its index in
+ * `ids`. `/shop`'s `recommended` sort and `listAdminProducts` both read this.
+ */
+export async function reorderProducts(ids: string[]): Promise<{ updated: number }> {
+  await prisma.$transaction(
+    ids.map((id, index) => prisma.product.update({ where: { id }, data: { sortOrder: index } }))
+  )
+  return { updated: ids.length }
+}
+
 // ── Get single ────────────────────────────────────────────────────────────────
 
 export async function getAdminProductById(id: string): Promise<ProductDTO | null> {

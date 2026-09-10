@@ -1,56 +1,133 @@
 'use client'
 
-import { useRouter, usePathname } from 'next/navigation'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { AnimatePresence, motion } from 'motion/react'
 import { ChevronDown } from 'lucide-react'
 import { useUiStore } from '@/stores/uiStore'
 import { Select } from '@/components/ui/Select'
 import { ProductCard } from '@/features/products/ProductCard'
+import { getStartingPrice } from '@/shared/pricing'
 import type { ProductDTO, CategoryDTO } from '@/shared/types'
-import type { ProductSortKey } from '@/server/services/productService'
 
 interface ShopClientProps {
-  initialProducts: ProductDTO[]
-  total: number
-  totalPages: number
-  currentPage: number
-  currentCategory: string | undefined
-  currentSort: ProductSortKey
+  products: ProductDTO[]
   categories: CategoryDTO[]
   locale: string
 }
 
-const SORT_KEYS: ProductSortKey[] = ['newest', 'price_asc', 'price_desc', 'name_he']
+// The sort keys offered in the /shop UI. `recommended` (the admin's drag order) is the
+// default; `name_he` is the generic "name" option, sorted by the active locale's name.
+const SORT_KEYS = ['recommended', 'newest', 'price_asc', 'price_desc', 'name_he'] as const
+type ShopSortKey = (typeof SORT_KEYS)[number]
 
-export function ShopClient({
-  initialProducts,
-  total,
-  totalPages,
-  currentPage,
-  currentCategory,
-  currentSort,
-  categories,
-  locale,
-}: ShopClientProps) {
+const PAGE_SIZE = 12
+
+// Above this the entrance/layout animation is skipped (see the roadmap guard). The catalog
+// is fetched with a hard cap well below this, so it's a safety net, not a real code path.
+const ANIM_CAP = 150
+
+function parseSort(raw: string | null): ShopSortKey {
+  return (SORT_KEYS as readonly string[]).includes(raw ?? '') ? (raw as ShopSortKey) : 'recommended'
+}
+
+export function ShopClient({ products, categories, locale }: ShopClientProps) {
   const t = useTranslations('shop')
-  const router = useRouter()
-  const pathname = usePathname()
   const { a11y } = useUiStore()
-  const shouldAnimate = !a11y.noMotion
+  const shouldAnimate = !a11y.noMotion && products.length <= ANIM_CAP
 
-  const products = initialProducts
+  // The route is static/ISR, so the server can't know the URL params — it renders the full
+  // catalog in `recommended` order (good for SEO). On mount we read the query string and
+  // apply any shared deep-link filter/sort/page. Subsequent changes are written back with
+  // history.replaceState — no navigation, no server round-trip.
+  const [category, setCategory] = useState<string | undefined>(undefined)
+  const [sort, setSort] = useState<ShopSortKey>('recommended')
+  const [page, setPage] = useState(1)
 
-  function setParam(key: string, value: string | null) {
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    if (value === null) {
-      params.delete(key)
-    } else {
-      params.set(key, value)
-    }
-    if (key !== 'page') params.delete('page')
+    const cat = params.get('category')
+    if (cat && categories.some((c) => c.id === cat)) setCategory(cat)
+    setSort(parseSort(params.get('sort')))
+    const n = parseInt(params.get('page') ?? '1', 10)
+    if (Number.isFinite(n) && n > 1) setPage(n)
+    // Run once on mount — later state changes own the URL, not the reverse.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Entrance stagger plays on first mount only; filter/sort/page changes get a plain
+  // crossfade so the grid never unmounts to a skeleton or replays the cascade.
+  const firstRender = useRef(true)
+  const isFirstRender = firstRender.current
+  firstRender.current = false
+
+  const nameField = locale === 'he' ? 'name_he' : 'name_en'
+  const collator = useMemo(
+    () => new Intl.Collator(locale === 'he' ? 'he' : 'en', { sensitivity: 'base' }),
+    [locale]
+  )
+
+  const filteredSorted = useMemo(() => {
+    const list = category ? products.filter((p) => p.category.id === category) : products.slice()
+
+    list.sort((a, b) => {
+      switch (sort) {
+        case 'price_asc':
+          return getStartingPrice(a) - getStartingPrice(b)
+        case 'price_desc':
+          return getStartingPrice(b) - getStartingPrice(a)
+        case 'newest':
+          return b.createdAt.localeCompare(a.createdAt)
+        case 'name_he':
+          return collator.compare(a[nameField], b[nameField])
+        case 'recommended':
+        default:
+          return a.sortOrder - b.sortOrder || b.createdAt.localeCompare(a.createdAt)
+      }
+    })
+    return list
+  }, [products, category, sort, collator, nameField])
+
+  const total = filteredSorted.length
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  const safePage = Math.min(page, totalPages)
+  const pageItems = filteredSorted.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+
+  // ── URL sync (no navigation) ────────────────────────────────────────────────
+  function writeUrl(next: { category?: string; sort?: ShopSortKey; page?: number }) {
+    const params = new URLSearchParams(window.location.search)
+    const cat = 'category' in next ? next.category : category
+    const srt = 'sort' in next ? next.sort : sort
+    const pg = 'page' in next ? next.page : page
+
+    if (cat) params.set('category', cat)
+    else params.delete('category')
+    if (srt && srt !== 'recommended') params.set('sort', srt)
+    else params.delete('sort')
+    if (pg && pg > 1) params.set('page', String(pg))
+    else params.delete('page')
+
     const query = params.toString()
-    router.push(`${pathname}${query ? `?${query}` : ''}`)
+    window.history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}`)
+  }
+
+  function selectCategory(next: string | undefined) {
+    setCategory(next)
+    setPage(1)
+    writeUrl({ category: next, page: 1 })
+  }
+
+  function selectSort(next: ShopSortKey) {
+    setSort(next)
+    setPage(1)
+    writeUrl({ sort: next, page: 1 })
+  }
+
+  function goToPage(next: number) {
+    const clamped = Math.min(Math.max(1, next), totalPages)
+    setPage(clamped)
+    writeUrl({ page: clamped })
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   // ── Category pill component ──────────────────────────────────────────────────
@@ -61,7 +138,7 @@ export function ShopClient({
     cat: CategoryDTO | null
     vertical?: boolean
   }) {
-    const isActive = cat === null ? currentCategory === undefined : currentCategory === cat.id
+    const isActive = cat === null ? category === undefined : category === cat.id
     const label = cat === null ? t('allCategories') : locale === 'he' ? cat.name_he : cat.name_en
 
     return (
@@ -69,8 +146,8 @@ export function ShopClient({
         type="button"
         onClick={() =>
           cat === null
-            ? setParam('category', null)
-            : setParam('category', currentCategory === cat.id ? null : cat.id)
+            ? selectCategory(undefined)
+            : selectCategory(category === cat.id ? undefined : cat.id)
         }
         aria-pressed={isActive}
         className={[
@@ -98,12 +175,12 @@ export function ShopClient({
           </span>
         )}
         <Select
-          value={currentSort}
-          onChange={(v) => setParam('sort', v)}
+          value={sort}
+          onChange={(v) => selectSort(v as ShopSortKey)}
           options={SORT_KEYS.map((key) => ({ value: key, label: t(`sort.${key}`) }))}
           aria-label={t('sortLabel')}
           dir={locale === 'he' ? 'rtl' : 'ltr'}
-          className={compact ? 'w-40' : 'w-full'}
+          className={compact ? 'w-44' : 'w-full'}
           triggerClassName="min-h-[44px] bg-surface"
         />
       </div>
@@ -150,31 +227,33 @@ export function ShopClient({
             </div>
 
             {/* Results count */}
-            <p className="text-sm text-text-muted mb-4">{t('results', { count: total })}</p>
+            <p className="text-sm text-text-muted mb-4" aria-live="polite">
+              {t('results', { count: total })}
+            </p>
 
             {/* Product grid */}
-            {products.length > 0 ? (
-              <motion.div layout className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6">
-                <AnimatePresence mode="popLayout">
-                  {products.map((product, i) => (
+            {pageItems.length > 0 ? (
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6">
+                <AnimatePresence initial={false} mode="popLayout">
+                  {pageItems.map((product, i) => (
                     <motion.div
                       key={product.id}
-                      layout
-                      initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
+                      layout={shouldAnimate}
+                      initial={shouldAnimate ? { opacity: 0, y: isFirstRender ? 20 : 0 } : false}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={shouldAnimate ? { opacity: 0, y: -10 } : undefined}
+                      exit={shouldAnimate ? { opacity: 0 } : undefined}
                       transition={{
-                        duration: 0.3,
-                        delay: shouldAnimate ? i * 0.05 : 0,
+                        duration: isFirstRender ? 0.3 : 0.15,
+                        delay: shouldAnimate && isFirstRender ? i * 0.05 : 0,
                       }}
                     >
                       <ProductCard product={product} locale={locale} />
                     </motion.div>
                   ))}
                 </AnimatePresence>
-              </motion.div>
+              </div>
             ) : (
-              <EmptyState onClear={() => setParam('category', null)} t={t} />
+              <EmptyState onClear={() => selectCategory(undefined)} t={t} />
             )}
 
             {/* Pagination */}
@@ -182,8 +261,8 @@ export function ShopClient({
               <div className="mt-10 flex items-center justify-center gap-4">
                 <button
                   type="button"
-                  onClick={() => setParam('page', String(currentPage - 1))}
-                  disabled={currentPage === 1}
+                  onClick={() => goToPage(safePage - 1)}
+                  disabled={safePage === 1}
                   aria-label={t('prevPage')}
                   className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-border text-text-main transition-colors hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 >
@@ -191,13 +270,13 @@ export function ShopClient({
                 </button>
 
                 <span className="text-sm text-text-muted">
-                  {t('page', { page: currentPage, total: totalPages })}
+                  {t('page', { page: safePage, total: totalPages })}
                 </span>
 
                 <button
                   type="button"
-                  onClick={() => setParam('page', String(currentPage + 1))}
-                  disabled={currentPage === totalPages}
+                  onClick={() => goToPage(safePage + 1)}
+                  disabled={safePage === totalPages}
                   aria-label={t('nextPage')}
                   className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-border text-text-main transition-colors hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 >

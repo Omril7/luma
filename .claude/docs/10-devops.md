@@ -3,24 +3,31 @@
 ## Environments
 
 - **Framework:** Next.js (App Router) — single app at the repo root. UI + API in one project.
-- **Database:** **Supabase Postgres** — a Supabase dev project for development, a separate
-  Supabase prod project for production. No local Docker Postgres needed.
+- **Database:** **Supabase Postgres** — **one project, production only.** There is no
+  dev/staging database; local dev, `npm run db:migrate`, and `npm run db:seed` all run
+  against the production Supabase project (`.env`). No local Docker Postgres.
+  - ⚠ **Migrations hit prod directly.** Only run `db:migrate` for additive/safe changes
+    (`ADD COLUMN … DEFAULT`, new tables). Run `npx prisma migrate status` first to confirm
+    no drift. Get the owner's explicit go-ahead before any migration that rewrites or drops
+    data. `prisma migrate dev` tends to hang after applying — the migration commits; a
+    `Ctrl+C` after "schema is up to date" is fine.
 - **File storage:** **Cloudinary** (primary). Local disk (`STORAGE_DRIVER=local`) is an
   offline-only fallback. Cloudinary is used in both dev and production.
-- **Deploy:** **Vercel** — the production and staging platform. No Docker in the deploy pipeline.
+- **Deploy:** **Vercel** — production (and preview builds). No Docker in the deploy pipeline.
 
 ## Development setup
 
 ```bash
 npm install
-cp .env.example .env.local   # fill in Supabase URL, Cloudinary URL, JWT secret
-npm run db:migrate            # run migrations against your Supabase dev project
-npm run db:seed               # seed sample products, coupons, admin user
+cp .env.example .env          # fill in Supabase URL, Cloudinary URL, JWT secret
+npm run db:migrate            # ⚠ runs against PRODUCTION (only DB) — additive/safe migrations only
+npm run db:seed               # ⚠ also production — seeds sample data (skip unless intentional)
 npm run dev                   # start Next.js on :3000
 ```
 
-No Docker required. Supabase gives you a managed Postgres instance — just point
-`DATABASE_URL`/`DIRECT_URL` at your dev project.
+No Docker required. Supabase gives a managed Postgres instance — `DATABASE_URL`/`DIRECT_URL`
+in `.env` point at the single production project. There is no separate dev database, so
+local dev reads and writes live production data.
 
 ## Production deployment — Vercel
 
@@ -34,13 +41,15 @@ Production runs on **Vercel** — one project, no custom serverless wrapper.
   - `DATABASE_URL` → pooled connection (port `6543`, transaction mode) + `?pgbouncer=true`
     so Prisma disables prepared statements (required for serverless).
   - `DIRECT_URL` → direct connection (port `5432`) for `prisma migrate` / introspection.
+  - **Same project for local dev** — `.env` holds these; there is no second (dev) project.
   - `schema.prisma`: `datasource db { url = env("DATABASE_URL"); directUrl = env("DIRECT_URL") }`
   - Single Prisma client reused via global singleton (`src/server/prisma.ts`) to avoid
     connection storms on cold starts.
 - **Uploads / storage:** Cloudinary (`STORAGE_DRIVER=cloudinary`, `CLOUDINARY_URL` set in
   Vercel dashboard). Vercel's filesystem is ephemeral — local storage cannot persist in prod.
-- **Migrations:** `prisma migrate deploy` runs as a Vercel build command or CI step before
-  each production release.
+- **Migrations:** applied **before** deploy by running `npm run db:migrate` locally against
+  the (production) DB — the Vercel build is just `next build`, it does not run migrations. So
+  land + verify the schema change first, then push the code that depends on it.
 - **Env vars:** set every var from `.env.example` in the Vercel dashboard (Production +
   Preview). `NEXT_PUBLIC_*` vars are inlined at build time.
 

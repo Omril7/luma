@@ -166,6 +166,7 @@ export interface ReviewDTO {
   imageUrl?: string
   status: 'NEW' | 'READ' | 'APPROVED' | 'REJECTED'
   featuredOnHome: boolean
+  sortOrder: number
   createdAt: string
 }
 

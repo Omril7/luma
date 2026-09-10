@@ -265,6 +265,7 @@ model Review {
   imageUrl       String? // optional single customer/admin image (Cloudinary URL)
   status         ReviewStatus @default(NEW)
   featuredOnHome Boolean      @default(false) // admin flag → homepage TestimonialsSection
+  sortOrder      Int          @default(0) // admin drag order for the homepage featured set
   createdAt      DateTime     @default(now())
 
   product Product? @relation(fields: [productId], references: [id])

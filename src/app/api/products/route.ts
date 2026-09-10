@@ -37,7 +37,14 @@ export const GET = withApi(async (req: NextRequest) => {
   const page = parseInt(searchParams.get('page') ?? '1', 10)
   const limit = parseInt(searchParams.get('limit') ?? '12', 10)
 
-  const validSorts: ProductSortKey[] = ['price_asc', 'price_desc', 'newest', 'name_he', 'name_en']
+  const validSorts: ProductSortKey[] = [
+    'recommended',
+    'price_asc',
+    'price_desc',
+    'newest',
+    'name_he',
+    'name_en',
+  ]
   if (!validSorts.includes(sort)) {
     return NextResponse.json({ error: 'Invalid sort' }, { status: 400 })
   }

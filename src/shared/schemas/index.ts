@@ -365,9 +365,17 @@ export const updateReviewSchema = z.object({
   rating: z.number().int().min(1).max(5).optional(),
   imageUrl: z.string().url().max(500).nullable().optional(), // null => remove image
   featuredOnHome: z.boolean().optional(),
+  sortOrder: z.number().int().min(0).optional(), // homepage-featured display order
 })
 
 export type UpdateReviewInput = z.infer<typeof updateReviewSchema>
+
+// Bulk drag-reorder of the homepage-featured reviews.
+export const reorderSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1).max(200),
+})
+
+export type ReorderInput = z.infer<typeof reorderSchema>
 
 // Admin-authored review (moderation panel "+ New review"). Defaults to APPROVED.
 export const adminCreateReviewSchema = z.object({

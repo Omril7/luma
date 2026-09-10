@@ -111,9 +111,22 @@ function toProductDTO(p: ProductWithRelations): ProductDTO {
 
 // ── Public queries ─────────────────────────────────────────────────────────────
 
-export type ProductSortKey = 'price_asc' | 'price_desc' | 'newest' | 'name_he' | 'name_en'
+export type ProductSortKey =
+  | 'recommended'
+  | 'price_asc'
+  | 'price_desc'
+  | 'newest'
+  | 'name_he'
+  | 'name_en'
 
-const SORT_MAP: Record<ProductSortKey, Prisma.ProductOrderByWithRelationInput> = {
+type ProductOrderBy =
+  | Prisma.ProductOrderByWithRelationInput
+  | Prisma.ProductOrderByWithRelationInput[]
+
+// `recommended` = the admin's drag order (sortOrder), newest first on ties — the same
+// ordering listAdminProducts uses, so /shop mirrors what the admin arranges.
+const SORT_MAP: Record<ProductSortKey, ProductOrderBy> = {
+  recommended: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
   price_asc: { basePrice: 'asc' },
   price_desc: { basePrice: 'desc' },
   newest: { createdAt: 'desc' },
@@ -163,19 +176,28 @@ export async function getProducts(opts: GetProductsOptions = {}): Promise<Produc
   }
 }
 
-// /shop renders dynamically per request (it reads `searchParams` for filters — a Dynamic API
-// that opts the whole route out of ISR), so without this every page view was a fresh DB
-// roundtrip regardless of how often the same filter combination gets requested. unstable_cache
-// keys on the serialized arguments automatically, so each distinct {categoryId, sort, page}
-// combination gets its own ~2min cache entry — the route stays per-request/per-filter, only the
-// underlying query is cached. Scoped to this export rather than `getProducts` itself, since
-// other callers (the public /api/products route, related-products on the product page) should
-// keep seeing fresh data.
-export const getProductsCached = unstable_cache(
-  (opts: GetProductsOptions) => getProducts(opts),
-  ['shop-products'],
-  { revalidate: 120 }
-)
+// The whole active catalog in one shot, `recommended` order. /shop filters, sorts and
+// paginates this list on the client (the catalog is small — tens of products), so the page
+// itself is static/ISR and a filter click costs zero server round-trips. `take` is a hard
+// safety cap; if the catalog ever outgrows it, /shop would need real server pagination back.
+export const SHOP_CATALOG_CAP = 150
+
+export async function getShopCatalog(): Promise<ProductDTO[]> {
+  const products = await prisma.product.findMany({
+    where: { isActive: true },
+    include: productInclude,
+    orderBy: SORT_MAP.recommended,
+    take: SHOP_CATALOG_CAP,
+  })
+  return products.map(toProductDTO)
+}
+
+// Cached for /shop specifically — the route is static, but on-demand revalidation still
+// re-runs this; the cache keeps repeat renders off the DB. Scoped to this export rather
+// than the shared query so /api/products keeps seeing fresh data.
+export const getShopCatalogCached = unstable_cache(() => getShopCatalog(), ['shop-catalog'], {
+  revalidate: 120,
+})
 
 // React cache(): deduped per request — generateMetadata and the product page
 // both fetch the same slug, so this halves the DB roundtrips per page view.

@@ -19,6 +19,52 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-09-10 — M1.28k: /shop client filter/sort/paginate + admin product & review ordering
+
+- **Done:**
+  - **`/shop` is now static/ISR.** `shop/page.tsx` no longer reads `searchParams`; it fetches
+    the whole active catalog once via new `getShopCatalogCached()` (`recommended` order, hard
+    `take: 150` cap) + categories. Route builds as `● (SSG)`.
+  - **`ShopClient` filters/sorts/paginates on the client** — reads the initial
+    category/sort/page from `window.location.search` on mount (not `useSearchParams`, since the
+    route is static), computes the visible slice in a `useMemo`, writes changes back with
+    `window.history.replaceState`. Zero navigation, zero refetch, links still shareable.
+    Entrance stagger plays on first mount only; later changes get a 0.15s crossfade.
+  - **`recommended` sort** = `[{ sortOrder: 'asc' }, { createdAt: 'desc' }]`, added to
+    `ProductSortKey` / `SORT_MAP` (now accepts array orderBy), the `/api/products` valid-sort
+    list, and the product page's related-products query. It's the default on `/shop`. i18n
+    `shop.sort.recommended` (he "מומלץ" / en "Recommended").
+  - **Product reorder:** `POST /api/admin/products/reorder` (shared `reorderSchema`,
+    `reorderProducts()` = one `$transaction`). `ProductsListPage` gets a "סידור תצוגה" toggle
+    that swaps the table for a `Reorder.Group` drag-list of all products (`limit=200`),
+    "שומר סדר..." indicator, "סיום סידור" to exit.
+  - **Review order (`Review.sortOrder`):** schema + migration
+    `20260910130000_review_sort_order` (idempotent `ADD COLUMN IF NOT EXISTS ... DEFAULT 0`).
+    `getFeaturedHomeReviews` orders by `sortOrder` then `createdAt desc`; `updateReviewSchema`
+    - `updateReview` accept `sortOrder`; `ReviewDTO.sortOrder` populated. New
+      `POST /api/admin/reviews/reorder` + `reorderFeaturedHomeReviews()`. `ReviewsListPage` gets
+      a collapsible "סדר בעמוד הבית" panel — a drag-list of the approved + featured-on-home
+      reviews.
+- **Roadmap:** M1.28k ✅ (working before M1.28j, per owner).
+- **Decisions:**
+  - `/shop` catalog reuses the full `ProductDTO` rather than a trimmed list DTO — payload
+    delta is small at this catalog size and it keeps `ProductCard` untouched.
+  - `Review.sortOrder` folded into M1.28k by explicit owner decision (M1.28k is otherwise
+    DB-free). `<ContactSection>` "move out of filter path" resolved for free — the page is
+    static now, so it renders once at ISR time.
+- **Notes/blockers:**
+  - **Migration `20260910130000_review_sort_order` is applied to prod.** This project has a
+    single Supabase database — `.env` points at production, there is no separate dev project —
+    so `npm run db:migrate` (`prisma migrate dev`) applied the migration directly to prod. It
+    is additive + safe (`ADD COLUMN ... DEFAULT 0`, no data rewrite); `prisma migrate status`
+    reports 9 migrations, schema up to date, no drift/reset. Existing reviews get
+    `sortOrder = 0` → homepage order unchanged until an admin drags. **No further prod step
+    needed** (unlike M1.28i, which was hand-applied because it was built on a branch).
+  - `prisma migrate dev` hung after applying (post-apply `generate`/prompt); the migration
+    itself committed fine.
+  - Corrects the docs' "local dev points at a Supabase dev project" line — there is only one DB.
+  - `typecheck + lint + test + build` all green; `/shop` + admin reorder verified in-browser.
+
 ## 2026-09-10 — M1.28i: unified Review table, homepage reviews, global reviews, review images
 
 - **Done:** Full M1.28i app code on branch `m1.28i-reviews-unified` (per plan

@@ -19,20 +19,20 @@ services / Prisma) where possible; Client Components use a thin API client for i
 All UI lives under the `[lang]` locale segment (`/he/...`, `/en/...`); the segment sets
 `<html lang dir>` and feeds next-intl. Paths below are relative to `/[lang]`.
 
-| Route | Page | Notes |
-|---|---|---|
-| `/` | Home | Hero + CTA, featured products grid, "Our Story" teaser, testimonials (placeholder), Instagram (placeholder). |
-| `/shop` | Catalog | Category filter, sort (price/newest/name), responsive product cards ("from ₪X"). |
-| `/product/[slug]` | Product Detail | **Core page.** Gallery (swipeable mobile), variant selector w/ dims, custom-dimension toggle + inputs w/ min/max, **live price**, color swatches, qty, add-to-cart, related products. |
-| `/cart` | Cart | Items w/ thumbnails + variant/custom info, qty +/-, coupon input, subtotal/shipping/discount/total, checkout CTA. |
-| `/checkout` | Checkout | Customer info, shipping vs pickup, order summary sidebar, "Pay with Credit Card" (stub), installments, terms checkbox. |
-| `/orders/[id]/confirmation` | Confirmation | Thank-you, order number, summary, delivery timeframe. `?payment=success` from provider redirect. |
-| `/about` | About | Craftsman story, workshop photos, philosophy. |
-| `/gallery` | Gallery | Masonry/grid of past work, lightbox. |
-| `/contact` | Contact | Form, WhatsApp link, optional Maps embed, hours. |
-| `/faq` | FAQ | Accordion, bilingual. |
-| `/terms`, `/privacy`, `/returns` | Legal | Bilingual, placeholder content phase 1. |
-| `/admin/*` | Admin | Separate layout + auth guard. See `08-admin-panel.md`. |
+| Route                            | Page           | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| -------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                              | Home           | Hero + CTA, featured products grid, "Our Story" teaser, testimonials (placeholder), Instagram (placeholder).                                                                                                                                                                                                                                                                                                                                                            |
+| `/shop`                          | Catalog        | Category filter, sort (recommended/price/newest/name), responsive product cards ("from ₪X"). **Static/ISR** — `shop/page.tsx` fetches the whole active catalog once (`getShopCatalogCached`, `take: 150` cap); `ShopClient` does all filter/sort/paginate in a `useMemo` and syncs the URL with `history.replaceState` (shareable, no navigation/refetch). Default sort `recommended` = the admin's `Product.sortOrder` drag order (`/admin/products` → "סידור תצוגה"). |
+| `/product/[slug]`                | Product Detail | **Core page.** Gallery (swipeable mobile), variant selector w/ dims, custom-dimension toggle + inputs w/ min/max, **live price**, color swatches, qty, add-to-cart, related products.                                                                                                                                                                                                                                                                                   |
+| `/cart`                          | Cart           | Items w/ thumbnails + variant/custom info, qty +/-, coupon input, subtotal/shipping/discount/total, checkout CTA.                                                                                                                                                                                                                                                                                                                                                       |
+| `/checkout`                      | Checkout       | Customer info, shipping vs pickup, order summary sidebar, "Pay with Credit Card" (stub), installments, terms checkbox.                                                                                                                                                                                                                                                                                                                                                  |
+| `/orders/[id]/confirmation`      | Confirmation   | Thank-you, order number, summary, delivery timeframe. `?payment=success` from provider redirect.                                                                                                                                                                                                                                                                                                                                                                        |
+| `/about`                         | About          | Craftsman story, workshop photos, philosophy.                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `/gallery`                       | Gallery        | Masonry/grid of past work, lightbox.                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `/contact`                       | Contact        | Form, WhatsApp link, optional Maps embed, hours.                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `/faq`                           | FAQ            | Accordion, bilingual.                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `/terms`, `/privacy`, `/returns` | Legal          | Bilingual, placeholder content phase 1.                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `/admin/*`                       | Admin          | Separate layout + auth guard. See `08-admin-panel.md`.                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 ## Layouts (App Router `layout.tsx`)
 
@@ -54,6 +54,7 @@ All UI lives under the `[lang]` locale segment (`/he/...`, `/en/...`); the segme
 ## Motion / animations
 
 Wrap UI elements with `motion/react` (Framer Motion) for small, tasteful animations:
+
 - Most interactive elements — buttons, cards, product tiles, drawers, modals — should use
   `motion.*` with hover/tap/enter variants.
 - List reorders (cart items, gallery) use `layout` prop for smooth position transitions.
@@ -63,6 +64,7 @@ Wrap UI elements with `motion/react` (Framer Motion) for small, tasteful animati
 ## Reviews carousel
 
 The reviews section (phase 2 UI, model exists in phase 1) uses **embla-carousel**:
+
 - `features/reviews/ReviewsCarousel.tsx` — embla-carousel-react with prev/next buttons and
   dot indicators.
 - RTL-aware: pass `{ direction: locale === 'he' ? 'rtl' : 'ltr' }` to `useEmblaCarousel`.
@@ -125,6 +127,7 @@ The reviews section (phase 2 UI, model exists in phase 1) uses **embla-carousel*
 
 After the user scrolls past the buy box (the section with variant/price/qty/add-to-cart), a
 sticky bar slides in at the bottom on mobile (`md:hidden`):
+
 - Shows: product name (truncated), current computed price, **"Add to Cart"** button.
 - Uses the same cart logic as the main buy box — no duplicate state.
 - Hides again when the buy box scrolls back into view (IntersectionObserver).

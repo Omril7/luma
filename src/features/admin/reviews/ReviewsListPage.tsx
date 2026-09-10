@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
+import { Reorder, useDragControls } from 'motion/react'
 import {
   Check,
   X,
@@ -12,6 +13,8 @@ import {
   Eye,
   Plus,
   Home,
+  GripVertical,
+  ChevronDown,
 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
@@ -114,6 +117,63 @@ export function ReviewsListPage() {
   const [savingEdit, setSavingEdit] = useState(false)
   const [viewReview, setViewReview] = useState<ReviewDTO | null>(null)
 
+  // ── Homepage order panel ────────────────────────────────────────────────────
+  const [orderOpen, setOrderOpen] = useState(false)
+  const [orderList, setOrderList] = useState<ReviewDTO[]>([])
+  const [orderLoading, setOrderLoading] = useState(false)
+  const [orderSaving, setOrderSaving] = useState(false)
+  const orderListRef = useRef<ReviewDTO[]>([])
+  useEffect(() => {
+    orderListRef.current = orderList
+  }, [orderList])
+
+  const loadHomeOrder = useCallback(async () => {
+    if (!token) return
+    setOrderLoading(true)
+    try {
+      const data = await api.get<ReviewsResponse>(
+        '/api/admin/reviews?status=APPROVED&pageSize=100',
+        token
+      )
+      setOrderList(
+        data.data
+          .filter((r) => r.featuredOnHome)
+          .sort((a, b) => a.sortOrder - b.sortOrder || b.createdAt.localeCompare(a.createdAt))
+      )
+    } catch {
+      setOrderList([])
+    } finally {
+      setOrderLoading(false)
+    }
+  }, [token])
+
+  function toggleOrderPanel() {
+    const next = !orderOpen
+    setOrderOpen(next)
+    if (next) loadHomeOrder()
+  }
+
+  function handleOrderDragEnd() {
+    setTimeout(persistHomeOrder, 0)
+  }
+
+  async function persistHomeOrder() {
+    if (!token) return
+    const list = orderListRef.current
+    if (!list.some((r, i) => r.sortOrder !== i)) return
+
+    setOrderSaving(true)
+    setOrderList(list.map((r, i) => ({ ...r, sortOrder: i })))
+    try {
+      await api.post('/api/admin/reviews/reorder', { ids: list.map((r) => r.id) }, token)
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'שגיאה בשמירת הסדר')
+      loadHomeOrder()
+    } finally {
+      setOrderSaving(false)
+    }
+  }
+
   const [products, setProducts] = useState<ProductOption[]>([])
   const [creating, setCreating] = useState(false)
   const [createDraft, setCreateDraft] = useState(EMPTY_CREATE)
@@ -174,6 +234,7 @@ export function ReviewsListPage() {
     try {
       await api.patch(`/api/admin/reviews/${review.id}`, { status: newStatus }, token)
       fetchReviews()
+      if (orderOpen) loadHomeOrder()
     } catch (e) {
       patchLocal(review.id, { status: review.status, featuredOnHome: review.featuredOnHome })
       alert(e instanceof Error ? e.message : 'שגיאה בעדכון הביקורת')
@@ -189,6 +250,7 @@ export function ReviewsListPage() {
     patchLocal(review.id, { featuredOnHome: next })
     try {
       await api.patch(`/api/admin/reviews/${review.id}`, { featuredOnHome: next }, token)
+      if (orderOpen) loadHomeOrder()
     } catch (e) {
       patchLocal(review.id, { featuredOnHome: review.featuredOnHome })
       alert(e instanceof Error ? e.message : 'שגיאה בעדכון')
@@ -307,6 +369,64 @@ export function ReviewsListPage() {
           <Plus size={15} aria-hidden="true" />
           ביקורת חדשה
         </button>
+      </div>
+
+      {/* Homepage order panel */}
+      <div className="bg-surface border border-border rounded-lg overflow-hidden">
+        <button
+          type="button"
+          onClick={toggleOrderPanel}
+          aria-expanded={orderOpen}
+          className="w-full flex items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-text-main hover:bg-bg/50 transition-colors cursor-pointer"
+        >
+          <span className="flex items-center gap-2">
+            <Star size={15} className="text-accent fill-accent" aria-hidden="true" />
+            סדר בעמוד הבית
+            {orderSaving && <span className="text-primary text-xs">· שומר...</span>}
+          </span>
+          <ChevronDown
+            size={16}
+            aria-hidden="true"
+            className={`transition-transform ${orderOpen ? 'rotate-180' : ''}`}
+          />
+        </button>
+
+        {orderOpen && (
+          <div className="border-t border-border p-3">
+            {orderLoading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-12 bg-secondary rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : orderList.length === 0 ? (
+              <p className="px-1 py-6 text-center text-sm text-text-muted">
+                אין ביקורות המסומנות להצגה בעמוד הבית. סמנו ביקורות מאושרות בכוכב כדי להוסיפן לכאן.
+              </p>
+            ) : (
+              <>
+                <p className="px-1 pb-2 text-xs text-text-muted">
+                  גררו לשינוי הסדר שבו הביקורות מופיעות בעמוד הבית.
+                </p>
+                <Reorder.Group
+                  axis="y"
+                  values={orderList}
+                  onReorder={setOrderList}
+                  className="space-y-1.5"
+                >
+                  {orderList.map((review, index) => (
+                    <HomeOrderRow
+                      key={review.id}
+                      review={review}
+                      position={index + 1}
+                      onDragEnd={handleOrderDragEnd}
+                    />
+                  ))}
+                </Reorder.Group>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Filters */}
@@ -963,5 +1083,62 @@ export function ReviewsListPage() {
         </div>
       )}
     </div>
+  )
+}
+
+// ── Homepage-order drag row ────────────────────────────────────────────────────
+// Defined outside ReviewsListPage so React keeps the row identity across parent renders.
+
+interface HomeOrderRowProps {
+  review: ReviewDTO
+  position: number
+  onDragEnd: () => void
+}
+
+function HomeOrderRow({ review, position, onDragEnd }: HomeOrderRowProps) {
+  const dragControls = useDragControls()
+
+  return (
+    <Reorder.Item
+      value={review}
+      dragListener={false}
+      dragControls={dragControls}
+      onDragEnd={onDragEnd}
+      whileDrag={{ scale: 1.01, boxShadow: '0 8px 24px rgba(0,0,0,0.14)' }}
+      className="flex items-center gap-3 rounded-lg border border-border bg-bg px-2 py-2"
+    >
+      <button
+        type="button"
+        onPointerDown={(e) => {
+          e.preventDefault()
+          dragControls.start(e)
+        }}
+        title="גרירה לשינוי סדר"
+        aria-label={`שינוי סדר: ${review.customerName}`}
+        className="p-2 rounded-lg text-text-muted hover:bg-secondary hover:text-text-main transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center cursor-grab active:cursor-grabbing touch-none select-none"
+      >
+        <GripVertical size={15} aria-hidden="true" />
+      </button>
+
+      <span className="tabular-nums text-xs text-text-muted w-6 text-center">{position}</span>
+
+      {review.imageUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={review.imageUrl}
+          alt=""
+          className="h-9 w-9 shrink-0 rounded-md object-cover border border-border"
+        />
+      )}
+
+      <div className="min-w-0 flex-1">
+        <p className="font-medium text-text-main text-sm truncate">{review.customerName}</p>
+        <p className="text-xs text-text-muted truncate">
+          {review.comment_he || review.comment_en || '—'}
+        </p>
+      </div>
+
+      <StarRating value={review.rating} readonly size="sm" />
+    </Reorder.Item>
   )
 }

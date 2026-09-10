@@ -54,7 +54,7 @@ export default async function ProductPage({
 
   // Related products (same category, exclude self) + reviews + site-wide FAQ, in parallel
   const [{ products: allRelated }, { reviews }, faqRow] = await Promise.all([
-    getProducts({ categoryId: product.category.id, limit: 5 }),
+    getProducts({ categoryId: product.category.id, sort: 'recommended', limit: 5 }),
     getApprovedReviewsForProduct(product.id, { limit: 10 }),
     getSiteContentByKey('faq.items'),
   ])

@@ -18,6 +18,7 @@ type ReviewWithProduct = {
   imageUrl: string | null
   status: 'NEW' | 'READ' | 'APPROVED' | 'REJECTED'
   featuredOnHome: boolean
+  sortOrder: number
   createdAt: Date
   product: { id: string; name_he: string; name_en: string; slug: string } | null
 }
@@ -36,6 +37,7 @@ export function toReviewDTO(r: ReviewWithProduct): ReviewDTO {
     imageUrl: r.imageUrl ?? undefined,
     status: r.status,
     featuredOnHome: r.featuredOnHome,
+    sortOrder: r.sortOrder,
     createdAt: r.createdAt.toISOString(),
   }
 }
@@ -72,11 +74,11 @@ export async function getApprovedReviewsForProduct(
   }
 }
 
-/** Approved reviews the admin flagged for the homepage, newest first. */
+/** Approved reviews the admin flagged for the homepage, in the admin's drag order. */
 export async function getFeaturedHomeReviews(limit = 12): Promise<HomeReviewDTO[]> {
   const rows = await prisma.review.findMany({
     where: { status: 'APPROVED', featuredOnHome: true },
-    orderBy: { createdAt: 'desc' },
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
     take: limit,
     include: { product: { select: { name_he: true, name_en: true } } },
   })
@@ -196,6 +198,7 @@ export type UpdateReviewFields = {
   rating?: number
   imageUrl?: string | null
   featuredOnHome?: boolean
+  sortOrder?: number
 }
 
 export type UpdateReviewResult =
@@ -231,6 +234,7 @@ export async function updateReview(
       ...(fields.comment_en !== undefined && { comment_en: fields.comment_en }),
       ...(fields.rating !== undefined && { rating: fields.rating }),
       ...(fields.imageUrl !== undefined && { imageUrl: fields.imageUrl }),
+      ...(fields.sortOrder !== undefined && { sortOrder: fields.sortOrder }),
       featuredOnHome: nextFeatured,
     },
     include: { product: { select: { id: true, name_he: true, name_en: true, slug: true } } },
@@ -241,6 +245,18 @@ export async function updateReview(
   }
 
   return { ok: true, review: toReviewDTO(updated) }
+}
+
+/**
+ * Persist the homepage-featured review order: each id's `sortOrder` becomes its position
+ * in `ids`. Ids that aren't currently featured-on-home are ignored by the homepage query
+ * anyway, so no extra guard is needed here.
+ */
+export async function reorderFeaturedHomeReviews(ids: string[]): Promise<{ updated: number }> {
+  await prisma.$transaction(
+    ids.map((id, index) => prisma.review.update({ where: { id }, data: { sortOrder: index } }))
+  )
+  return { updated: ids.length }
 }
 
 export async function deleteReview(id: string): Promise<boolean> {

@@ -443,9 +443,10 @@ maintenance window.
 
 - **Acceptance:** 8 MB JPEG uploads (would 413 today), stored downscaled; 12 MB blocked client-side; non-admin can't get an admin ticket; public review uploader stays rate-limited; gallery renders identically off the new table with order preserved and orphan cleanup intact; `MAINTENANCE_MODE=1` shows the page on the storefront only, admin still usable, `?bypass` unlocks; no dead `SiteContent` keys or FAQ code remain; `typecheck + lint + test + build` green.
 
-### M1.28k `/shop` — client-side filter/sort/paginate + admin product ordering
+### M1.28k `/shop` — client-side filter/sort/paginate + admin product & review ordering ✅
 
-**No DB change.** Two problems, one fix. `Product.sortOrder Int @default(0)` already exists,
+**One small DB change** (`Review.sortOrder`, folded in by owner decision — see the review
+block below). Products need no schema change. Three problems, one fix. `Product.sortOrder Int @default(0)` already exists,
 `create`/`updateProductSchema` accept it, `ProductDTO.sortOrder` is populated, and
 `listAdminProducts` already orders by `[{ sortOrder: 'asc' }, { createdAt: 'desc' }]` — only the
 admin drag UI and the storefront read are missing. Separately, **`/shop` filtering/sorting is
@@ -469,36 +470,50 @@ slow** because every filter click is a full server navigation.
 
 **Fix — move filter/sort/paginate to the client** (catalog is small — ~10–50 products):
 
-- [ ] `shop/page.tsx` stops reading `searchParams`; fetches the **full active catalog once**
-      (trimmed list DTO) + categories → route goes static/ISR (`export const revalidate`).
-- [ ] `ShopClient` receives all products; reads initial filter/sort/page from `useSearchParams`;
-      computes the visible slice in a `useMemo` (filter → sort → paginate); writes URL changes via
+- [x] `shop/page.tsx` stops reading `searchParams`; fetches the **full active catalog once**
+      (`getShopCatalogCached`, `recommended` order, hard `take: 150` cap) + categories → route is
+      static/ISR (`export const revalidate = 300`).
+- [x] `ShopClient` receives all products; reads initial filter/sort/page from the URL on mount
+      (route is static, so via `window.location.search` not `useSearchParams`); computes the
+      visible slice in a `useMemo` (filter → sort → paginate); writes URL changes via
       `window.history.replaceState` (shareable link, **zero navigation, zero refetch**).
-- [ ] Move `<ContactSection>` + its `getSiteSettings`/`getSiteContentByKey` out of the filter
-      path (own slot, or `unstable_cache` those calls).
-- [ ] Animations: stagger on **first mount only**; on filter change drop `mode="popLayout"` /
-      exit anims — `layout` + a short fade is enough.
-- [ ] Guard: cap the client list at ~150; if the catalog ever exceeds that, fall back to server
-      pagination (realistically N/A for this business).
+- [x] `<ContactSection>` no longer on a filter path — it renders once at ISR time.
+- [x] Animations: stagger on **first mount only**; filter/sort/page changes get a 0.15s
+      crossfade, no exit-cascade. `a11y.noMotion` still disables all of it.
+- [x] Guard: `ANIM_CAP = 150` — above it the layout/entrance anim is skipped.
 
 **Product ordering (rides the same `ShopClient` rewrite):**
 
-- [ ] **Storefront** — client sort gains a `curated` key = order by `sortOrder` then `createdAt
-desc`; make it the **default** on `/shop`. Keep price/name/newest as explicit user choices.
-      i18n `shop.sort.curated` ("הסדר שלנו" / "Our order"). (Server `SORT_MAP` also gets `curated`
-      for `/api/products` + related-products consistency.)
-- [ ] **Bulk reorder endpoint** — `POST /api/admin/products/reorder` (`withAdmin`), body
-      `{ ids: string[] }`, one `$transaction` setting `sortOrder = index`.
-- [ ] **Admin UI** — `ProductsListPage.tsx`: a "סידור תצוגה" toggle that swaps the paginated
-      filtered table for a `Reorder.Group` drag-list of **all** products (fetch `limit=200`, no
-      pagination/filter while reordering), drag handle + `GripVertical`, `persistOrder` → the bulk
-      endpoint, "saving…" indicator. Exit toggle returns to the normal table. Mirrors
-      `CategoriesListPage.tsx` / `GalleryPage.tsx`.
-- [ ] Optional: read-only `sortOrder` column in the normal table.
+- [x] **Storefront** — sort gains a `recommended` key = order by `sortOrder` then `createdAt
+    desc`; it's the **default** on `/shop`. Price/name/newest still override it. i18n
+      `shop.sort.recommended` ("מומלץ" / "Recommended"). Server `SORT_MAP` gets `recommended`
+      too (`/api/products` + related-products).
+- [x] **Bulk reorder endpoint** — `POST /api/admin/products/reorder` (`withAdmin`), body
+      `{ ids: string[] }` (shared `reorderSchema`), `reorderProducts()` = one `$transaction`
+      setting `sortOrder = index`.
+- [x] **Admin UI** — `ProductsListPage.tsx`: a "סידור תצוגה" toggle swaps the paginated table
+      for a `Reorder.Group` drag-list of **all** products (`limit=200`, no filter), drag handle +
+      `GripVertical`, `persistOrder` → the bulk endpoint, "שומר סדר..." indicator. "סיום סידור"
+      returns to the normal table. Mirrors `CategoriesListPage.tsx`.
+- [ ] Optional: read-only `sortOrder` column in the normal table. _(skipped — position shown in
+      the reorder list instead)_
+
+**Homepage review ordering (`Review.sortOrder`):**
+
+- [x] **Schema + migration** — `Review.sortOrder Int @default(0)`;
+      `prisma/migrations/20260910130000_review_sort_order/` (idempotent `ADD COLUMN IF NOT
+    EXISTS`). Applied to **prod** via `db:migrate` (single-DB project — `.env` is prod).
+      Additive + safe, no reset. No further prod step.
+- [x] `getFeaturedHomeReviews` orders by `[{ sortOrder: 'asc' }, { createdAt: 'desc' }]`;
+      `updateReviewSchema` + `updateReview` accept `sortOrder`; `ReviewDTO.sortOrder` populated.
+- [x] **Bulk reorder endpoint** — `POST /api/admin/reviews/reorder`, `reorderFeaturedHomeReviews()`.
+- [x] **Admin UI** — `ReviewsListPage.tsx`: a collapsible "סדר בעמוד הבית" panel listing the
+      approved + featured-on-home reviews as a `Reorder.Group` drag-list → the bulk endpoint.
 
 - **Acceptance:** changing a filter/sort/page on `/shop` is instant (no skeleton flash, no
   refetch, URL still updates and is shareable); dragging products in the admin persists an order
   that `/shop` shows by default (RTL/LTR correct), with price/name/newest still overriding it;
+  dragging homepage reviews persists an order the homepage `TestimonialsSection` reflects;
   `typecheck + lint + test + build` green.
 
 ---

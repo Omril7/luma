@@ -132,7 +132,9 @@ global "about the business" reviews (also feeds the homepage testimonials carous
 `comment_he?`, `comment_en?`, `imageUrl?` (one optional Cloudinary image, customer- or
 admin-supplied), `status ReviewStatus @default(NEW)` (`NEW|READ|APPROVED|REJECTED`),
 `featuredOnHome Boolean @default(false)` (admin flag → homepage `TestimonialsSection`;
-only meaningful while `APPROVED`), `createdAt`. Relation `product Product?` (optional).
+only meaningful while `APPROVED`), `sortOrder Int @default(0)` (admin drag order for the
+homepage-featured set — `getFeaturedHomeReviews` orders by `sortOrder` then `createdAt desc`;
+set via `POST /api/admin/reviews/reorder`), `createdAt`. Relation `product Product?` (optional).
 
 Guard (service-enforced): a review must carry at least one of `comment_he` / `comment_en`
 / `imageUrl`. Public submissions land as `NEW`; admin-authored ones default to `APPROVED`.

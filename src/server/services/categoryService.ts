@@ -13,8 +13,8 @@ export async function getActiveCategories(): Promise<CategoryDTO[]> {
   return categories
 }
 
-// Cached for /shop specifically — see the matching comment on getProductsCached in
-// productService.ts for why (route stays dynamic, only the DB query is cached).
+// Cached for /shop specifically — see the matching comment on getShopCatalogCached in
+// productService.ts (the route is static/ISR; this keeps repeat renders off the DB).
 export const getActiveCategoriesCached = unstable_cache(
   () => getActiveCategories(),
   ['shop-categories'],

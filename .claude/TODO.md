@@ -58,10 +58,11 @@ Check items off as you complete them and I'll update future plans accordingly.
 - [ ] Add **Build Command** override: `prisma migrate deploy && next build`
 - [ ] Deploy — Vercel auto-detects Next.js 15
 
-### Supabase production project
+### Supabase project
 
-- [ ] Create a separate Supabase project for production (keep dev project for dev)
-- [ ] Set production `DATABASE_URL` / `DIRECT_URL` in Vercel dashboard
+- [x] ~~Create a separate Supabase project for production~~ — decided against; there is **one**
+      Supabase project (production) used for both local dev and prod. No dev/staging DB.
+- [ ] Set the same `DATABASE_URL` / `DIRECT_URL` in the Vercel dashboard
 
 ---
 

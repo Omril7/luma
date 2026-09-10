@@ -22,13 +22,15 @@ Bilingual Hebrew (RTL, default) + English (LTR). Built with Next.js 15, Prisma, 
 
 ```bash
 npm install                    # installs deps + runs prisma generate
-cp .env.example .env.local     # fill in your Supabase + Cloudinary credentials
-npm run db:migrate             # run migrations against your Supabase dev project
-npm run db:seed                # seed sample products, coupons, admin user
+cp .env.example .env           # fill in your Supabase + Cloudinary credentials
+npm run db:migrate             # ⚠ runs against the PRODUCTION DB (only additive/safe migrations)
+npm run db:seed                # ⚠ also the production DB — skip unless intentional
 npm run dev                    # start Next.js on :3000
 ```
 
-No Docker needed. Point `DATABASE_URL` / `DIRECT_URL` at your [Supabase](https://supabase.com) dev project.
+No Docker needed. There is **one** [Supabase](https://supabase.com) database — production.
+`DATABASE_URL` / `DIRECT_URL` in `.env` point at it; there is no separate dev database, so
+local dev and migrations run against live production data.
 
 ## Available scripts
 
