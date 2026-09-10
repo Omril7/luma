@@ -405,7 +405,7 @@ per review (customer-uploadable + admin add/edit).
 - [x] Admin `/admin/reviews`: global-review chip, "feature on homepage" star toggle (approved-only), image + rating in edit dialog, image in view dialog + row, "+ New review" create dialog (global or product target, auto-`APPROVED`), scope filter
 - [x] Retire the Site Content "המלצות לקוחות" tab + `TestimonialsTab` (types/state/hooks/render block)
 - [x] i18n: new `reviews.*` keys (he + en); updated `.claude/docs/02-data-models.md` `Review` section
-- **Acceptance:** a customer can leave a product review or a business review, each with an optional photo; the admin moderates, can add/replace/remove the image, and flags reviews for the homepage; the homepage carousel shows exactly the flagged approved reviews (hidden when none, CTA still visible); no `home.testimonials` reads remain; `typecheck + lint + test + build` green. ✅ Verified 2026-09-10 — migration live on prod, 3 prior testimonials re-entered as featured global reviews, build 86/86 green. **Follow-up:** delete the now-dead `SiteContent` row `key = home.testimonials` (nothing reads it).
+- **Acceptance:** a customer can leave a product review or a business review, each with an optional photo; the admin moderates, can add/replace/remove the image, and flags reviews for the homepage; the homepage carousel shows exactly the flagged approved reviews (hidden when none, CTA still visible); no `home.testimonials` reads remain; `typecheck + lint + test + build` green. ✅ Verified 2026-09-10 — migration live on prod, 3 prior testimonials re-entered as featured global reviews, dead `SiteContent` row `key = home.testimonials` deleted, build 86/86 green.
 
 ### M1.28j Storage & content-store cleanup
 

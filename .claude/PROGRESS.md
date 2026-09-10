@@ -74,10 +74,9 @@ Keep entries short and factual. One entry per working session (or per merged cha
     — zod `.default()` broke `parseBody<T>` inference (input vs output type). Defaults applied in the service.
   - `POST /api/reviews/upload` keeps the current `storage.save()` proxy pattern; it folds into
     `storage.md` Part 1's signed-ticket model later (checklist line added there).
-- **Notes/blockers:** one follow-up left — delete the now-dead `SiteContent` row
-  `key = home.testimonials` (nothing reads it; couldn't be done from here — run in Supabase SQL
-  Editor: `DELETE FROM "SiteContent" WHERE "key" = 'home.testimonials';`). Location field from the
-  old testimonials (city) is dropped — the new `Review` card shows name + optional product only.
+- **Notes/blockers:** none. Dead `SiteContent` row `key = home.testimonials` deleted by the owner
+  via the Supabase dashboard (verified gone). Location field from the old testimonials (city) is
+  dropped — the new `Review` card shows name + optional product only.
 
 ## 2026-09-06 — Product gallery: full thumbnail carousel, zoom lightbox, hover-swap, variant prices
 

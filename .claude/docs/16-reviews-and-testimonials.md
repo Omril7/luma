@@ -3,7 +3,7 @@
 > **Status:** ✅ implemented and shipped (M1.28i, 2026-09-10). Migration
 > (`prisma/migrations/20260910120000_review_global_and_image/`) applied to prod via the
 > Supabase SQL Editor + `prisma migrate resolve`. Merged to `main` (`1191d55`).
-> One follow-up: delete the dead `SiteContent` row `key = home.testimonials`.
+> Dead `SiteContent` row `key = home.testimonials` deleted. Nothing outstanding.
 > **Depends on:** nothing hard, but shares the upload path with
 > [`storage.md`](storage.md) — see [§7](#7-relationship-to-storagemd).
 > **LIVE-site rule:** the site is in production. The one required schema migration
