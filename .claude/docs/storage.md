@@ -1,21 +1,25 @@
 # storage.md — Plan: storage & content-store cleanup
 
-> **Status:** planned, not implemented.
+> **Status:** Parts 1–2 implemented and shipped (2026-09-20). Parts 3–5 still planned.
 >
 > This doc grew into the umbrella for a linked set of storage / content-store changes, best
 > shipped together (or back-to-back) because they share the upload call sites, the gallery
 > admin, and one downtime window:
 >
-> | Part  | What                                                                 | DB change?                  |
-> | ----- | -------------------------------------------------------------------- | --------------------------- |
-> | **1** | Signed direct-to-Cloudinary uploads (10 MB ceiling, drop `local.ts`) | no                          |
-> | **2** | Gallery: `SiteContent['gallery']` blob → `GalleryImage` table        | **yes** (create + backfill) |
-> | **3** | Maintenance-mode page + switch (for any gated migration)             | no                          |
-> | **4** | `SiteContent` audit — which rows are dead and safe to delete         | no (manual deletes)         |
-> | **5** | Why `EmailSettings` stays its own table (analysis, no action)        | no                          |
+> | Part  | What                                                                 | DB change?                  | Status                              |
+> | ----- | -------------------------------------------------------------------- | --------------------------- | ----------------------------------- |
+> | **1** | Signed direct-to-Cloudinary uploads (10 MB ceiling, drop `local.ts`) | no                          | ✅ shipped 2026-09-20               |
+> | **2** | Gallery: `SiteContent['gallery']` blob → `GalleryImage` table        | **yes** (create + backfill) | ✅ shipped 2026-09-20, blob deleted |
+> | **3** | Maintenance-mode page + switch (for any gated migration)             | no                          | planned                             |
+> | **4** | `SiteContent` audit — which rows are dead and safe to delete         | no (manual deletes)         | planned                             |
+> | **5** | Why `EmailSettings` stays its own table (analysis, no action)        | no                          | analysis only, no action needed     |
 >
-> **LIVE-site rule:** Parts 2's migration + backfill **must not run without the owner's
-> explicit go-ahead**, behind the Part 3 maintenance page.
+> **LIVE-site rule:** Part 2's migration + backfill ran with the owner's explicit go-ahead
+> (2026-09-20), without Part 3's maintenance page — it was additive-only (new table + a
+> read-only backfill copy) so the live site was unaffected while it ran. The old code was
+> deployed unaware of `GalleryImage` throughout; the blob was deleted only after the new
+> code was live and verified. Any future consent-gated migration should still consider
+> Part 3 first if it's less clearly non-destructive than this one was.
 
 ---
 
@@ -364,15 +368,12 @@ No call-site, component, or cleanup-service changes. Switch live via `STORAGE_PR
 
 # Part 2 — Gallery: `SiteContent['gallery']` blob → `GalleryImage` table
 
-> **Status:** planned, not implemented.
-> **Why it lives here:** the gallery admin is one of the upload call sites this doc already
-> touches, and this migration + the maintenance-mode plan below are the reason the storage
-> work needs a downtime window. Do the table migration and the upload rework in the same PR
-> or back-to-back.
-> **LIVE-site rule:** this needs a real schema migration **and a data backfill**. It **must
-> not run without the owner's explicit go-ahead**, and it wants the maintenance page
-> ([Part 3](#part-3--maintenance-mode-for-migrations-that-need-a-downtime-window)) up while
-> the backfill runs.
+> **Status:** ✅ implemented and shipped 2026-09-20. Migration
+> (`prisma/migrations/20260920120000_gallery_image_table/`) applied to prod with the owner's
+> explicit go-ahead; 10/10 rows backfilled correctly. Code deployed and verified; the owner
+> manually deleted the `SiteContent['gallery']` blob row (Step C) the same day. Ran without
+> Part 3's maintenance page — additive-only (new table + read-only backfill), so the live
+> site kept working off the untouched blob the whole time the migration was applying.
 
 ## Why move it out of `SiteContent`
 
@@ -689,7 +690,7 @@ runs entirely on `HOME_CONTACT_DEFAULTS` + i18n today).
 | `home.story`           | `(storefront)/page.tsx` → `StorySection`         | override + image, i18n fallback. **Has stale sub-keys** — see below.          |
 | `about.page`           | `about/page.tsx`                                 | about copy + image. Real content set.                                         |
 | `faq.items`            | `faq/page.tsx` **and** `product/[slug]/page.tsx` | **the live FAQ** — 8 items, real content                                      |
-| `gallery`              | `adminGalleryService` / `/api/gallery`           | 10 images → **moves to `GalleryImage` in Part 2, then delete this row**       |
+| ~~`gallery`~~          | ~~`adminGalleryService` / `/api/gallery`~~       | **Done 2026-09-20** — moved to the `GalleryImage` table (Part 2); row deleted |
 | `gallery.intro`        | `gallery/page.tsx`                               | page heading — stays in SiteContent                                           |
 | `instagram.highlights` | `listActiveInstagramHighlights()`                | 6 permalinks                                                                  |
 

@@ -432,10 +432,9 @@ maintenance window.
       from `SiteContent['gallery']` via `jsonb_array_elements`) — **applied to prod 2026-09-20**
       via `prisma migrate deploy`, with the owner's explicit go-ahead. Verified: 10/10 rows
       backfilled (matches blob length), ids/urls/altText carried over correctly, re-indexed
-      `sortOrder` 0–9. The `SiteContent['gallery']` blob row is untouched (confirmed after
-      migration) — its verify-then-`DELETE` (Step C) stays a separate manual step, done only
-      after the new code is deployed and the storefront/admin are confirmed working off the
-      new table.
+      `sortOrder` 0–9. Code deployed (pushed to `main` → Vercel) and confirmed working; owner
+      manually ran Step C (`DELETE FROM "SiteContent" WHERE key = 'gallery'`) 2026-09-20 —
+      confirmed gone, `GalleryImage` still has all 10 rows. Part 2 fully closed out.
 - [x] Rewrote `adminGalleryService.ts` to Prisma (same exported signatures);
       `listGalleryImages({ activeOnly })`; repointed `GET /api/gallery` **and** the two direct
       server-side callers (`(storefront)/gallery/page.tsx`, home `page.tsx` — not mentioned in

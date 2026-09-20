@@ -19,6 +19,23 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-09-20 — M1.28j Parts 1–2 deployed; gallery blob cleanup done
+
+- **Done:**
+  - Pushed both commits (`bee4ca2` Part 1, `ce22689` Part 2) to `origin/main`, triggering the
+    Vercel deploy. Vercel's build command (`prisma migrate deploy && next build`) re-ran
+    `migrate deploy` against the already-migrated DB — no-op, since the table was applied
+    directly beforehand; not a double-apply risk.
+  - Owner manually ran Step C after verifying the deploy: `DELETE FROM "SiteContent" WHERE key
+= 'gallery'`. Confirmed after: blob row gone, `GalleryImage` still has all 10 rows intact.
+    Grepped `src/` for any remaining `key: 'gallery'` reads — none (only unrelated matches: a
+    nav-link `key` prop and the `gallery` i18n namespace).
+  - `.claude/docs/storage.md` updated: Parts 1–2 marked implemented/shipped in the umbrella
+    table and Part 2's own status line; Part 4's `gallery` row in the SiteContent audit table
+    marked done/struck through.
+- **Roadmap:** M1.28j Parts 1 + 2 fully closed out end-to-end (code, migration, deploy, and
+  the manual blob cleanup). Parts 3–5 remain planned.
+
 ## 2026-09-20 — M1.28j Part 2: GalleryImage table (migration applied)
 
 - **Done:**
