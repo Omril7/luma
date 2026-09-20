@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { ImagePlus, Trash2 } from 'lucide-react'
+import { uploadImage } from '@/lib/uploadImage'
 
 export interface ImageUploadProps {
   value: string | null
@@ -20,18 +21,7 @@ export function ImageUpload({ value, onChange, token, className, label }: ImageU
     setUploading(true)
     setError(null)
     try {
-      const fd = new FormData()
-      fd.append('file', file)
-      const res = await fetch('/api/admin/upload', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: fd,
-      })
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        throw new Error((body as { error?: string }).error ?? 'שגיאה בהעלאה')
-      }
-      const { url } = (await res.json()) as { url: string }
+      const url = await uploadImage(file, '/api/admin/upload', token)
       onChange(url)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'שגיאה בהעלאה')

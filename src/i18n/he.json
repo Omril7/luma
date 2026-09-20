@@ -491,7 +491,7 @@
     "required": "שדה חובה",
     "ratingRequired": "יש לבחור דירוג",
     "formImageLabel": "הוספת תמונה (לא חובה)",
-    "formImageHint": "JPG, PNG או WebP · עד 5MB",
+    "formImageHint": "JPG, PNG או WebP · עד 10MB",
     "formImageRemove": "הסרת התמונה",
     "formImageError": "העלאת התמונה נכשלה, נסו שוב",
     "imageAlt": "תמונה מאת {name}",

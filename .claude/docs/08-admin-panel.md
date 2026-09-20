@@ -65,8 +65,11 @@ password reset via `EmailProvider`; login lockout; 2FA; RBAC; or delegate to Sup
 
 ## Image upload
 
-Goes through `POST /api/admin/upload` → `StorageProvider` → **Cloudinary**. Returns a URL
-stored on `ProductImage.url` / gallery item. Validate type/size server-side.
+The browser requests a signed `UploadTicket` from `POST /api/admin/upload`, then posts the
+file **directly to Cloudinary** with it via `uploadImage()` (`src/lib/uploadImage.ts`) — the
+bytes never touch our server, so Vercel's ~4.5 MB body cap doesn't apply. Ceiling is
+Cloudinary's 10 MB; type/size/dimension limits are enforced by the `luma_signed` preset, not
+server code. Returns a URL stored on `ProductImage.url` / gallery item.
 
 ## Coupons
 

@@ -2,35 +2,6 @@ import 'server-only'
 import { prisma } from '@/server/prisma'
 import { getStorageProvider } from '@/server/providers/storage'
 
-// ── Public ID extraction ───────────────────────────────────────────────────────
-
-/**
- * Extract the Cloudinary public ID from a full secure URL.
- * URL format: https://res.cloudinary.com/{cloud}/image/upload/v{version}/{public_id}.{ext}
- * Returns null if the URL is not a Cloudinary URL or cannot be parsed.
- */
-export function extractPublicId(url: string): string | null {
-  if (!url.includes('res.cloudinary.com')) return null
-
-  const uploadMarker = '/upload/'
-  const uploadIdx = url.indexOf(uploadMarker)
-  if (uploadIdx === -1) return null
-
-  // Everything after /upload/
-  let after = url.slice(uploadIdx + uploadMarker.length)
-
-  // Remove optional version prefix: v1234567890/
-  after = after.replace(/^v\d+\//, '')
-
-  // Remove file extension (strip from the last dot)
-  const lastDot = after.lastIndexOf('.')
-  if (lastDot !== -1) {
-    after = after.slice(0, lastDot)
-  }
-
-  return after || null
-}
-
 // ── URL collection ─────────────────────────────────────────────────────────────
 
 /**
@@ -102,20 +73,16 @@ async function getAllDbImageUrls(): Promise<Set<string>> {
 export async function deleteIfOrphaned(url: string | null | undefined): Promise<void> {
   try {
     if (!url) return
-    if (!url.includes('res.cloudinary.com')) return
+
+    const storage = await getStorageProvider()
+    const key = storage.keyFromUrl(url)
+    if (!key) return
 
     const stillReferenced = await getAllDbImageUrls()
     if (stillReferenced.has(url)) return
 
-    const publicId = extractPublicId(url)
-    if (!publicId) {
-      console.warn('[cloudinaryCleanup] Could not extract public ID from URL:', url)
-      return
-    }
-
-    const storage = await getStorageProvider()
-    await storage.delete(publicId)
-    console.log('[cloudinaryCleanup] Deleted orphaned asset:', publicId)
+    await storage.deleteAsset(key)
+    console.log('[cloudinaryCleanup] Deleted orphaned asset:', key)
   } catch (err) {
     console.error('[cloudinaryCleanup] Failed to delete orphaned asset:', url, err)
   }

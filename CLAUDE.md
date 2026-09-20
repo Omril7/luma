@@ -20,21 +20,21 @@ Full brief (Next.js architecture): [`read/CLAUDE-CODE-PROMPT.md`](read/CLAUDE-CO
 
 ## Tech stack
 
-| Layer        | Choice                                                                     |
-| ------------ | -------------------------------------------------------------------------- |
-| Framework    | **Next.js (App Router) + React + TypeScript** — one app for UI **and** API |
-| Styling      | Tailwind CSS (RTL via logical properties)                                  |
-| State        | Zustand (cart, language, UI) — in client components                        |
-| Routing      | Next.js App Router (file-based; `[lang]` locale segment for he/en)         |
-| i18n         | next-intl (he + en, RTL/LTR auto-switch, SSR-friendly)                     |
-| Backend      | Next.js **Route Handlers** (`src/app/api/**`) + TypeScript                 |
-| Database     | PostgreSQL (**Supabase**) + Prisma ORM                                     |
-| Admin auth   | JWT                                                                        |
-| Payments     | Stubbed `PaymentProvider` interface (Meshulam/Tranzila/PayPlus later)      |
-| Animations   | `motion/react` (Framer Motion v11+) — subtle UI animations throughout      |
-| File storage | **Cloudinary** (primary); local disk fallback for offline dev              |
-| Email        | **Nodemailer** (SMTP) — `ConsoleEmailProvider` stub in dev                 |
-| Deploy       | **Vercel** (production + preview builds, Next-native; no Docker needed)    |
+| Layer        | Choice                                                                        |
+| ------------ | ----------------------------------------------------------------------------- |
+| Framework    | **Next.js (App Router) + React + TypeScript** — one app for UI **and** API    |
+| Styling      | Tailwind CSS (RTL via logical properties)                                     |
+| State        | Zustand (cart, language, UI) — in client components                           |
+| Routing      | Next.js App Router (file-based; `[lang]` locale segment for he/en)            |
+| i18n         | next-intl (he + en, RTL/LTR auto-switch, SSR-friendly)                        |
+| Backend      | Next.js **Route Handlers** (`src/app/api/**`) + TypeScript                    |
+| Database     | PostgreSQL (**Supabase**) + Prisma ORM                                        |
+| Admin auth   | JWT                                                                           |
+| Payments     | Stubbed `PaymentProvider` interface (Meshulam/Tranzila/PayPlus later)         |
+| Animations   | `motion/react` (Framer Motion v11+) — subtle UI animations throughout         |
+| File storage | **Cloudinary** — signed direct browser upload (provider abstraction retained) |
+| Email        | **Nodemailer** (SMTP) — `ConsoleEmailProvider` stub in dev                    |
+| Deploy       | **Vercel** (production + preview builds, Next-native; no Docker needed)       |
 
 > **Stack note:** chosen over a Vite SPA + separate Express API specifically for e-commerce —
 > server-rendered product/catalog pages for SEO, Vercel-native deploy, `next/image`, and

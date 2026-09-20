@@ -11,8 +11,9 @@
     no drift. Get the owner's explicit go-ahead before any migration that rewrites or drops
     data. `prisma migrate dev` tends to hang after applying — the migration commits; a
     `Ctrl+C` after "schema is up to date" is fine.
-- **File storage:** **Cloudinary** (primary). Local disk (`STORAGE_DRIVER=local`) is an
-  offline-only fallback. Cloudinary is used in both dev and production.
+- **File storage:** **Cloudinary**, signed direct-from-browser upload — the app only issues a
+  signed `UploadTicket`; large files never pass through a Vercel function. No local-disk
+  fallback (deleted; a local disk can't accept a direct browser upload).
 - **Deploy:** **Vercel** — production (and preview builds). No Docker in the deploy pipeline.
 
 ## Development setup
@@ -45,8 +46,10 @@ Production runs on **Vercel** — one project, no custom serverless wrapper.
   - `schema.prisma`: `datasource db { url = env("DATABASE_URL"); directUrl = env("DIRECT_URL") }`
   - Single Prisma client reused via global singleton (`src/server/prisma.ts`) to avoid
     connection storms on cold starts.
-- **Uploads / storage:** Cloudinary (`STORAGE_DRIVER=cloudinary`, `CLOUDINARY_URL` set in
-  Vercel dashboard). Vercel's filesystem is ephemeral — local storage cannot persist in prod.
+- **Uploads / storage:** Cloudinary (`STORAGE_PROVIDER=cloudinary`, `CLOUDINARY_CLOUD_NAME` /
+  `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` set in Vercel dashboard). The server only signs
+  an `UploadTicket`; the browser posts the file straight to Cloudinary, so Vercel's ~4.5 MB
+  function body cap never applies to uploads.
 - **Migrations:** applied **before** deploy by running `npm run db:migrate` locally against
   the (production) DB — the Vercel build is just `next build`, it does not run migrations. So
   land + verify the schema change first, then push the code that depends on it.
@@ -71,12 +74,12 @@ JWT_EXPIRES_IN=30d
 # security baseline below) but not implemented in code yet — no env vars for either until
 # they're actually built; don't add RATE_LIMIT_*/PAYMENT_PROVIDER to Vercel, they're unused.
 
-# --- storage (Cloudinary primary; local = offline dev fallback) ---
-STORAGE_DRIVER=cloudinary
+# --- storage (Cloudinary — signed direct-to-browser upload) ---
+STORAGE_PROVIDER=cloudinary
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
-UPLOAD_DIR=./uploads         # used only when STORAGE_DRIVER=local
+CLOUDINARY_UPLOAD_PRESET=luma_signed   # optional; this is the code default
 
 # --- email (Nodemailer SMTP) ---
 EMAIL_PROVIDER=stub          # stub | nodemailer
@@ -105,21 +108,40 @@ NEXT_PUBLIC_META_PIXEL_ID=
 
 ## Storage abstraction
 
-`StorageProvider` interface in `src/server/providers/storage/`:
+`StorageProvider` interface in `src/server/providers/storage/`, built for **direct
+browser-to-provider uploads** — the server only issues a short-lived signed ticket:
 
 ```ts
+interface UploadTicket {
+  provider: string
+  endpoint: string
+  fields: Record<string, string>
+}
+
 interface StorageProvider {
-  save(file: UploadFile): Promise<{ url: string; key: string }>
-  delete(key: string): Promise<void>
+  createUploadTicket(): Promise<UploadTicket> | UploadTicket
+  deleteAsset(key: string): Promise<void>
+  keyFromUrl(url: string): string | null
 }
 ```
 
-- `CloudinaryStorageProvider` — primary. Uses `CLOUDINARY_URL`. Responsive/optimized delivery
-  built-in. Works in both dev and production.
-- `LocalStorageProvider` — offline fallback. Writes to `UPLOAD_DIR`, serves from `/uploads`.
-  Never use in production.
+- `cloudinaryProvider` (`./cloudinary.ts`) — the only implementation. Signs `timestamp` +
+  `upload_preset` (the `luma_signed` Cloudinary preset carries the folder/format/size/
+  dimension limits) with `CLOUDINARY_API_SECRET`; `api_secret` never leaves the server.
+- Selected by `STORAGE_PROVIDER` (default `cloudinary`) in `getStorageProvider()`.
+- Client flow: `src/lib/uploadImage.ts` fetches the ticket from the call site's endpoint
+  (`POST /api/admin/upload` with an admin bearer token, or the public, rate-limited
+  `POST /api/reviews/upload`), then POSTs the file + ticket fields straight to
+  `ticket.endpoint` (Cloudinary) — the bytes never touch a Vercel function.
+- Orphan cleanup (`cloudinaryCleanupService.ts`) calls `storage.keyFromUrl()` +
+  `storage.deleteAsset()` — provider-agnostic.
 
-Selected by `STORAGE_DRIVER`. Call sites (`POST /api/admin/upload`) never change.
+**Adding a second provider later** is a 3-file change: `storage/<provider>.ts` implementing
+`StorageProvider`, a `case` in `getStorageProvider()`, and a `case` in
+`uploadImage.ts`'s `urlFromResponse()` for that provider's response shape. No call-site changes.
+
+There is no local-disk provider — a local disk can't accept a direct browser upload, so it
+doesn't fit this interface. Nothing serves `/uploads` in production regardless.
 
 ## npm scripts (single root `package.json`)
 

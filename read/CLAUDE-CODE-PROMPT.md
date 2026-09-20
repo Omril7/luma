@@ -18,21 +18,21 @@ will be built in phase 1, but the foundation should support them all.
 
 ## Tech Stack
 
-| Layer | Choice |
-|---|---|
-| Framework | **Next.js (App Router) + React + TypeScript** — one app for UI **and** API |
-| Styling | Tailwind CSS (logical properties for RTL) |
-| Animations | **motion/react** (Framer Motion v11+) — subtle, purposeful UI animations |
-| State | Zustand (cart, language, UI) — client components only |
-| Routing | Next.js App Router (`[lang]` locale segment for he/en) |
-| i18n | **next-intl** (he + en, RTL/LTR auto-switch, SSR-friendly) |
-| Backend | Next.js **Route Handlers** (`src/app/api/**`) |
-| Database | PostgreSQL (**Supabase**) + Prisma ORM |
-| Auth (Admin) | JWT-based |
-| Payments | Stubbed `PaymentProvider` interface (provider TBD — phase 2) |
-| File Storage | **Cloudinary** (primary; local fallback for offline dev) |
-| Email | **Nodemailer** (SMTP); `ConsoleEmailProvider` stub in dev |
-| Deploy | **Vercel** (production + staging; no Docker needed) |
+| Layer        | Choice                                                                     |
+| ------------ | -------------------------------------------------------------------------- |
+| Framework    | **Next.js (App Router) + React + TypeScript** — one app for UI **and** API |
+| Styling      | Tailwind CSS (logical properties for RTL)                                  |
+| Animations   | **motion/react** (Framer Motion v11+) — subtle, purposeful UI animations   |
+| State        | Zustand (cart, language, UI) — client components only                      |
+| Routing      | Next.js App Router (`[lang]` locale segment for he/en)                     |
+| i18n         | **next-intl** (he + en, RTL/LTR auto-switch, SSR-friendly)                 |
+| Backend      | Next.js **Route Handlers** (`src/app/api/**`)                              |
+| Database     | PostgreSQL (**Supabase**) + Prisma ORM                                     |
+| Auth (Admin) | JWT-based                                                                  |
+| Payments     | Stubbed `PaymentProvider` interface (provider TBD — phase 2)               |
+| File Storage | **Cloudinary** (primary; local fallback for offline dev)                   |
+| Email        | **Nodemailer** (SMTP); `ConsoleEmailProvider` stub in dev                  |
+| Deploy       | **Vercel** (production + staging; no Docker needed)                        |
 
 **Single Next.js app at the repo root** — no workspaces/monorepo. Framework-free shared logic
 (pricing, validation, types) lives in `src/shared/`. The backend is Route Handlers, not a
@@ -92,6 +92,7 @@ are created in phase 1 — their UIs are deferred.
 > Both apps point at the same Supabase Postgres instance.
 
 ### Product
+
 - `id`, `slug`, `name_he`, `name_en`, `description_he`, `description_en`
 - `category` (enum: TABLE, SHELF, CONSOLE, SHOE_RACK, NIGHTSTAND, ARMCHAIR, TV_STAND, BENCH, OTHER)
 - `basePrice` (Decimal), `customizable` (Boolean)
@@ -99,33 +100,40 @@ are created in phase 1 — their UIs are deferred.
 - Relations: `images`, `variants`, `customPricingRule`, `colorOptions`, `reviews`, `bundles`
 
 ### ProductVariant
+
 - `id`, `productId`, `name_he`, `name_en` (S/M/L labels)
 - `width?`, `height?`, `depth?`, `diameter?` (Decimal, cm)
 - `price` (Decimal), `sku`, `isActive`
 
 ### CustomPricingRule
+
 - `id`, `productId` (unique), `basedOnVariantId?`
 - `pricePerCmWidth?`, `pricePerCmHeight?`, `pricePerCmDepth?`, `pricePerCmDiameter?` (Decimal)
 - `minWidth?`, `maxWidth?`, `minHeight?`, `maxHeight?`, `minDepth?`, `maxDepth?` (Decimal)
 
 ### ColorOption
+
 - `id`, `name_he`, `name_en`, `hexCode`, `imageUrl?` (swatch), `isActive`
 - Many-to-many with Product
 
 ### ProductImage
+
 - `id`, `productId`, `url`, `altText_he`, `altText_en`, `sortOrder`, `isPrimary`
 
-### Order *(created here, managed by luma-manager)*
+### Order _(created here, managed by luma-manager)_
+
 - `id`, `orderNumber` (auto-generated), customer fields, `shippingAddress` (Json)
 - `shippingMethod`, `subtotal`, `shippingCost`, `discount`, `total` (Decimal)
 - `couponCode?`, `paymentStatus`, `orderStatus`, `installments?`, `notes?`, `language`
 - Relations: `items OrderItem[]`
 
 ### OrderItem
+
 - `id`, `orderId`, `productId`, `variantId?`, `isCustom`, custom dimensions, `selectedColorId?`
 - `quantity`, `unitPrice`, `totalPrice` (snapshot prices — never recomputed)
 
 ### Coupon
+
 - `id`, `code` (unique), `discountType` (PERCENTAGE | FIXED_AMOUNT)
 - `discountValue` (Decimal), `minOrderAmount?`, `maxUses?`, `usedCount`
 - `validFrom?`, `validUntil?` (deadline-code), `isActive`
@@ -133,14 +141,17 @@ are created in phase 1 — their UIs are deferred.
 - `firstOrderOnly` (Boolean) — only applies to a customer's first order
 - `autoApply` (Boolean) — applied automatically without entering a code
 
-### Bundle *(phase 2 UI, model now)*
+### Bundle _(phase 2 UI, model now)_
+
 - `id`, `name_he`, `name_en`, `description_he`, `description_en`
 - `products Product[]` (m-n), `bundlePrice` (Decimal), `isActive`
 
 ### NewsletterSubscriber
+
 - `id`, `email` (unique), `name?`, `language` (Language), `subscribedAt`, `isActive`
 
-### Review *(phase 2 UI, model now)*
+### Review _(phase 2 UI, model now)_
+
 - `id`, `productId`, `customerName`, `rating Int` (1–5), `comment_he?`, `comment_en?`
 - `isApproved Boolean @default(false)`, `createdAt`
 
@@ -217,6 +228,7 @@ Gated by JWT. Not customer-facing — simpler UI but still polished. Admin manag
 **Aesthetic:** Warm, natural, rustic-modern. Wood textures, earthy tones, cozy feeling.
 
 **Color Palette (CSS custom properties — all swappable):**
+
 - Primary: warm wood brown (`#8B6914`)
 - Secondary: cream/beige (`#F5F0E8`)
 - Accent: terracotta / burnt orange (`#C26B3D`)
@@ -235,10 +247,12 @@ Legally required in Israel.
 
 ## Storage & Email
 
-**Cloudinary** is the primary image storage provider. Configure via `CLOUDINARY_URL` env var.
-Local disk (`STORAGE_DRIVER=local`) is an offline-only fallback for development without
-internet. All image uploads go through the `StorageProvider` interface — call sites never
-change when switching drivers.
+**Cloudinary** is the sole image storage provider (`CLOUDINARY_CLOUD_NAME` /
+`CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET`). Uploads are **signed direct-to-Cloudinary
+from the browser** — the server only issues a short-lived `UploadTicket`; large files never
+pass through a Vercel function. All uploads go through the `StorageProvider` interface — call
+sites never change when switching providers. No local-disk fallback (a local disk can't
+accept a direct browser upload).
 
 **Email** is sent via **Nodemailer** (SMTP). Set `EMAIL_PROVIDER=nodemailer` and the SMTP
 env vars for real sending. `EMAIL_PROVIDER=stub` logs to console in dev — no setup needed.
@@ -250,6 +264,7 @@ env vars for real sending. `EMAIL_PROVIDER=stub` logs to console in dev — no s
 See `.claude/docs/04-api-contract.md` for full detail.
 
 ### Public
+
 - `GET /api/products`, `GET /api/products/:slug`, `POST /api/products/:id/calculate-price`
 - `GET /api/categories`
 - `POST /api/orders`, `GET /api/orders/:id`, `POST /api/orders/:id/apply-coupon`
@@ -257,6 +272,7 @@ See `.claude/docs/04-api-contract.md` for full detail.
 - `GET /api/gallery`, `GET /api/reviews/:productId`, `GET /api/faq`
 
 ### Admin (JWT required)
+
 - `POST /api/admin/auth/login`
 - Products: full CRUD + image upload
 - Site content: read/update blobs
@@ -284,6 +300,7 @@ No Docker needed. Use a Supabase dev project for Postgres.
 ## Phase Plan
 
 ### Phase 1 (MVP — build now)
+
 - Full project setup + all tooling
 - Database schema with ALL models (including phase-2 ones)
 - Product catalog + variants + custom pricing engine
@@ -298,6 +315,7 @@ No Docker needed. Use a Supabase dev project for Postgres.
 - Wishlist + comparison pages
 
 ### Phase 2 (post-launch)
+
 - Payment processor integration (Meshulam/Tranzila/PayPlus)
 - Bundles with admin-set bundle pricing
 - Customer reviews with admin moderation

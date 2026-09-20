@@ -491,7 +491,7 @@
     "required": "This field is required",
     "ratingRequired": "Please select a rating",
     "formImageLabel": "Add a photo (optional)",
-    "formImageHint": "JPG, PNG or WebP · up to 5MB",
+    "formImageHint": "JPG, PNG or WebP · up to 10MB",
     "formImageRemove": "Remove photo",
     "formImageError": "Photo upload failed, please try again",
     "imageAlt": "Photo by {name}",

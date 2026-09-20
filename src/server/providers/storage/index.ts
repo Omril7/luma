@@ -1,28 +1,24 @@
 import 'server-only'
 
-export interface UploadFile {
-  buffer: Buffer
-  mimetype: string
-  originalName: string
-}
-
-export interface UploadResult {
-  url: string
-  key: string
+export interface UploadTicket {
+  provider: string
+  endpoint: string
+  fields: Record<string, string>
 }
 
 export interface StorageProvider {
-  save(file: UploadFile): Promise<UploadResult>
-  delete(key: string): Promise<void>
+  createUploadTicket(): Promise<UploadTicket> | UploadTicket
+  deleteAsset(key: string): Promise<void>
+  keyFromUrl(url: string): string | null
 }
 
-// Selected by STORAGE_DRIVER env — implementations in ./cloudinary.ts and ./local.ts
+// Selected by STORAGE_PROVIDER env — implementation in ./cloudinary.ts
 export async function getStorageProvider(): Promise<StorageProvider> {
-  const driver = process.env.STORAGE_DRIVER ?? 'local'
-  if (driver === 'cloudinary') {
-    const { CloudinaryStorageProvider } = await import('./cloudinary')
-    return new CloudinaryStorageProvider()
+  switch (process.env.STORAGE_PROVIDER ?? 'cloudinary') {
+    case 'cloudinary':
+    default: {
+      const { cloudinaryProvider } = await import('./cloudinary')
+      return cloudinaryProvider
+    }
   }
-  const { LocalStorageProvider } = await import('./local')
-  return new LocalStorageProvider()
 }

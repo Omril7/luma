@@ -105,6 +105,8 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Phase-2 items are built l
 
 - [x] `StorageProvider` interface + `CloudinaryStorageProvider` (primary) + `LocalStorageProvider` (fallback)
 - **Acceptance:** uploaded image returns a served URL; switching `STORAGE_DRIVER` changes provider.
+  _(Superseded by M1.28j Part 1: reshaped to signed direct-to-Cloudinary tickets,
+  `LocalStorageProvider` deleted, `STORAGE_DRIVER` renamed `STORAGE_PROVIDER`.)_
 
 ---
 
@@ -416,12 +418,12 @@ maintenance window.
 
 **Part 1 — signed direct-to-Cloudinary uploads** (no DB change)
 
-- [ ] Reshape `src/server/providers/storage/` — `UploadTicket` + `createUploadTicket`/`deleteAsset`/`keyFromUrl`; `getStorageProvider()` switches on `STORAGE_PROVIDER`
-- [ ] `POST /api/admin/upload` → thin signed-ticket issuer; **`POST /api/reviews/upload`** → public rate-limited ticket issuer
-- [ ] `src/lib/uploadImage.ts` shared client helper (10 MB pre-check, provider-keyed response parser); swap `ImageUpload.tsx`, `ProductFormPage.tsx`, `PublicImageUpload.tsx` call sites
-- [ ] Cloudinary dashboard: signed `luma_signed` preset (folder `luma`, formats, 10 MB, incoming `c_limit,w_2500,h_2500,q_auto`)
-- [ ] Delete `src/server/providers/storage/local.ts` + `uploads/`; rewire `cloudinaryCleanupService` to `provider.keyFromUrl`/`deleteAsset`
-- [ ] Env: `STORAGE_DRIVER` → `STORAGE_PROVIDER`, drop `UPLOAD_DIR`, add optional `CLOUDINARY_UPLOAD_PRESET`; doc updates
+- [x] Reshape `src/server/providers/storage/` — `UploadTicket` + `createUploadTicket`/`deleteAsset`/`keyFromUrl`; `getStorageProvider()` switches on `STORAGE_PROVIDER`
+- [x] `POST /api/admin/upload` → thin signed-ticket issuer; **`POST /api/reviews/upload`** → public rate-limited ticket issuer
+- [x] `src/lib/uploadImage.ts` shared client helper (10 MB pre-check, provider-keyed response parser); swap `ImageUpload.tsx`, `ProductFormPage.tsx`, `PublicImageUpload.tsx` call sites
+- [x] Cloudinary dashboard: signed `luma_signed` preset (folder `luma`, formats `jpg,png,webp,gif`, incoming `c_limit,w_2500,h_2500,q_auto`) — done 2026-09-20 via browser automation; no separate "max file size" field exists in the current console, account plan's 10 MB image limit already covers it
+- [x] Delete `src/server/providers/storage/local.ts` + `uploads/`; rewire `cloudinaryCleanupService` to `provider.keyFromUrl`/`deleteAsset`
+- [x] Env: `STORAGE_DRIVER` → `STORAGE_PROVIDER`, drop `UPLOAD_DIR`, add optional `CLOUDINARY_UPLOAD_PRESET`; doc updates
 
 **Part 2 — Gallery → `GalleryImage` table** (consent-gated migration + backfill)
 
@@ -485,7 +487,7 @@ slow** because every filter click is a full server navigation.
 **Product ordering (rides the same `ShopClient` rewrite):**
 
 - [x] **Storefront** — sort gains a `recommended` key = order by `sortOrder` then `createdAt
-  desc`; it's the **default** on `/shop`. Price/name/newest still override it. i18n
+desc`; it's the **default** on `/shop`. Price/name/newest still override it. i18n
       `shop.sort.recommended` ("מומלץ" / "Recommended"). Server `SORT_MAP` gets `recommended`
       too (`/api/products` + related-products).
 - [x] **Bulk reorder endpoint** — `POST /api/admin/products/reorder` (`withAdmin`), body
@@ -502,7 +504,7 @@ slow** because every filter click is a full server navigation.
 
 - [x] **Schema + migration** — `Review.sortOrder Int @default(0)`;
       `prisma/migrations/20260910130000_review_sort_order/` (idempotent `ADD COLUMN IF NOT
-  EXISTS`). Applied to **prod** via `db:migrate` (single-DB project — `.env` is prod).
+EXISTS`). Applied to **prod** via `db:migrate` (single-DB project — `.env` is prod).
       Additive + safe, no reset. No further prod step.
 - [x] `getFeaturedHomeReviews` orders by `[{ sortOrder: 'asc' }, { createdAt: 'desc' }]`;
       `updateReviewSchema` + `updateReview` accept `sortOrder`; `ReviewDTO.sortOrder` populated.

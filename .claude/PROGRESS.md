@@ -19,6 +19,41 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-09-20 — M1.28j Part 1: signed direct-to-Cloudinary uploads
+
+- **Done:**
+  - `src/server/providers/storage/` reshaped: `UploadTicket`/`StorageProvider`
+    (`createUploadTicket`/`deleteAsset`/`keyFromUrl`) replace the old `save()`/`delete()` shape;
+    `getStorageProvider()` now switches on `STORAGE_PROVIDER` (was `STORAGE_DRIVER`).
+    `local.ts` deleted along with `uploads/` (dead — nothing served `/uploads` in prod).
+  - `POST /api/admin/upload` and `POST /api/reviews/upload` are now thin ticket issuers (admin
+    JWT-guarded / public rate-limited respectively) — no more `formData()`/buffering/magic-byte
+    sniffing server-side.
+  - New `src/lib/uploadImage.ts`: shared client helper (10 MB pre-check, fetches a ticket from
+    a given endpoint, posts the file straight to Cloudinary, parses the provider-keyed
+    response). `ImageUpload.tsx`, `ProductFormPage.tsx`, `PublicImageUpload.tsx` all swapped to
+    it; copy updated `5MB → 10MB` (he.json/en.json `reviews.formImageHint` + product form hint).
+  - `cloudinaryCleanupService.ts` rewired to `storage.keyFromUrl()`/`storage.deleteAsset()` —
+    `extractPublicId` moved into `cloudinaryProvider.keyFromUrl`; orphan cleanup is now
+    provider-agnostic.
+  - Docs updated: `CLAUDE.md` stack table, `04-api-contract.md`, `08-admin-panel.md`,
+    `10-devops.md` (env block + storage-abstraction section), `read/CLAUDE-CODE-PROMPT.md`,
+    `.claude/TODO.md` (Cloudinary setup steps rewritten for the split env vars + preset).
+  - `typecheck` / `lint` / `test` / `build` all green.
+- **Roadmap:** M1.28j Part 1 ✅ (Parts 2–4 not started).
+- **Decisions:** `uploadImage()` takes the ticket endpoint as a parameter (not hardcoded to
+  `/api/admin/upload` as the doc's snippet showed) so the same helper serves both the admin
+  (token) and public review (no token) upload paths.
+- **Notes/blockers:**
+  - **Cloudinary `luma_signed` preset created 2026-09-20** via browser automation (signed,
+    folder `luma`, formats `jpg,png,webp,gif`, incoming transformation
+    `c_limit,w_2500,h_2500,q_auto`). No "max file size" field exists in the current Cloudinary
+    console — the account plan's own 10 MB image limit already covers it.
+  - **Owner action still required:** rename `STORAGE_DRIVER` → `STORAGE_PROVIDER` and drop
+    `UPLOAD_DIR` in the local `.env` and in Vercel (agent has no access to `.env` or Vercel).
+  - Part 2 (`GalleryImage` table + backfill) needs the owner's explicit go-ahead before
+    running any migration against prod, per `storage.md`'s LIVE-site rule — not started.
+
 ## 2026-09-10 — M1.28k: /shop client filter/sort/paginate + admin product & review ordering
 
 - **Done:**

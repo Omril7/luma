@@ -23,9 +23,15 @@ Check items off as you complete them and I'll update future plans accordingly.
 
 ### Cloudinary (image storage)
 
-- [ ] Create a Cloudinary account at https://cloudinary.com (Luma studio organization)
-- [ ] Go to **Dashboard → API Keys** and copy the **API URL** (format: `cloudinary://<api_key>:<api_secret>@<cloud_name>`)
-- [ ] Add to `.env.local`: `CLOUDINARY_URL=cloudinary://...` and `STORAGE_DRIVER=cloudinary`
+- [x] Create a Cloudinary account at https://cloudinary.com (Luma studio organization)
+- [x] Go to **Dashboard → API Keys** and copy the **cloud name, API key, API secret**
+- [x] Confirm `.env` has: `CLOUDINARY_CLOUD_NAME=`, `CLOUDINARY_API_KEY=`, `CLOUDINARY_API_SECRET=`,
+      `STORAGE_PROVIDER=cloudinary` (renamed from `STORAGE_DRIVER`; drop `UPLOAD_DIR`)
+- [x] **Settings → Upload → Upload presets → `luma_signed`**: mode **Signed**, asset folder
+      `luma`, allowed formats `jpg,png,webp,gif`, incoming transformation
+      `c_limit,w_2500,h_2500,q_auto` — done 2026-09-20. There is no separate "max file size"
+      field in the current Cloudinary console; the account plan's own "Maximum image file
+      size" limit (Settings → Upload → Usage Limits) is already 10 MB, which is the ceiling.
 
 ### OpenRouteService (delivery distance)
 
@@ -55,7 +61,7 @@ Check items off as you complete them and I'll update future plans accordingly.
 - [ ] Set all env vars from `.env.example` in the Vercel dashboard (Production + Preview)
   - `DATABASE_URL` — pooled connection (port 6543, `?pgbouncer=true`)
   - `DIRECT_URL` — direct connection (port 5432, for migrations)
-  - `CLOUDINARY_URL`, `STORAGE_DRIVER=cloudinary`
+  - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `STORAGE_PROVIDER=cloudinary`
   - `JWT_SECRET`, `JWT_EXPIRES_IN=30d`
   - `ADMIN_EMAIL`, `ADMIN_PASSWORD`
   - `NEXT_PUBLIC_WHATSAPP_NUMBER`

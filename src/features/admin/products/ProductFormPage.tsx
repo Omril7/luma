@@ -17,6 +17,7 @@ import {
   X as XIcon,
 } from 'lucide-react'
 import { api } from '@/lib/api'
+import { uploadImage } from '@/lib/uploadImage'
 import { useAdminStore } from '@/stores/adminStore'
 import type { ProductDTO, ColorOptionDTO, CategoryDTO } from '@/shared/types'
 import { Select } from '@/components/ui/Select'
@@ -329,15 +330,7 @@ export function ProductFormPage({ mode, productId }: Props) {
         ],
       }))
       try {
-        const fd = new FormData()
-        fd.append('file', file)
-        const res = await fetch('/api/admin/upload', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-          body: fd,
-        })
-        if (!res.ok) throw new Error('Upload failed')
-        const { url } = await res.json()
+        const url = await uploadImage(file, '/api/admin/upload', token)
         setForm((f) => ({
           ...f,
           images: f.images.map((img) =>
@@ -1152,7 +1145,7 @@ export function ProductFormPage({ mode, productId }: Props) {
           >
             <Upload size={28} className="mx-auto text-text-muted mb-3" aria-hidden="true" />
             <p className="text-sm font-medium text-text-main">לחצו להעלאה או גררו תמונות</p>
-            <p className="text-xs text-text-muted mt-1">JPG, PNG, WebP — עד 5MB לתמונה</p>
+            <p className="text-xs text-text-muted mt-1">JPG, PNG, WebP — עד 10MB לתמונה</p>
             <input
               ref={fileInputRef}
               type="file"

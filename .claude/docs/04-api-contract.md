@@ -53,7 +53,7 @@ actually created (not on preview).
 | Method | Path                          | Purpose                                                                                                                                                               |
 | ------ | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | POST   | `/api/admin/auth/login`       | Email+password → JWT.                                                                                                                                                 |
-| POST   | `/api/admin/upload`           | Image upload (multipart). Returns stored URL via `StorageProvider` (Cloudinary).                                                                                      |
+| POST   | `/api/admin/upload`           | Returns a signed `UploadTicket` for direct browser → Cloudinary upload (admin only). No file body.                                                                    |
 | —      | `/api/admin/products`         | Full CRUD (incl. variants, pricing rule, color links, images).                                                                                                        |
 | POST   | `/api/admin/products/reorder` | Bulk drag-reorder. Body `{ ids: string[] }` in the desired order → each product's `sortOrder` = its index, one `$transaction`. Drives `/shop`'s `recommended` sort.   |
 | —      | `/api/admin/coupons`          | Full CRUD + activate/deactivate. All coupon type fields supported.                                                                                                    |

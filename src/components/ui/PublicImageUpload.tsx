@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { ImagePlus, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { uploadImage } from '@/lib/uploadImage'
 
 export interface PublicImageUploadProps {
   value: string | null
@@ -11,7 +12,7 @@ export interface PublicImageUploadProps {
 }
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
-const MAX_SIZE = 5 * 1024 * 1024 // 5 MB — keep in sync with /api/reviews/upload
+const MAX_SIZE = 10 * 1024 * 1024 // 10 MB — Cloudinary free-tier ceiling, enforced by the preset
 
 /**
  * Compact, unauthenticated image picker for public forms (product review + global
@@ -32,11 +33,7 @@ export function PublicImageUpload({ value, onChange, className }: PublicImageUpl
     setUploading(true)
     setError(null)
     try {
-      const fd = new FormData()
-      fd.append('file', file)
-      const res = await fetch('/api/reviews/upload', { method: 'POST', body: fd })
-      if (!res.ok) throw new Error('upload failed')
-      const { url } = (await res.json()) as { url: string }
+      const url = await uploadImage(file, '/api/reviews/upload')
       onChange(url)
     } catch {
       setError(t('formImageError'))
