@@ -135,6 +135,7 @@
     },
     "priceOffer": {
       "button": "Request a Price Offer",
+      "whatsappMessage": "Hi! I'm interested in \"{name}\" — could you tell me more about pricing?",
       "title": "Request a Price Offer",
       "subtitle": "Leave your details and we'll get back to you with a personal quote",
       "yourSelection": "Your selection",

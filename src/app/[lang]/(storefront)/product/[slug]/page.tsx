@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { getProductBySlug, getProducts } from '@/server/services/productService'
 import { getApprovedReviewsForProduct } from '@/server/services/reviewService'
 import { getSiteContentByKey } from '@/server/services/adminSiteContentService'
+import { getSiteSettings } from '@/server/services/adminSettingsService'
 import { ProductDetail } from '@/features/products/ProductDetail'
 import { FEATURES } from '@/lib/featureFlags'
 import { setRequestLocale } from 'next-intl/server'
@@ -53,10 +54,11 @@ export default async function ProductPage({
   if (!product) notFound()
 
   // Related products (same category, exclude self) + reviews + site-wide FAQ, in parallel
-  const [{ products: allRelated }, { reviews }, faqRow] = await Promise.all([
+  const [{ products: allRelated }, { reviews }, faqRow, { business }] = await Promise.all([
     getProducts({ categoryId: product.category.id, sort: 'recommended', limit: 5 }),
     getApprovedReviewsForProduct(product.id, { limit: 10 }),
     getSiteContentByKey('faq.items'),
+    getSiteSettings(),
   ])
   const relatedProducts = allRelated.filter((p) => p.id !== product.id).slice(0, 4)
   const faqValue = faqRow?.value as { items?: FaqItem[] } | undefined
@@ -70,6 +72,7 @@ export default async function ProductPage({
       faqItems={faqItems}
       locale={lang}
       purchasingEnabled={FEATURES.shop}
+      whatsappNumber={business.whatsappNumber}
     />
   )
 }

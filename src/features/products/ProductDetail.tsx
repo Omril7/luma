@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { ShoppingBag, Heart, Minus, Plus, Check, MessageSquareQuote } from 'lucide-react'
 import { calculatePrice, PricingError, getStartingPrice } from '@/shared/pricing'
 import type { VariantTier, PricingRule, PriceResult } from '@/shared/pricing'
-import { trackViewItem, trackAddToCart } from '@/lib/analytics'
+import { trackViewItem, trackAddToCart, trackWhatsAppClick } from '@/lib/analytics'
 import { useCartStore } from '@/stores/cartStore'
 import { useWishlistStore } from '@/stores/wishlistStore'
 import { useUiStore } from '@/stores/uiStore'
@@ -33,6 +33,8 @@ interface ProductDetailProps {
   locale: string
   /** When false, hides all purchase controls and shows a static "starting from" price instead. */
   purchasingEnabled: boolean
+  /** Business WhatsApp number (digits only, intl format e.g. "9725..."), for the showcase-mode contact CTA. */
+  whatsappNumber: string
 }
 
 // Static, bilingual, same on every product — not admin-editable (see M1.28g spec).
@@ -61,6 +63,7 @@ export function ProductDetail({
   faqItems,
   locale,
   purchasingEnabled,
+  whatsappNumber,
 }: ProductDetailProps) {
   const t = useTranslations('product')
   const { addItem } = useCartStore()
@@ -223,6 +226,9 @@ export function ProductDetail({
   const productName = locale === 'he' ? product.name_he : product.name_en
   const productDesc = locale === 'he' ? product.description_he : product.description_en
   const isWishlisted = has(product.id)
+  const whatsappOfferUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+    t('priceOffer.whatsappMessage', { name: productName })
+  )}`
 
   function variantLabel(v: ProductVariantDTO): string {
     const name = locale === 'he' ? v.name_he : v.name_en
@@ -705,6 +711,7 @@ export function ProductDetail({
                 </div>
 
                 {/* Request a price offer — the main action while purchasing is off */}
+                {/* Offer-modal flow kept for potential future use — see PriceOfferModal below.
                 <button
                   type="button"
                   onClick={() => setOfferOpen(true)}
@@ -713,6 +720,17 @@ export function ProductDetail({
                   <MessageSquareQuote size={20} aria-hidden="true" />
                   {t('priceOffer.button')}
                 </button>
+                */}
+                <a
+                  href={whatsappOfferUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackWhatsAppClick('product_offer')}
+                  className="flex items-center justify-center gap-2 min-h-[52px] rounded-full bg-primary text-surface font-semibold text-base hover:opacity-90 transition-opacity duration-150 cursor-pointer"
+                >
+                  <MessageSquareQuote size={20} aria-hidden="true" />
+                  {t('priceOffer.button')}
+                </a>
               </>
             )}
 
