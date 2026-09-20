@@ -314,6 +314,25 @@ model ContactMessage {
   updatedAt              DateTime             @updatedAt
 }
 
+// Supersedes the SiteContent['gallery'] JSON blob (see .claude/docs/storage.md Part 2).
+// `gallery.intro` (the page heading) stays in SiteContent — this is only the image rows.
+model GalleryImage {
+  id          String   @id @default(cuid())
+  url         String
+  title_he    String   @default("")
+  title_en    String   @default("")
+  subtitle_he String   @default("")
+  subtitle_en String   @default("")
+  altText_he  String   @default("")
+  altText_en  String   @default("")
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true) // soft-hide without deleting the asset
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
 model SiteContent {
   id        String   @id @default(cuid())
   key       String   @unique

@@ -19,6 +19,41 @@ Keep entries short and factual. One entry per working session (or per merged cha
 
 ---
 
+## 2026-09-20 — M1.28j Part 2: GalleryImage table (migration applied)
+
+- **Done:**
+  - `prisma/schema.prisma`: new `GalleryImage` model (bilingual title/subtitle/altText,
+    `sortOrder`, `isActive` for soft-hide) — matches `storage.md` Part 2's spec.
+  - `prisma/migrations/20260920120000_gallery_image_table/migration.sql` written
+    (`CREATE TABLE` + index + backfill `INSERT ... SELECT` from `SiteContent['gallery']`,
+    re-indexed by array position) and **applied to prod via `prisma migrate deploy`, with the
+    owner's explicit go-ahead.** Verified: 10/10 rows backfilled (matches the blob's array
+    length), ids/urls/altText carried over correctly, `sortOrder` re-indexed 0–9, all
+    `isActive: true`. The `SiteContent['gallery']` blob row was confirmed still present and
+    untouched immediately after the migration.
+  - `adminGalleryService.ts` rewritten to Prisma, same exported signatures
+    (`listGalleryImages({ activeOnly })`, `createGalleryImage`, `updateGalleryImage`,
+    `deleteGalleryImage`); `GET /api/gallery` repointed.
+  - Found and fixed two direct server-side callers of `listGalleryImages()` that the doc's
+    Part 2 write-up didn't mention — `(storefront)/gallery/page.tsx` and the homepage
+    `page.tsx` both import the service function directly (bypassing the API route); both now
+    pass `{ activeOnly: true }`.
+  - `cloudinaryCleanupService.ts`'s `getAllDbImageUrls()` now includes `GalleryImage.url`.
+  - Docs: `02-data-models.md` (new `GalleryImage` section), `04-api-contract.md`.
+  - `typecheck`/`lint`/`test`/`build` all green — `/gallery` prerenders successfully now that
+    the table exists (it failed with `P2021: table does not exist` before the migration ran,
+    which was the expected state while code was built ahead of the migration).
+- **Roadmap:** M1.28j Part 2 ✅ (code + migration). Only the manual blob-delete (Step C)
+  remains, deferred until this code is deployed and verified live.
+- **Decisions:** `isActive` is on the model and in `listGalleryImages`'s filter, but not yet
+  exposed as an admin-editable field (Zod schemas / `GalleryPage.tsx` toggle) — matches
+  storage.md marking that UI as optional; defaults `true` so behavior is unchanged until wired.
+- **Notes/blockers:** nothing has been deployed yet — this is all local/uncommitted. Before
+  deploying: confirm `DATABASE_URL`/`DIRECT_URL` in Vercel point at the same prod project
+  (they already do — single-DB setup), then ship normally. **After** deploying and verifying
+  `/gallery`, homepage, and admin gallery all render correctly off `GalleryImage`, manually run
+  `DELETE FROM "SiteContent" WHERE key = 'gallery'` (Step C) — not automated, per the doc.
+
 ## 2026-09-20 — M1.28j Part 1: signed direct-to-Cloudinary uploads
 
 - **Done:**

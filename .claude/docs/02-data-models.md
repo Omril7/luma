@@ -139,6 +139,20 @@ set via `POST /api/admin/reviews/reorder`), `createdAt`. Relation `product Produ
 Guard (service-enforced): a review must carry at least one of `comment_he` / `comment_en`
 / `imageUrl`. Public submissions land as `NEW`; admin-authored ones default to `APPROVED`.
 
+### GalleryImage
+
+Portfolio images shown on the public `/gallery` page and the homepage `GallerySection`.
+Supersedes the old `SiteContent['gallery']` JSON blob (see `.claude/docs/storage.md` Part 2)
+— `gallery.intro` (the page heading/subtitle) is genuine site-copy and stays in `SiteContent`.
+
+`id`, `url`, `title_he`/`title_en` (optional caption, default `''`), `subtitle_he`/`subtitle_en`
+(default `''`), `altText_he`/`altText_en` (default `''`, storefront falls back to title when
+empty), `sortOrder Int @default(0)`, `isActive Boolean @default(true)` (soft-hide without
+deleting the Cloudinary asset), `createdAt`, `updatedAt`.
+
+`listGalleryImages({ activeOnly })` — the storefront (`/gallery`, homepage `GallerySection`,
+`GET /api/gallery`) passes `activeOnly: true`; the admin gallery page gets everything.
+
 ### SiteContent
 
 `id`, `key` (unique, e.g. `home.hero`), `value` (Json — bilingual blob), `updatedAt`.

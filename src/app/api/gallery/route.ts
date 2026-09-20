@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 import { withApi } from '@/server/http'
-import { prisma } from '@/server/prisma'
+import { listGalleryImages } from '@/server/services/adminGalleryService'
 
 export const GET = withApi(async () => {
-  const row = await prisma.siteContent.findUnique({ where: { key: 'gallery' } })
-  return NextResponse.json({ items: row?.value ?? [] })
+  const items = await listGalleryImages({ activeOnly: true })
+  return NextResponse.json({ items })
 })

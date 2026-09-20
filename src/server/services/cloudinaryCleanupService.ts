@@ -30,17 +30,20 @@ export function extractUrlsFromValue(val: unknown, out: Set<string>): void {
  *   - ProductImage.url
  *   - ColorOption.imageUrl (where not null)
  *   - Review.imageUrl (where not null)
+ *   - GalleryImage.url
  *   - All SiteContent.value JSON blobs (recursively)
  */
 async function getAllDbImageUrls(): Promise<Set<string>> {
   const urls = new Set<string>()
 
-  const [productImages, colorOptions, reviewImages, siteContents] = await Promise.all([
-    prisma.productImage.findMany({ select: { url: true } }),
-    prisma.colorOption.findMany({ select: { imageUrl: true } }),
-    prisma.review.findMany({ where: { imageUrl: { not: null } }, select: { imageUrl: true } }),
-    prisma.siteContent.findMany({ select: { value: true } }),
-  ])
+  const [productImages, colorOptions, reviewImages, galleryImages, siteContents] =
+    await Promise.all([
+      prisma.productImage.findMany({ select: { url: true } }),
+      prisma.colorOption.findMany({ select: { imageUrl: true } }),
+      prisma.review.findMany({ where: { imageUrl: { not: null } }, select: { imageUrl: true } }),
+      prisma.galleryImage.findMany({ select: { url: true } }),
+      prisma.siteContent.findMany({ select: { value: true } }),
+    ])
 
   for (const img of productImages) {
     urls.add(img.url)
@@ -52,6 +55,10 @@ async function getAllDbImageUrls(): Promise<Set<string>> {
 
   for (const review of reviewImages) {
     if (review.imageUrl) urls.add(review.imageUrl)
+  }
+
+  for (const img of galleryImages) {
+    urls.add(img.url)
   }
 
   for (const content of siteContents) {

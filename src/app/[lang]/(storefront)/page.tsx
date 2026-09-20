@@ -97,7 +97,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
     getSiteContentByKey('home.contact'),
     getSiteSettings(),
     listActiveInstagramHighlights(),
-    listGalleryImages(),
+    listGalleryImages({ activeOnly: true }),
   ])
   const heroContent: HomeHeroContent = {
     ...HOME_HERO_DEFAULTS,

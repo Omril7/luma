@@ -35,7 +35,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ lang: 
   setRequestLocale(lang)
   const [row, images] = await Promise.all([
     getSiteContentByKey('gallery.intro'),
-    listGalleryImages(),
+    listGalleryImages({ activeOnly: true }),
   ])
   const intro: GalleryIntro = {
     ...DEFAULTS,

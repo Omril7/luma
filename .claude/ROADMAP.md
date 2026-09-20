@@ -427,9 +427,22 @@ maintenance window.
 
 **Part 2 — Gallery → `GalleryImage` table** (consent-gated migration + backfill)
 
-- [ ] `GalleryImage` model; migration = `CREATE TABLE` + SQL backfill from `SiteContent['gallery']` (`jsonb_array_elements`); verify then `DELETE` the blob row. **Do not run without the owner's explicit go-ahead.**
-- [ ] Rewrite `adminGalleryService.ts` to Prisma (same exported signatures); `listGalleryImages({ activeOnly })`; repoint `GET /api/gallery`; add `Review`+`GalleryImage` urls to `cloudinaryCleanupService.getAllDbImageUrls`; seed via `createMany`
-- [ ] `gallery.intro` stays in `SiteContent`
+- [x] `GalleryImage` model added to `schema.prisma`; migration written at
+      `prisma/migrations/20260920120000_gallery_image_table/` (`CREATE TABLE` + SQL backfill
+      from `SiteContent['gallery']` via `jsonb_array_elements`) — **applied to prod 2026-09-20**
+      via `prisma migrate deploy`, with the owner's explicit go-ahead. Verified: 10/10 rows
+      backfilled (matches blob length), ids/urls/altText carried over correctly, re-indexed
+      `sortOrder` 0–9. The `SiteContent['gallery']` blob row is untouched (confirmed after
+      migration) — its verify-then-`DELETE` (Step C) stays a separate manual step, done only
+      after the new code is deployed and the storefront/admin are confirmed working off the
+      new table.
+- [x] Rewrote `adminGalleryService.ts` to Prisma (same exported signatures);
+      `listGalleryImages({ activeOnly })`; repointed `GET /api/gallery` **and** the two direct
+      server-side callers (`(storefront)/gallery/page.tsx`, home `page.tsx` — not mentioned in
+      the original doc write-up, found while wiring this up) to `activeOnly: true`; added
+      `GalleryImage` urls to `cloudinaryCleanupService.getAllDbImageUrls` (`Review` urls were
+      already added in M1.28i). Seed `createMany` skipped — no gallery blob was ever seeded.
+- [x] `gallery.intro` stays in `SiteContent` — unchanged, confirmed no drift
 
 **Part 3 — Maintenance mode** (no DB change)
 
