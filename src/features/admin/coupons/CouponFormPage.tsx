@@ -147,7 +147,10 @@ export function CouponFormPage({ couponId }: Props) {
     if (!isEdit || !couponId || !token) return
     setLoading(true)
     try {
-      const coupon = await api.get<CouponDTO>(`/api/admin/coupons/${couponId}`, token)
+      const { coupon } = await api.get<{ coupon: CouponDTO }>(
+        `/api/admin/coupons/${couponId}`,
+        token
+      )
       setForm(couponToForm(coupon))
       setUsedCount(coupon.usedCount)
     } catch {

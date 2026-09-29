@@ -973,28 +973,22 @@ export function ProductFormPage({ mode, productId }: Props) {
 
             <div>
               <h3 className="text-sm font-semibold text-text-main mb-3">מגבלות מידות (ס&quot;מ)</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {(
                   [
-                    ['minWidth', 'רוחב מינ.'],
-                    ['maxWidth', 'רוחב מקס.'],
-                    ['minHeight', 'גובה מינ.'],
-                    ['maxHeight', 'גובה מקס.'],
-                    ['minDepth', 'עומק מינ.'],
-                    ['maxDepth', 'עומק מקס.'],
+                    ['minWidth', 'maxWidth', 'רוחב'],
+                    ['minHeight', 'maxHeight', 'גובה'],
+                    ['minDepth', 'maxDepth', 'עומק'],
                   ] as const
-                ).map(([field, label]) => (
-                  <FieldRow key={field} label={label}>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.1"
-                      value={form.pricingRule[field]}
-                      onChange={(e) => setPricingRule(field, e.target.value)}
-                      dir="ltr"
-                      className={inputCls(false)}
-                    />
-                  </FieldRow>
+                ).map(([minField, maxField, label]) => (
+                  <SegmentedPillField
+                    key={minField}
+                    label={label}
+                    minValue={form.pricingRule[minField]}
+                    maxValue={form.pricingRule[maxField]}
+                    onMinChange={(v) => setPricingRule(minField, v)}
+                    onMaxChange={(v) => setPricingRule(maxField, v)}
+                  />
                 ))}
               </div>
             </div>
@@ -1306,6 +1300,74 @@ function FieldRow({
         </p>
       )}
     </div>
+  )
+}
+
+function useRangeOrderError(minValue: string, maxValue: string) {
+  return minValue !== '' && maxValue !== '' && Number(minValue) > Number(maxValue)
+}
+
+function RangeErrorHint({ show }: { show: boolean }) {
+  if (!show) return null
+  return (
+    <p className="mt-1 text-xs text-red-600" role="alert">
+      המינימום גדול מהמקסימום
+    </p>
+  )
+}
+
+// Min/max dimension-range field — a single bordered pill split into two segments.
+function SegmentedPillField({
+  label,
+  minValue,
+  maxValue,
+  onMinChange,
+  onMaxChange,
+}: {
+  label: string
+  minValue: string
+  maxValue: string
+  onMinChange: (v: string) => void
+  onMaxChange: (v: string) => void
+}) {
+  const outOfOrder = useRangeOrderError(minValue, maxValue)
+  return (
+    <FieldRow label={label}>
+      <div
+        className={[
+          'flex items-stretch rounded-lg border bg-bg overflow-hidden',
+          outOfOrder ? 'border-red-400' : 'border-border',
+        ].join(' ')}
+      >
+        <div className="flex-1 px-3 py-2 text-center">
+          <input
+            type="number"
+            value={minValue}
+            onChange={(e) => onMinChange(e.target.value)}
+            dir="ltr"
+            aria-label={`${label} מינימום`}
+            className="w-full bg-transparent text-center text-sm font-semibold tabular-nums text-text-main focus:outline-none"
+          />
+          <p className="text-[11px] text-text-muted mt-0.5">מינימום</p>
+        </div>
+        <div className="w-px bg-border" aria-hidden="true" />
+        <div className="flex-1 px-3 py-2 text-center">
+          <input
+            type="number"
+            value={maxValue}
+            onChange={(e) => onMaxChange(e.target.value)}
+            dir="ltr"
+            aria-label={`${label} מקסימום`}
+            className="w-full bg-transparent text-center text-sm font-semibold tabular-nums text-text-main focus:outline-none"
+          />
+          <p className="text-[11px] text-text-muted mt-0.5">מקסימום</p>
+        </div>
+        <div className="flex items-center px-3 text-xs text-text-muted bg-secondary border-s border-border shrink-0">
+          ס״מ
+        </div>
+      </div>
+      <RangeErrorHint show={outOfOrder} />
+    </FieldRow>
   )
 }
 

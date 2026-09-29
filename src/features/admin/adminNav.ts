@@ -1,7 +1,7 @@
 import {
   LayoutDashboard,
   Package,
-  // Tag,
+  Tag,
   FileText,
   Mail,
   Send,
@@ -62,7 +62,13 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     desc: 'ניהול קטלוג המוצרים, קטגוריות, צבעים, גרסאות ומחירים',
     category: 'catalog',
   },
-  // { href: '/admin/coupons', icon: Tag, label: 'קופונים', desc: 'יצירה וניהול קודי הנחה', category: 'catalog' },
+  {
+    href: '/admin/coupons',
+    icon: Tag,
+    label: 'קופונים',
+    desc: 'יצירה וניהול קודי הנחה',
+    category: 'catalog',
+  },
   {
     href: '/admin/content',
     icon: FileText,
