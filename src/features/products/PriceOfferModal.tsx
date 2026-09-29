@@ -7,6 +7,7 @@ import { X, Check, Send } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useUiStore } from '@/stores/uiStore'
 import type { ProductDTO } from '@/shared/types'
+import { Input, Textarea } from '@/components/ui/Input'
 
 export interface PriceOfferSelection {
   variantId: string | null
@@ -152,11 +153,6 @@ export function PriceOfferModal({
   if (color) summaryParts.push(locale === 'he' ? color.name_he : color.name_en)
   if (selection.quantity > 1) summaryParts.push(`${t('quantityLabel')}: ${selection.quantity}`)
 
-  const inputClass = (hasError: boolean) =>
-    `min-h-[44px] w-full rounded-lg border bg-surface px-3 py-2 text-sm text-text-main placeholder:text-text-muted focus:outline focus:outline-2 focus:outline-primary ${
-      hasError ? 'border-red-500' : 'border-border'
-    }`
-
   return (
     <AnimatePresence>
       {open && (
@@ -240,7 +236,8 @@ export function PriceOfferModal({
                       *
                     </span>
                   </label>
-                  <input
+                  <Input
+                    variant="storefront"
                     ref={firstFieldRef}
                     id="offer-name"
                     type="text"
@@ -250,7 +247,8 @@ export function PriceOfferModal({
                     onChange={(e) => setName(e.target.value)}
                     onBlur={() => handleBlur('name')}
                     aria-invalid={!!errors.name}
-                    className={inputClass(!!errors.name)}
+                    hasError={!!errors.name}
+                    className="px-3 py-2"
                   />
                   {errors.name && (
                     <p role="alert" className="text-xs text-red-600">
@@ -267,7 +265,8 @@ export function PriceOfferModal({
                       *
                     </span>
                   </label>
-                  <input
+                  <Input
+                    variant="storefront"
                     id="offer-phone"
                     type="tel"
                     inputMode="tel"
@@ -278,7 +277,8 @@ export function PriceOfferModal({
                     onChange={(e) => setPhone(e.target.value)}
                     onBlur={() => handleBlur('phone')}
                     aria-invalid={!!errors.phone}
-                    className={`${inputClass(!!errors.phone)} text-start`}
+                    hasError={!!errors.phone}
+                    className="px-3 py-2 text-start"
                   />
                   {errors.phone && (
                     <p role="alert" className="text-xs text-red-600">
@@ -293,7 +293,8 @@ export function PriceOfferModal({
                     {t('email')}{' '}
                     <span className="text-xs font-normal text-text-muted">({t('optional')})</span>
                   </label>
-                  <input
+                  <Input
+                    variant="storefront"
                     id="offer-email"
                     type="email"
                     inputMode="email"
@@ -303,7 +304,8 @@ export function PriceOfferModal({
                     onChange={(e) => setEmail(e.target.value)}
                     onBlur={() => handleBlur('email')}
                     aria-invalid={!!errors.email}
-                    className={`${inputClass(!!errors.email)} text-start`}
+                    hasError={!!errors.email}
+                    className="px-3 py-2 text-start"
                   />
                   {errors.email && (
                     <p role="alert" className="text-xs text-red-600">
@@ -318,14 +320,15 @@ export function PriceOfferModal({
                     {t('message')}{' '}
                     <span className="text-xs font-normal text-text-muted">({t('optional')})</span>
                   </label>
-                  <textarea
+                  <Textarea
+                    variant="storefront"
                     id="offer-message"
                     rows={3}
                     maxLength={2000}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder={t('messagePlaceholder')}
-                    className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-main placeholder:text-text-muted focus:outline focus:outline-2 focus:outline-primary resize-none"
+                    className="px-3 py-2 resize-none"
                   />
                 </div>
 

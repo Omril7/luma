@@ -15,6 +15,7 @@ import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import { ImageUpload } from '@/components/ui/ImageUpload'
 import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
+import { Input, Textarea } from '@/components/ui/Input'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -62,12 +63,6 @@ function emptyTexts(): GalleryImageTexts {
 }
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
-
-const inputCls =
-  'w-full h-10 px-3 text-sm bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
-
-const textareaCls =
-  'w-full px-3 py-2 text-sm bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none'
 
 const labelCls = 'block text-xs font-medium text-text-muted mb-1'
 
@@ -248,24 +243,22 @@ export function GalleryPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={labelCls}>כותרת {badgeHe}</label>
-            <input
+            <Input
               type="text"
               value={intro.title_he}
               onChange={(e) => setIntroField('title_he', e.target.value)}
               dir="rtl"
               placeholder="הגלריה שלנו"
-              className={inputCls}
             />
           </div>
           <div dir="ltr">
             <label className={labelCls}>Title {badgeEn}</label>
-            <input
+            <Input
               type="text"
               value={intro.title_en}
               onChange={(e) => setIntroField('title_en', e.target.value)}
               dir="ltr"
               placeholder="Our Gallery"
-              className={inputCls}
             />
           </div>
         </div>
@@ -273,24 +266,24 @@ export function GalleryPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={labelCls}>תת-כותרת {badgeHe}</label>
-            <textarea
+            <Textarea
               rows={3}
               value={intro.subtitle_he}
               onChange={(e) => setIntroField('subtitle_he', e.target.value)}
               dir="rtl"
               placeholder="תת-כותרת הגלריה בעברית"
-              className={`${textareaCls} min-h-[80px]`}
+              className="resize-none min-h-[80px]"
             />
           </div>
           <div dir="ltr">
             <label className={labelCls}>Subtitle {badgeEn}</label>
-            <textarea
+            <Textarea
               rows={3}
               value={intro.subtitle_en}
               onChange={(e) => setIntroField('subtitle_en', e.target.value)}
               dir="ltr"
               placeholder="Gallery subtitle in English"
-              className={`${textareaCls} min-h-[80px]`}
+              className="resize-none min-h-[80px]"
             />
           </div>
         </div>
@@ -493,24 +486,22 @@ function AddImageModal({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={labelCls}>כותרת {badgeHe}</label>
-            <input
+            <Input
               type="text"
               value={draft.title_he}
               onChange={(e) => setField('title_he', e.target.value)}
               dir="rtl"
               placeholder="שולחן אלון בהזמנה אישית"
-              className={inputCls}
             />
           </div>
           <div dir="ltr">
             <label className={labelCls}>Title {badgeEn}</label>
-            <input
+            <Input
               type="text"
               value={draft.title_en}
               onChange={(e) => setField('title_en', e.target.value)}
               dir="ltr"
               placeholder="Custom oak table"
-              className={inputCls}
             />
           </div>
         </div>
@@ -518,24 +509,22 @@ function AddImageModal({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={labelCls}>תת-כותרת {badgeHe}</label>
-            <input
+            <Input
               type="text"
               value={draft.subtitle_he}
               onChange={(e) => setField('subtitle_he', e.target.value)}
               dir="rtl"
               placeholder="אלון מלא, גימור שמן טבעי"
-              className={inputCls}
             />
           </div>
           <div dir="ltr">
             <label className={labelCls}>Subtitle {badgeEn}</label>
-            <input
+            <Input
               type="text"
               value={draft.subtitle_en}
               onChange={(e) => setField('subtitle_en', e.target.value)}
               dir="ltr"
               placeholder="Solid oak, natural oil finish"
-              className={inputCls}
             />
           </div>
         </div>
@@ -543,24 +532,22 @@ function AddImageModal({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={labelCls}>טקסט חלופי (נגישות) {badgeHe}</label>
-            <input
+            <Input
               type="text"
               value={draft.altText_he}
               onChange={(e) => setField('altText_he', e.target.value)}
               dir="rtl"
               placeholder="אם ריק — הכותרת תשמש"
-              className={inputCls}
             />
           </div>
           <div dir="ltr">
             <label className={labelCls}>Alt text {badgeEn}</label>
-            <input
+            <Input
               type="text"
               value={draft.altText_en}
               onChange={(e) => setField('altText_en', e.target.value)}
               dir="ltr"
               placeholder="Falls back to title"
-              className={inputCls}
             />
           </div>
         </div>
@@ -745,22 +732,20 @@ function ImageRow({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className={labelCls}>כותרת {badgeHe}</label>
-              <input
+              <Input
                 type="text"
                 value={draft.title_he}
                 onChange={(e) => setField('title_he', e.target.value)}
                 dir="rtl"
-                className={inputCls}
               />
             </div>
             <div dir="ltr">
               <label className={labelCls}>Title {badgeEn}</label>
-              <input
+              <Input
                 type="text"
                 value={draft.title_en}
                 onChange={(e) => setField('title_en', e.target.value)}
                 dir="ltr"
-                className={inputCls}
               />
             </div>
           </div>
@@ -768,22 +753,20 @@ function ImageRow({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className={labelCls}>תת-כותרת {badgeHe}</label>
-              <input
+              <Input
                 type="text"
                 value={draft.subtitle_he}
                 onChange={(e) => setField('subtitle_he', e.target.value)}
                 dir="rtl"
-                className={inputCls}
               />
             </div>
             <div dir="ltr">
               <label className={labelCls}>Subtitle {badgeEn}</label>
-              <input
+              <Input
                 type="text"
                 value={draft.subtitle_en}
                 onChange={(e) => setField('subtitle_en', e.target.value)}
                 dir="ltr"
-                className={inputCls}
               />
             </div>
           </div>
@@ -791,24 +774,22 @@ function ImageRow({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className={labelCls}>טקסט חלופי (נגישות) {badgeHe}</label>
-              <input
+              <Input
                 type="text"
                 value={draft.altText_he}
                 onChange={(e) => setField('altText_he', e.target.value)}
                 dir="rtl"
                 placeholder="אם ריק — הכותרת תשמש"
-                className={inputCls}
               />
             </div>
             <div dir="ltr">
               <label className={labelCls}>Alt text {badgeEn}</label>
-              <input
+              <Input
                 type="text"
                 value={draft.altText_en}
                 onChange={(e) => setField('altText_en', e.target.value)}
                 dir="ltr"
                 placeholder="Falls back to title"
-                className={inputCls}
               />
             </div>
           </div>

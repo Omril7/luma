@@ -175,9 +175,13 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderDTO> {
   let shippingCost = 0
   if (input.shippingMethod === 'NATIONAL_SHIPPING') {
     const settings = await getSiteSettings()
-    const dest = [input.shippingAddress.street, input.shippingAddress.city, 'ישראל']
-      .filter(Boolean)
-      .join(', ')
+    const { lat, lng } = input.shippingAddress
+    const dest =
+      lat != null && lng != null
+        ? { lat, lng }
+        : [input.shippingAddress.street, input.shippingAddress.city, 'ישראל']
+            .filter(Boolean)
+            .join(', ')
     try {
       const estimate = await calculateDeliveryFee(dest, settings)
       shippingCost = estimate.fee

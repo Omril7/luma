@@ -17,6 +17,7 @@ import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import { Select } from '@/components/ui/Select'
 import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
+import { Input, Textarea } from '@/components/ui/Input'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -40,13 +41,7 @@ interface NewsletterSendDTO {
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
 
-const inputCls =
-  'w-full h-10 px-3 text-sm bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
-
 const labelCls = 'block text-xs font-medium text-text-muted mb-1'
-
-const textareaCls =
-  'w-full px-3 py-2 text-sm bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -568,14 +563,13 @@ function SendTab({ token }: { token: string }) {
                 *
               </span>
             </label>
-            <input
+            <Input
               type="text"
               value={form.subject_he}
               onChange={(e) => setField('subject_he', e.target.value)}
               dir="rtl"
               placeholder="נושא המייל בעברית"
               required
-              className={inputCls}
             />
           </div>
           <div dir="ltr">
@@ -586,14 +580,13 @@ function SendTab({ token }: { token: string }) {
                 *
               </span>
             </label>
-            <input
+            <Input
               type="text"
               value={form.subject_en}
               onChange={(e) => setField('subject_en', e.target.value)}
               dir="ltr"
               placeholder="Email subject in English"
               required
-              className={inputCls}
             />
           </div>
         </div>
@@ -611,14 +604,14 @@ function SendTab({ token }: { token: string }) {
                 *
               </span>
             </label>
-            <textarea
+            <Textarea
               value={form.body_he}
               onChange={(e) => setField('body_he', e.target.value)}
               dir="rtl"
               placeholder="תוכן הניוזלטר בעברית (HTML נתמך)"
               rows={12}
               required
-              className={textareaCls}
+              className="resize-none"
             />
           </div>
           <div dir="ltr">
@@ -629,14 +622,14 @@ function SendTab({ token }: { token: string }) {
                 *
               </span>
             </label>
-            <textarea
+            <Textarea
               value={form.body_en}
               onChange={(e) => setField('body_en', e.target.value)}
               dir="ltr"
               placeholder="Newsletter content in English (HTML supported)"
               rows={12}
               required
-              className={textareaCls}
+              className="resize-none"
             />
           </div>
         </div>

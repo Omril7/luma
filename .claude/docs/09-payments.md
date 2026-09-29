@@ -5,6 +5,14 @@
 > production; Prisma schema changes described here are additive and safe to apply, but the user
 > decides when migrations actually run. Do not run `db:migrate` for this work without explicit
 > go-ahead.
+>
+> **Provider not yet confirmed (2026-09-29).** Morning was carried over from the sibling project
+> `lights-and-vessels` as a starting point, not because the client chose it for Luma — he is
+> currently researching which payment service best fits his business. Do not start implementation
+> until a provider is confirmed. Most of the design below (the `PaymentProvider` interface shape,
+> refund-as-credit-note concept, `/admin/orders` UI, webhook idempotency rules) is provider-
+> agnostic and should carry over regardless of which processor is picked; only the
+> client/webhook specifics (env vars, payload shape, sandbox mechanics) are Morning-specific.
 
 ---
 

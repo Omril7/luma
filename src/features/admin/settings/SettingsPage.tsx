@@ -5,6 +5,7 @@ import { Building2, Truck, MapPin, Clock, Check, AlertCircle } from 'lucide-reac
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
+import { Input } from '@/components/ui/Input'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -37,9 +38,6 @@ interface SiteSettingsDTO {
 }
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
-
-const inputCls =
-  'w-full h-10 px-3 text-sm bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
 
 const labelCls = 'block text-xs font-medium text-text-muted mb-1'
 
@@ -335,13 +333,12 @@ export function SettingsPage() {
                 שם העסק{' '}
                 <IsraelFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
               </label>
-              <input
+              <Input
                 type="text"
                 value={biz.businessName_he}
                 onChange={(e) => setBizField('businessName_he', e.target.value)}
                 dir="rtl"
                 placeholder="לומה רהיטים"
-                className={inputCls}
               />
             </div>
             <div dir="ltr">
@@ -349,13 +346,12 @@ export function SettingsPage() {
                 Business name{' '}
                 <USAFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
               </label>
-              <input
+              <Input
                 type="text"
                 value={biz.businessName_en}
                 onChange={(e) => setBizField('businessName_en', e.target.value)}
                 dir="ltr"
                 placeholder="Luma Furniture"
-                className={inputCls}
               />
             </div>
           </div>
@@ -367,13 +363,12 @@ export function SettingsPage() {
                 כתובת{' '}
                 <IsraelFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
               </label>
-              <input
+              <Input
                 type="text"
                 value={biz.address_he}
                 onChange={(e) => setBizField('address_he', e.target.value)}
                 dir="rtl"
                 placeholder="תל אביב, ישראל"
-                className={inputCls}
               />
             </div>
             <div dir="ltr">
@@ -381,13 +376,12 @@ export function SettingsPage() {
                 Address{' '}
                 <USAFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
               </label>
-              <input
+              <Input
                 type="text"
                 value={biz.address_en}
                 onChange={(e) => setBizField('address_en', e.target.value)}
                 dir="ltr"
                 placeholder="Tel Aviv, Israel"
-                className={inputCls}
               />
             </div>
           </div>
@@ -396,25 +390,23 @@ export function SettingsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelCls}>טלפון</label>
-              <input
+              <Input
                 type="tel"
                 value={biz.phone}
                 onChange={(e) => setBizField('phone', e.target.value)}
                 dir="ltr"
                 placeholder="050-0000000"
-                className={inputCls}
                 autoComplete="tel"
               />
             </div>
             <div>
               <label className={labelCls}>מספר WhatsApp</label>
-              <input
+              <Input
                 type="tel"
                 value={biz.whatsappNumber}
                 onChange={(e) => setBizField('whatsappNumber', e.target.value)}
                 dir="ltr"
                 placeholder="972500000000"
-                className={inputCls}
                 autoComplete="tel"
               />
               <p className="text-xs text-text-muted mt-1">
@@ -425,13 +417,12 @@ export function SettingsPage() {
 
           <div>
             <label className={labelCls}>אימייל</label>
-            <input
+            <Input
               type="email"
               value={biz.email}
               onChange={(e) => setBizField('email', e.target.value)}
               dir="ltr"
               placeholder="info@luma.co.il"
-              className={inputCls}
               autoComplete="email"
             />
           </div>
@@ -447,13 +438,12 @@ export function SettingsPage() {
                 שעות פעילות{' '}
                 <IsraelFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
               </label>
-              <input
+              <Input
                 type="text"
                 value={biz.hours_he}
                 onChange={(e) => setBizField('hours_he', e.target.value)}
                 dir="rtl"
                 placeholder="א׳-ה׳: 9:00-18:00, ו׳: 9:00-13:00"
-                className={inputCls}
               />
             </div>
             <div dir="ltr">
@@ -461,13 +451,12 @@ export function SettingsPage() {
                 Working hours{' '}
                 <USAFlag className="inline-block w-[14px] h-[9px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]" />
               </label>
-              <input
+              <Input
                 type="text"
                 value={biz.hours_en}
                 onChange={(e) => setBizField('hours_en', e.target.value)}
                 dir="ltr"
                 placeholder="Sun-Thu: 9AM-6PM, Fri: 9AM-1PM"
-                className={inputCls}
               />
             </div>
           </div>
@@ -476,24 +465,22 @@ export function SettingsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div dir="ltr">
               <label className={labelCls}>Instagram</label>
-              <input
+              <Input
                 type="url"
                 value={biz.instagramUrl}
                 onChange={(e) => setBizField('instagramUrl', e.target.value)}
                 dir="ltr"
                 placeholder="https://instagram.com/luma.furniture"
-                className={inputCls}
               />
             </div>
             <div dir="ltr">
               <label className={labelCls}>Facebook</label>
-              <input
+              <Input
                 type="url"
                 value={biz.facebookUrl}
                 onChange={(e) => setBizField('facebookUrl', e.target.value)}
                 dir="ltr"
                 placeholder="https://facebook.com/luma.furniture"
-                className={inputCls}
               />
             </div>
           </div>
@@ -521,7 +508,7 @@ export function SettingsPage() {
                   <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
                     ₪
                   </span>
-                  <input
+                  <Input
                     type="number"
                     min="0"
                     step="1"
@@ -533,7 +520,7 @@ export function SettingsPage() {
                       }))
                     }
                     dir="rtl"
-                    className={`${inputCls} ps-8`}
+                    className="ps-8"
                   />
                 </div>
                 <p className="text-xs text-text-muted mt-1">עלות משלוח סטנדרטי לכל הארץ</p>
@@ -545,7 +532,7 @@ export function SettingsPage() {
                   <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
                     ₪
                   </span>
-                  <input
+                  <Input
                     type="number"
                     min="0"
                     step="1"
@@ -553,7 +540,7 @@ export function SettingsPage() {
                     onChange={(e) => setShip((s) => ({ ...s, freeShippingAbove: e.target.value }))}
                     dir="rtl"
                     placeholder="ריק = אין משלוח חינם"
-                    className={`${inputCls} ps-8`}
+                    className="ps-8"
                   />
                 </div>
                 <p className="text-xs text-text-muted mt-1">השאר ריק אם אין הטבת משלוח חינם</p>
@@ -580,12 +567,11 @@ export function SettingsPage() {
 
             <div>
               <label className={labelCls}>כתובת הסטודיו (נקודת מוצא)</label>
-              <input
+              <Input
                 type="text"
                 value={delivery.studioAddress}
                 onChange={(e) => setDelivery((s) => ({ ...s, studioAddress: e.target.value }))}
                 placeholder="רחוב המלאכה 5, תל אביב"
-                className={inputCls}
                 dir="rtl"
               />
               <p className="text-xs text-text-muted mt-1">
@@ -600,7 +586,7 @@ export function SettingsPage() {
                   <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
                     ₪
                   </span>
-                  <input
+                  <Input
                     type="number"
                     min="0"
                     step="0.5"
@@ -612,7 +598,7 @@ export function SettingsPage() {
                       }))
                     }
                     dir="rtl"
-                    className={`${inputCls} ps-8`}
+                    className="ps-8"
                   />
                 </div>
               </div>
@@ -622,7 +608,7 @@ export function SettingsPage() {
                   <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
                     ₪
                   </span>
-                  <input
+                  <Input
                     type="number"
                     min="0"
                     step="1"
@@ -634,7 +620,7 @@ export function SettingsPage() {
                       }))
                     }
                     dir="rtl"
-                    className={`${inputCls} ps-8`}
+                    className="ps-8"
                   />
                 </div>
               </div>
@@ -644,7 +630,7 @@ export function SettingsPage() {
                   <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
                     ₪
                   </span>
-                  <input
+                  <Input
                     type="number"
                     min="0"
                     step="1"
@@ -656,7 +642,7 @@ export function SettingsPage() {
                       }))
                     }
                     dir="rtl"
-                    className={`${inputCls} ps-8`}
+                    className="ps-8"
                   />
                 </div>
                 <p className="text-xs text-text-muted mt-1">0 = ללא תקרה</p>

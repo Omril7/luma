@@ -10,6 +10,7 @@ import {
   Loader2,
   ShoppingCart,
   MapPin,
+  LocateFixed,
   AlertTriangle,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
@@ -18,7 +19,9 @@ import { Link, useRouter } from '@/i18n/navigation'
 import { useCartStore, type CartItem } from '@/stores/cartStore'
 import { useUiStore } from '@/stores/uiStore'
 import { api } from '@/lib/api'
+import { PlacePicker, type PickedPlace } from './PlacePicker'
 import { trackBeginCheckout, trackPurchase, type AnalyticsItem } from '@/lib/analytics'
+import { Input, Textarea } from '@/components/ui/Input'
 
 interface CheckoutClientProps {
   locale: string
@@ -43,6 +46,8 @@ function toAnalyticsItems(items: CartItem[], locale: string): AnalyticsItem[] {
   }))
 }
 
+type ErrorKey = 'name' | 'email' | 'phone' | 'terms' | 'city' | 'street' | 'houseNumber'
+
 export function CheckoutClient({ locale }: CheckoutClientProps) {
   const t = useTranslations('checkout')
   const { items, couponCode, discount, subtotal, total, clear } = useCartStore()
@@ -55,14 +60,21 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
     name: '',
     email: '',
     phone: '',
-    street: '',
-    city: '',
+    houseNumber: '',
+    entrance: '',
+    floor: '',
+    apartment: '',
+    postalCode: '',
     shippingMethod: 'NATIONAL_SHIPPING' as 'NATIONAL_SHIPPING' | 'PICKUP',
     installments: 1,
     notes: '',
     terms: false,
   })
-  const [errors, setErrors] = useState<Partial<Record<keyof typeof form, string>>>({})
+  const [city, setCity] = useState<PickedPlace | null>(null)
+  const [street, setStreet] = useState<PickedPlace | null>(null)
+  const [locating, setLocating] = useState(false)
+  const [locationError, setLocationError] = useState<string | null>(null)
+  const [errors, setErrors] = useState<Partial<Record<ErrorKey, string>>>({})
   const [submitting, setSubmitting] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
   const [deliveryEstimate, setDeliveryEstimate] = useState<{
@@ -79,49 +91,38 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ── Delivery estimate (debounced) ────────────────────────────────────────────
+  // ── Delivery estimate (runs as soon as an address is picked) ─────────────────
   useEffect(() => {
-    if (form.shippingMethod !== 'NATIONAL_SHIPPING') {
+    // Fee is based on city + street only; house number, floor etc. don't change the distance
+    if (form.shippingMethod !== 'NATIONAL_SHIPPING' || !street) {
       setDeliveryEstimate(null)
       setEstimateError(null)
+      setEstimating(false)
       return
     }
-    const street = form.street.trim()
-    const city = form.city.trim()
-    if (!street || !city) {
-      setDeliveryEstimate(null)
-      setEstimateError(null)
-      return
+    let cancelled = false
+    const [lng, lat] = street.coords
+    setEstimating(true)
+    setEstimateError(null)
+    setDeliveryEstimate(null)
+    api
+      .post<{ distanceKm: number; fee: number }>('/api/delivery/estimate', { lat, lng })
+      .then((data) => {
+        if (!cancelled) setDeliveryEstimate({ distanceKm: data.distanceKm, fee: data.fee })
+      })
+      .catch((err: Error) => {
+        if (cancelled) return
+        setEstimateError(
+          err.message === 'NOT_CONFIGURED' ? t('deliveryNotConfigured') : t('deliveryEstimateError')
+        )
+      })
+      .finally(() => {
+        if (!cancelled) setEstimating(false)
+      })
+    return () => {
+      cancelled = true
     }
-    const timer = setTimeout(async () => {
-      setEstimating(true)
-      setEstimateError(null)
-      setDeliveryEstimate(null)
-      try {
-        const address = `${street}, ${city}, ישראל`
-        const data = await api.post<{
-          distanceKm: number
-          fee: number
-          ratePerKm: number
-          minFee: number
-          maxFee: number
-          error?: string
-        }>('/api/delivery/estimate', { address })
-        if (data.error === 'ADDRESS_NOT_FOUND') {
-          setEstimateError(t('deliveryAddressNotFound'))
-        } else if (data.error === 'NOT_CONFIGURED') {
-          setEstimateError(t('deliveryNotConfigured'))
-        } else {
-          setDeliveryEstimate({ distanceKm: data.distanceKm, fee: data.fee })
-        }
-      } catch {
-        setEstimateError(t('deliveryEstimateError'))
-      } finally {
-        setEstimating(false)
-      }
-    }, 800)
-    return () => clearTimeout(timer)
-  }, [form.street, form.city, form.shippingMethod, t])
+  }, [street, form.shippingMethod, t])
 
   // ── Empty cart guard ─────────────────────────────────────────────────────────
   if (items.length === 0) {
@@ -162,16 +163,17 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
   const totalValue = Math.max(0, subtotalValue + shippingAgorot - discount)
 
   // ── Validation ───────────────────────────────────────────────────────────────
-  function validate(): Partial<Record<keyof typeof form, string>> {
-    const errs: Partial<Record<keyof typeof form, string>> = {}
+  function validate(): Partial<Record<ErrorKey, string>> {
+    const errs: Partial<Record<ErrorKey, string>> = {}
     if (!form.name.trim() || form.name.trim().length < 2) errs.name = t('required')
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       errs.email = t('invalidEmail')
     if (!form.phone.trim() || form.phone.replace(/\D/g, '').length < 9)
       errs.phone = t('invalidPhone')
     if (form.shippingMethod === 'NATIONAL_SHIPPING') {
-      if (!form.street.trim()) errs.street = t('required')
-      if (!form.city.trim()) errs.city = t('required')
+      if (!city) errs.city = t('cityRequired')
+      else if (!street) errs.street = t('streetRequired')
+      if (!form.houseNumber.trim()) errs.houseNumber = t('required')
     }
     if (!form.terms) errs.terms = t('termsRequired')
     return errs
@@ -184,7 +186,7 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
     if (Object.keys(errs).length > 0) {
       setErrors(errs)
       // Focus first error field
-      const firstKey = Object.keys(errs)[0] as keyof typeof form
+      const firstKey = Object.keys(errs)[0]
       const el = document.getElementById(firstKey)
       el?.focus()
       return
@@ -196,11 +198,22 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
         customerName: form.name.trim(),
         customerEmail: form.email.trim(),
         customerPhone: form.phone.trim(),
-        shippingAddress: {
-          street: form.shippingMethod === 'NATIONAL_SHIPPING' ? form.street.trim() : '-',
-          city: form.shippingMethod === 'NATIONAL_SHIPPING' ? form.city.trim() : '-',
-          country: 'Israel',
-        },
+        shippingAddress:
+          form.shippingMethod === 'NATIONAL_SHIPPING' && city && street
+            ? {
+                // street keeps "name + number" so anything reading only street/city stays complete
+                street: `${street.label} ${form.houseNumber.trim()}`,
+                city: city.label,
+                houseNumber: form.houseNumber.trim(),
+                entrance: form.entrance.trim() || undefined,
+                floor: form.floor.trim() || undefined,
+                apartment: form.apartment.trim() || undefined,
+                postalCode: form.postalCode.trim() || undefined,
+                country: 'Israel',
+                lat: street.coords[1],
+                lng: street.coords[0],
+              }
+            : { street: '-', city: '-', country: 'Israel' },
         shippingMethod: form.shippingMethod,
         couponCode: couponCode ?? undefined,
         installments: form.installments,
@@ -228,15 +241,58 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
     }
   }
 
+  // ── Use my location: fills city (+ street when known) via reverse geocoding ──
+  function handleUseMyLocation() {
+    setLocationError(null)
+    if (!navigator.geolocation) {
+      setLocationError(t('locationUnsupported'))
+      return
+    }
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords
+          const res = await fetch(`/api/delivery/reverse?lat=${latitude}&lng=${longitude}`)
+          if (res.status === 404) {
+            setLocationError(t('locationNotInIsrael'))
+          } else if (!res.ok) {
+            setLocationError(t('locationError'))
+          } else {
+            const data = (await res.json()) as {
+              city: string
+              street: string | null
+              coords: [number, number]
+            }
+            setCity({ label: data.city, coords: data.coords })
+            setStreet(data.street ? { label: data.street, coords: data.coords } : null)
+            setErrors((prev) => ({ ...prev, city: undefined, street: undefined }))
+          }
+        } catch {
+          setLocationError(t('locationError'))
+        } finally {
+          setLocating(false)
+        }
+      },
+      (err) => {
+        setLocating(false)
+        setLocationError(
+          err.code === err.PERMISSION_DENIED ? t('locationDenied') : t('locationError')
+        )
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+    )
+  }
+
   // ── Field change helper ───────────────────────────────────────────────────────
   function handleChange(field: keyof typeof form, value: string | boolean | number) {
     setForm((prev) => ({ ...prev, [field]: value }))
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }))
+    if (field in errors) setErrors((prev) => ({ ...prev, [field]: undefined }))
   }
 
   // ── Input class ──────────────────────────────────────────────────────────────
-  const inputClass =
-    'min-h-[44px] w-full rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline focus:outline-2 focus:outline-[var(--color-primary)]'
+  // Checkout fields sit on a surface card, so they use the page bg and the theme radius
+  const checkoutFieldClass = 'rounded-[var(--radius)] bg-bg px-3 py-2'
 
   const errorClass = 'mt-1 text-xs text-[var(--color-accent)]'
 
@@ -298,13 +354,14 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
                     >
                       {t('name')}
                     </label>
-                    <input
+                    <Input
+                      variant="storefront"
                       id="name"
                       type="text"
                       autoComplete="name"
                       value={form.name}
                       onChange={(e) => handleChange('name', e.target.value)}
-                      className={inputClass}
+                      className={checkoutFieldClass}
                       aria-describedby={errors.name ? 'error-name' : undefined}
                       aria-invalid={!!errors.name}
                     />
@@ -323,13 +380,14 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
                     >
                       {t('phone')}
                     </label>
-                    <input
+                    <Input
+                      variant="storefront"
                       id="phone"
                       type="tel"
                       autoComplete="tel"
                       value={form.phone}
                       onChange={(e) => handleChange('phone', e.target.value)}
-                      className={inputClass}
+                      className={checkoutFieldClass}
                       aria-describedby={errors.phone ? 'error-phone' : undefined}
                       aria-invalid={!!errors.phone}
                     />
@@ -349,13 +407,14 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
                   >
                     {t('email')}
                   </label>
-                  <input
+                  <Input
+                    variant="storefront"
                     id="email"
                     type="email"
                     autoComplete="email"
                     value={form.email}
                     onChange={(e) => handleChange('email', e.target.value)}
-                    className={inputClass}
+                    className={checkoutFieldClass}
                     aria-describedby={errors.email ? 'error-email' : undefined}
                     aria-invalid={!!errors.email}
                   />
@@ -430,86 +489,192 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
                       className="overflow-hidden"
                     >
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 m-1">
-                        {/* Street */}
-                        <div>
-                          <label
-                            htmlFor="street"
-                            className="mb-1 block text-sm font-medium text-[var(--color-text)]"
-                          >
-                            {t('street')}
-                          </label>
-                          <input
-                            id="street"
-                            type="text"
-                            autoComplete="street-address"
-                            value={form.street}
-                            onChange={(e) => handleChange('street', e.target.value)}
-                            className={inputClass}
-                            aria-describedby={errors.street ? 'error-street' : undefined}
-                            aria-invalid={!!errors.street}
-                          />
-                          {errors.street && (
-                            <p id="error-street" role="alert" className={errorClass}>
-                              {errors.street}
-                            </p>
-                          )}
+                        {/* City (autocomplete) */}
+                        <PlacePicker
+                          id="city"
+                          kind="city"
+                          label={t('city')}
+                          placeholder={t('cityPlaceholder')}
+                          value={city}
+                          onChange={(v) => {
+                            setCity(v)
+                            // A different city invalidates the chosen street
+                            setStreet(null)
+                            if (!v) {
+                              // City cleared — reset the rest of the address too
+                              setForm((prev) => ({
+                                ...prev,
+                                houseNumber: '',
+                                entrance: '',
+                                floor: '',
+                                apartment: '',
+                                postalCode: '',
+                              }))
+                              setLocationError(null)
+                              setErrors((prev) => ({
+                                ...prev,
+                                city: undefined,
+                                street: undefined,
+                                houseNumber: undefined,
+                              }))
+                            }
+                            if (errors.city) setErrors((prev) => ({ ...prev, city: undefined }))
+                          }}
+                          error={errors.city}
+                          inputClassName={checkoutFieldClass}
+                        />
+
+                        {/* Street (autocomplete, scoped to the chosen city) */}
+                        <PlacePicker
+                          id="street"
+                          kind="street"
+                          label={t('street')}
+                          placeholder={t('streetPlaceholder')}
+                          value={street}
+                          onChange={(v) => {
+                            setStreet(v)
+                            if (errors.street) setErrors((prev) => ({ ...prev, street: undefined }))
+                          }}
+                          city={city}
+                          error={errors.street}
+                          inputClassName={checkoutFieldClass}
+                        />
+
+                        {/* Use my location */}
+                        {!(city && street) && (
+                          <div className="sm:col-span-2">
+                            <button
+                              type="button"
+                              onClick={handleUseMyLocation}
+                              disabled={locating}
+                              className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-[var(--radius)] px-2 text-sm font-medium text-[var(--color-primary)] transition-colors duration-150 hover:bg-[var(--color-secondary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              {locating ? (
+                                <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+                              ) : (
+                                <LocateFixed size={16} aria-hidden="true" />
+                              )}
+                              {locating ? t('locating') : t('useMyLocation')}
+                            </button>
+                            {locationError && (
+                              <p role="alert" className={errorClass}>
+                                {locationError}
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* House number, entrance, floor, apartment */}
+                        <div className="grid grid-cols-2 gap-4 sm:col-span-2 sm:grid-cols-4">
+                          <div>
+                            <label
+                              htmlFor="houseNumber"
+                              className="mb-1 block text-sm font-medium text-[var(--color-text)]"
+                            >
+                              {t('houseNumber')}
+                            </label>
+                            <Input
+                              variant="storefront"
+                              id="houseNumber"
+                              type="text"
+                              inputMode="numeric"
+                              autoComplete="off"
+                              maxLength={10}
+                              value={form.houseNumber}
+                              onChange={(e) => {
+                                handleChange('houseNumber', e.target.value)
+                                if (errors.houseNumber)
+                                  setErrors((prev) => ({ ...prev, houseNumber: undefined }))
+                              }}
+                              className={checkoutFieldClass}
+                              aria-describedby={
+                                errors.houseNumber ? 'error-houseNumber' : undefined
+                              }
+                              aria-invalid={!!errors.houseNumber}
+                            />
+                            {errors.houseNumber && (
+                              <p id="error-houseNumber" role="alert" className={errorClass}>
+                                {errors.houseNumber}
+                              </p>
+                            )}
+                          </div>
+                          {(
+                            [
+                              ['entrance', 'entrance'],
+                              ['floor', 'floor'],
+                              ['apartment', 'apartment'],
+                            ] as const
+                          ).map(([field, key]) => (
+                            <div key={field}>
+                              <label
+                                htmlFor={field}
+                                className="mb-1 block text-sm font-medium text-[var(--color-text)]"
+                              >
+                                {t(key)}
+                              </label>
+                              <Input
+                                variant="storefront"
+                                id={field}
+                                type="text"
+                                autoComplete="off"
+                                maxLength={10}
+                                value={form[field]}
+                                onChange={(e) => handleChange(field, e.target.value)}
+                                className={checkoutFieldClass}
+                              />
+                            </div>
+                          ))}
                         </div>
 
-                        {/* City */}
+                        {/* Postal code (optional) */}
                         <div>
                           <label
-                            htmlFor="city"
+                            htmlFor="postalCode"
                             className="mb-1 block text-sm font-medium text-[var(--color-text)]"
                           >
-                            {t('city')}
+                            {t('postalCode')}
                           </label>
-                          <input
-                            id="city"
+                          <Input
+                            variant="storefront"
+                            id="postalCode"
                             type="text"
-                            autoComplete="address-level2"
-                            value={form.city}
-                            onChange={(e) => handleChange('city', e.target.value)}
-                            className={inputClass}
-                            aria-describedby={errors.city ? 'error-city' : undefined}
-                            aria-invalid={!!errors.city}
+                            inputMode="numeric"
+                            autoComplete="postal-code"
+                            maxLength={7}
+                            value={form.postalCode}
+                            onChange={(e) => handleChange('postalCode', e.target.value)}
+                            className={checkoutFieldClass}
                           />
-                          {errors.city && (
-                            <p id="error-city" role="alert" className={errorClass}>
-                              {errors.city}
-                            </p>
-                          )}
                         </div>
 
                         {/* Delivery estimate feedback */}
-                        {form.shippingMethod === 'NATIONAL_SHIPPING' &&
-                          (form.street.trim() || form.city.trim()) && (
-                            <div className="mt-1">
-                              {estimating && (
-                                <p className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
-                                  <Loader2 size={12} className="animate-spin" aria-hidden="true" />
-                                  {t('deliveryCalculating')}
-                                </p>
-                              )}
-                              {!estimating && estimateError && (
-                                <p
-                                  role="alert"
-                                  className="flex items-center gap-1.5 text-xs text-[var(--color-accent)]"
-                                >
-                                  <AlertTriangle size={12} aria-hidden="true" />
-                                  {estimateError}
-                                </p>
-                              )}
-                              {!estimating && !estimateError && deliveryEstimate && (
-                                <p className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
-                                  <MapPin size={12} aria-hidden="true" />
-                                  {t('deliveryFeeLabel', {
-                                    fee: formatPrice(deliveryEstimate.fee * 100, locale),
-                                    km: deliveryEstimate.distanceKm.toFixed(1),
-                                  })}
-                                </p>
-                              )}
-                            </div>
-                          )}
+                        {form.shippingMethod === 'NATIONAL_SHIPPING' && street && (
+                          <div className="mt-1 sm:col-span-2">
+                            {estimating && (
+                              <p className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
+                                <Loader2 size={12} className="animate-spin" aria-hidden="true" />
+                                {t('deliveryCalculating')}
+                              </p>
+                            )}
+                            {!estimating && estimateError && (
+                              <p
+                                role="alert"
+                                className="flex items-center gap-1.5 text-xs text-[var(--color-accent)]"
+                              >
+                                <AlertTriangle size={12} aria-hidden="true" />
+                                {estimateError}
+                              </p>
+                            )}
+                            {!estimating && !estimateError && deliveryEstimate && (
+                              <p className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
+                                <MapPin size={12} aria-hidden="true" />
+                                {t('deliveryFeeLabel', {
+                                  fee: formatPrice(deliveryEstimate.fee * 100, locale),
+                                })}
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   )}
@@ -558,13 +723,14 @@ export function CheckoutClient({ locale }: CheckoutClientProps) {
                   >
                     {t('notes')}
                   </label>
-                  <textarea
+                  <Textarea
+                    variant="storefront"
                     id="notes"
                     rows={3}
                     value={form.notes}
                     onChange={(e) => handleChange('notes', e.target.value)}
                     placeholder={t('notesPlaceholder')}
-                    className="min-h-[44px] w-full rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline focus:outline-2 focus:outline-[var(--color-primary)] resize-y"
+                    className={`${checkoutFieldClass} resize-y`}
                   />
                 </div>
 

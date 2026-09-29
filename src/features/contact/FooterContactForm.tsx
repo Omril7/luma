@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Loader2, Send } from 'lucide-react'
 import { useUiStore } from '@/stores/uiStore'
 import { api } from '@/lib/api'
+import { Input } from '@/components/ui/Input'
 
 interface FooterContactFormProps {
   className?: string
@@ -59,10 +60,6 @@ export function FooterContactForm({
     }
   }
 
-  const inputCls =
-    inputClassName ??
-    'min-h-[44px] w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-sm text-text-main placeholder:text-text-muted/70 transition-colors focus:outline-none focus:ring-2 focus:ring-primary'
-
   return (
     <form onSubmit={handleSubmit} className={className} noValidate>
       <p className={labelClassName ?? 'mb-3 text-sm text-text-muted'}>{t('contactHeading')}</p>
@@ -70,7 +67,8 @@ export function FooterContactForm({
         <label htmlFor="footer-contact-name" className="sr-only">
           {t('contactNamePlaceholder')}
         </label>
-        <input
+        <Input
+          variant="storefront"
           id="footer-contact-name"
           type="text"
           value={name}
@@ -78,12 +76,13 @@ export function FooterContactForm({
           placeholder={t('contactNamePlaceholder')}
           autoComplete="name"
           required
-          className={`${inputCls} md:flex-1`}
+          className={`${inputClassName ?? ''} md:flex-1`}
         />
         <label htmlFor="footer-contact-email" className="sr-only">
           {t('contactEmailPlaceholder')}
         </label>
-        <input
+        <Input
+          variant="storefront"
           id="footer-contact-email"
           type="email"
           dir="ltr"
@@ -92,18 +91,19 @@ export function FooterContactForm({
           placeholder={t('contactEmailPlaceholder')}
           autoComplete="email"
           required
-          className={`${inputCls} md:flex-1`}
+          className={`${inputClassName ?? ''} md:flex-1`}
         />
         <label htmlFor="footer-contact-message" className="sr-only">
           {t('contactMessagePlaceholder')}
         </label>
-        <input
+        <Input
+          variant="storefront"
           id="footer-contact-message"
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder={t('contactMessagePlaceholder')}
-          className={`${inputCls} md:flex-[2]`}
+          className={`${inputClassName ?? ''} md:flex-[2]`}
         />
         <button
           type="submit"

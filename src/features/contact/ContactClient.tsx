@@ -7,6 +7,7 @@ import { Phone, Mail, MapPin, Clock, Loader2, CheckCircle2 } from 'lucide-react'
 import { useUiStore } from '@/stores/uiStore'
 import { api } from '@/lib/api'
 import { trackWhatsAppClick } from '@/lib/analytics'
+import { Input, Textarea } from '@/components/ui/Input'
 
 interface ContactInfo {
   phone: string
@@ -109,9 +110,6 @@ export function ContactClient({ locale, info }: ContactClientProps) {
     if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }))
   }
 
-  const inputCls =
-    'w-full min-h-[44px] rounded-lg border bg-surface px-3.5 py-2.5 text-text-main placeholder:text-text-muted/70 transition-colors focus:outline-none focus:ring-2 focus:ring-primary'
-
   return (
     <section className="py-12 md:py-20">
       <div className="mx-auto max-w-5xl px-4 md:px-8">
@@ -145,7 +143,8 @@ export function ContactClient({ locale, info }: ContactClientProps) {
               >
                 {t('formName')}
               </label>
-              <input
+              <Input
+                variant="storefront"
                 ref={nameRef}
                 id="contact-name"
                 type="text"
@@ -154,7 +153,8 @@ export function ContactClient({ locale, info }: ContactClientProps) {
                 onChange={(e) => set('name', e.target.value)}
                 aria-invalid={!!errors.name}
                 aria-describedby={errors.name ? 'contact-name-error' : undefined}
-                className={`${inputCls} ${errors.name ? 'border-red-400' : 'border-border'}`}
+                hasError={!!errors.name}
+                className="text-base"
               />
               {errors.name && (
                 <p id="contact-name-error" role="alert" className="mt-1 text-sm text-red-600">
@@ -171,7 +171,8 @@ export function ContactClient({ locale, info }: ContactClientProps) {
                 >
                   {t('formEmail')}
                 </label>
-                <input
+                <Input
+                  variant="storefront"
                   ref={emailRef}
                   id="contact-email"
                   type="email"
@@ -181,7 +182,8 @@ export function ContactClient({ locale, info }: ContactClientProps) {
                   onChange={(e) => set('email', e.target.value)}
                   aria-invalid={!!errors.email}
                   aria-describedby={errors.email ? 'contact-email-error' : undefined}
-                  className={`${inputCls} ${errors.email ? 'border-red-400' : 'border-border'}`}
+                  hasError={!!errors.email}
+                  className="text-base"
                 />
                 {errors.email && (
                   <p id="contact-email-error" role="alert" className="mt-1 text-sm text-red-600">
@@ -196,14 +198,15 @@ export function ContactClient({ locale, info }: ContactClientProps) {
                 >
                   {t('formPhone')}
                 </label>
-                <input
+                <Input
+                  variant="storefront"
                   id="contact-phone"
                   type="tel"
                   dir="ltr"
                   autoComplete="tel"
                   value={form.phone}
                   onChange={(e) => set('phone', e.target.value)}
-                  className={`${inputCls} border-border`}
+                  className="text-base"
                 />
               </div>
             </div>
@@ -215,7 +218,8 @@ export function ContactClient({ locale, info }: ContactClientProps) {
               >
                 {t('formSubject')}
               </label>
-              <input
+              <Input
+                variant="storefront"
                 ref={subjectRef}
                 id="contact-subject"
                 type="text"
@@ -223,7 +227,8 @@ export function ContactClient({ locale, info }: ContactClientProps) {
                 onChange={(e) => set('subject', e.target.value)}
                 aria-invalid={!!errors.subject}
                 aria-describedby={errors.subject ? 'contact-subject-error' : undefined}
-                className={`${inputCls} ${errors.subject ? 'border-red-400' : 'border-border'}`}
+                hasError={!!errors.subject}
+                className="text-base"
               />
               {errors.subject && (
                 <p id="contact-subject-error" role="alert" className="mt-1 text-sm text-red-600">
@@ -239,13 +244,14 @@ export function ContactClient({ locale, info }: ContactClientProps) {
               >
                 {t('formMessage')}
               </label>
-              <textarea
+              <Textarea
+                variant="storefront"
                 ref={messageRef}
                 id="contact-message"
                 rows={5}
                 value={form.message}
                 onChange={(e) => set('message', e.target.value)}
-                className={`${inputCls} resize-none border-border`}
+                className="resize-none text-base"
               />
             </div>
 

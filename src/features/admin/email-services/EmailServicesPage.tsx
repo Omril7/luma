@@ -5,6 +5,7 @@ import { Settings, Check } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
+import { Input } from '@/components/ui/Input'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -25,9 +26,6 @@ interface SenderForm {
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
-
-const inputCls =
-  'w-full h-10 px-3 text-sm bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
 
 const labelCls = 'block text-xs font-medium text-text-muted mb-1'
 
@@ -152,14 +150,13 @@ export function EmailServicesPage() {
               *
             </span>
           </label>
-          <input
+          <Input
             type="email"
             value={form.fromAddress}
             onChange={(e) => setField('fromAddress', e.target.value)}
             dir="ltr"
             placeholder="noreply@example.com"
             required
-            className={inputCls}
           />
         </div>
 
@@ -172,14 +169,13 @@ export function EmailServicesPage() {
                 *
               </span>
             </label>
-            <input
+            <Input
               type="text"
               value={form.fromName_he}
               onChange={(e) => setField('fromName_he', e.target.value)}
               dir="rtl"
               placeholder="לומה רהיטים"
               required
-              className={inputCls}
             />
           </div>
           <div dir="ltr">
@@ -190,27 +186,25 @@ export function EmailServicesPage() {
                 *
               </span>
             </label>
-            <input
+            <Input
               type="text"
               value={form.fromName_en}
               onChange={(e) => setField('fromName_en', e.target.value)}
               dir="ltr"
               placeholder="Luma Furniture"
               required
-              className={inputCls}
             />
           </div>
         </div>
 
         <div>
           <label className={labelCls}>Reply-To</label>
-          <input
+          <Input
             type="email"
             value={form.replyTo}
             onChange={(e) => setField('replyTo', e.target.value)}
             dir="ltr"
             placeholder="support@example.com"
-            className={inputCls}
           />
           <p className="text-xs text-text-muted mt-1">השאר ריק לשימוש בכתובת השולח</p>
         </div>

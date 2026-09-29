@@ -7,6 +7,7 @@ import { ArrowRight, Plus, Pencil, Power, Check, X as XIcon, GripVertical } from
 import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
+import { Input } from '@/components/ui/Input'
 
 // Local admin-only DTO — the storefront-facing CategoryDTO in `@/shared/types` intentionally
 // omits sortOrder/isActive (public product responses don't need them), but the admin list/edit
@@ -24,9 +25,6 @@ interface EditDraft {
   name_en: string
   sortOrder: string
 }
-
-const inputCls =
-  'w-full h-9 px-2.5 text-xs bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
 
 const flagCls =
   'inline-block w-[16px] h-[11px] rounded-[2px] ms-1 align-middle shadow-[0_0_0_0.5px_rgba(0,0,0,0.10)]'
@@ -238,35 +236,35 @@ export function CategoriesListPage() {
               <label className="block text-xs font-medium text-text-muted mb-1">
                 שם <IsraelFlag className={flagCls} />
               </label>
-              <input
+              <Input
                 type="text"
                 value={createDraft.name_he}
                 onChange={(e) => setCreateDraft((d) => ({ ...d, name_he: e.target.value }))}
                 dir="rtl"
-                className={inputCls}
+                compact
               />
             </div>
             <div dir="ltr">
               <label className="block text-xs font-medium text-text-muted mb-1">
                 Name <USAFlag className={flagCls} />
               </label>
-              <input
+              <Input
                 type="text"
                 value={createDraft.name_en}
                 onChange={(e) => setCreateDraft((d) => ({ ...d, name_en: e.target.value }))}
                 dir="ltr"
-                className={inputCls}
+                compact
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-text-muted mb-1">סדר מיון</label>
-              <input
+              <Input
                 type="number"
                 min="0"
                 value={createDraft.sortOrder}
                 onChange={(e) => setCreateDraft((d) => ({ ...d, sortOrder: e.target.value }))}
                 dir="ltr"
-                className={inputCls}
+                compact
               />
             </div>
           </div>
@@ -423,12 +421,12 @@ function CategoryRow({
       </td>
       <td className="px-4 py-2.5">
         {isEditing ? (
-          <input
+          <Input
             type="text"
             value={editDraft.name_he}
             onChange={(e) => setEditDraft((d) => ({ ...d, name_he: e.target.value }))}
             dir="rtl"
-            className={inputCls}
+            compact
           />
         ) : (
           <span className="font-medium text-text-main">{category.name_he}</span>
@@ -436,12 +434,12 @@ function CategoryRow({
       </td>
       <td className="px-4 py-2.5">
         {isEditing ? (
-          <input
+          <Input
             type="text"
             value={editDraft.name_en}
             onChange={(e) => setEditDraft((d) => ({ ...d, name_en: e.target.value }))}
             dir="ltr"
-            className={inputCls}
+            compact
           />
         ) : (
           <span className="text-text-muted" dir="ltr">
@@ -451,13 +449,13 @@ function CategoryRow({
       </td>
       <td className="px-4 py-2.5">
         {isEditing ? (
-          <input
+          <Input
             type="number"
             min="0"
             value={editDraft.sortOrder}
             onChange={(e) => setEditDraft((d) => ({ ...d, sortOrder: e.target.value }))}
             dir="ltr"
-            className={`${inputCls} w-20`}
+            compact
           />
         ) : (
           <span className="tabular-nums text-text-muted">{category.sortOrder}</span>

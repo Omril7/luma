@@ -1,4 +1,3 @@
-import { z } from 'zod'
 import { NextRequest, NextResponse } from 'next/server'
 import { withApi, parseBody } from '@/server/http'
 import { getSiteSettings } from '@/server/services/adminSettingsService'
@@ -6,19 +5,16 @@ import {
   calculateDeliveryFee,
   DeliveryEstimateError,
 } from '@/server/services/deliveryDistanceService'
-
-const estimateSchema = z.object({
-  address: z.string().min(3).max(300),
-})
+import { coordinatesSchema } from '@/shared/schemas'
 
 export const POST = withApi(async (req: NextRequest) => {
-  const body = await parseBody(req, estimateSchema)
+  const body = await parseBody(req, coordinatesSchema)
   if (body instanceof NextResponse) return body
 
   const settings = await getSiteSettings()
 
   try {
-    const { distanceKm, fee } = await calculateDeliveryFee(body.address, settings)
+    const { distanceKm, fee } = await calculateDeliveryFee(body, settings)
     return NextResponse.json({
       distanceKm,
       fee,

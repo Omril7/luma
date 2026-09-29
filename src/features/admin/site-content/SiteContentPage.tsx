@@ -6,6 +6,7 @@ import { api } from '@/lib/api'
 import { useAdminStore } from '@/stores/adminStore'
 import { ImageUpload } from '@/components/ui/ImageUpload'
 import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
+import { Input, Textarea } from '@/components/ui/Input'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -125,12 +126,6 @@ function defaultFaq(): FaqItems {
 
 // ── Shared UI components ───────────────────────────────────────────────────────
 
-const inputCls =
-  'w-full h-10 px-3 text-sm bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
-
-const textareaCls =
-  'w-full px-3 py-2 text-sm bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none'
-
 const labelCls = 'block text-xs font-medium text-text-muted mb-1'
 
 const flagCls =
@@ -242,24 +237,22 @@ function HomeHeroTab({ data, onChange, onSave, saving, success, error }: HomeHer
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>תגית עילית {badgeHe}</label>
-          <input
+          <Input
             type="text"
             value={data.eyebrow_he}
             onChange={(e) => set('eyebrow_he', e.target.value)}
             dir="rtl"
             placeholder="עשוי ביד בישראל"
-            className={inputCls}
           />
         </div>
         <div dir="ltr">
           <label className={labelCls}>Eyebrow {badgeEn}</label>
-          <input
+          <Input
             type="text"
             value={data.eyebrow_en}
             onChange={(e) => set('eyebrow_en', e.target.value)}
             dir="ltr"
             placeholder="Handmade in Israel"
-            className={inputCls}
           />
         </div>
       </div>
@@ -267,24 +260,22 @@ function HomeHeroTab({ data, onChange, onSave, saving, success, error }: HomeHer
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>כותרת ראשית {badgeHe}</label>
-          <input
+          <Input
             type="text"
             value={data.heading_he}
             onChange={(e) => set('heading_he', e.target.value)}
             dir="rtl"
             placeholder="ריהוט בעיצוב כפרי"
-            className={inputCls}
           />
         </div>
         <div dir="ltr">
           <label className={labelCls}>Heading {badgeEn}</label>
-          <input
+          <Input
             type="text"
             value={data.heading_en}
             onChange={(e) => set('heading_en', e.target.value)}
             dir="ltr"
             placeholder="Custom Furniture, Handmade"
-            className={inputCls}
           />
         </div>
       </div>
@@ -292,24 +283,24 @@ function HomeHeroTab({ data, onChange, onSave, saving, success, error }: HomeHer
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>כותרת משנה {badgeHe}</label>
-          <textarea
+          <Textarea
             rows={2}
             value={data.subheading_he}
             onChange={(e) => set('subheading_he', e.target.value)}
             dir="rtl"
             placeholder="כל פריט עשוי ביד, בהתאמה מושלמת לבית שלך"
-            className={textareaCls}
+            className="resize-none"
           />
         </div>
         <div dir="ltr">
           <label className={labelCls}>Subheading {badgeEn}</label>
-          <textarea
+          <Textarea
             rows={2}
             value={data.subheading_en}
             onChange={(e) => set('subheading_en', e.target.value)}
             dir="ltr"
             placeholder="Every piece crafted by hand, perfectly tailored for your home"
-            className={textareaCls}
+            className="resize-none"
           />
         </div>
       </div>
@@ -354,24 +345,22 @@ function HomeStoryTab({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>כותרת {badgeHe}</label>
-          <input
+          <Input
             type="text"
             value={data.heading_he}
             onChange={(e) => set('heading_he', e.target.value)}
             dir="rtl"
             placeholder="הסיפור שלנו"
-            className={inputCls}
           />
         </div>
         <div dir="ltr">
           <label className={labelCls}>Heading {badgeEn}</label>
-          <input
+          <Input
             type="text"
             value={data.heading_en}
             onChange={(e) => set('heading_en', e.target.value)}
             dir="ltr"
             placeholder="Our Story"
-            className={inputCls}
           />
         </div>
       </div>
@@ -379,24 +368,24 @@ function HomeStoryTab({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>פסקה ראשונה {badgeHe}</label>
-          <textarea
+          <Textarea
             rows={3}
             value={data.body1_he}
             onChange={(e) => set('body1_he', e.target.value)}
             dir="rtl"
             placeholder="לומה נולדה מאהבה לעץ ולמלאכת יד..."
-            className={`${textareaCls} min-h-[90px]`}
+            className="resize-none min-h-[90px]"
           />
         </div>
         <div dir="ltr">
           <label className={labelCls}>Paragraph 1 {badgeEn}</label>
-          <textarea
+          <Textarea
             rows={3}
             value={data.body1_en}
             onChange={(e) => set('body1_en', e.target.value)}
             dir="ltr"
             placeholder="Luma was born from a love of wood and craftsmanship..."
-            className={`${textareaCls} min-h-[90px]`}
+            className="resize-none min-h-[90px]"
           />
         </div>
       </div>
@@ -404,24 +393,24 @@ function HomeStoryTab({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>פסקה שנייה {badgeHe}</label>
-          <textarea
+          <Textarea
             rows={3}
             value={data.body2_he}
             onChange={(e) => set('body2_he', e.target.value)}
             dir="rtl"
             placeholder="אנו מאמינים שהבית שלך ראוי לריהוט שמספר סיפור..."
-            className={`${textareaCls} min-h-[90px]`}
+            className="resize-none min-h-[90px]"
           />
         </div>
         <div dir="ltr">
           <label className={labelCls}>Paragraph 2 {badgeEn}</label>
-          <textarea
+          <Textarea
             rows={3}
             value={data.body2_en}
             onChange={(e) => set('body2_en', e.target.value)}
             dir="ltr"
             placeholder="We believe your home deserves furniture that tells a story..."
-            className={`${textareaCls} min-h-[90px]`}
+            className="resize-none min-h-[90px]"
           />
         </div>
       </div>
@@ -429,24 +418,22 @@ function HomeStoryTab({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>טקסט קישור {badgeHe}</label>
-          <input
+          <Input
             type="text"
             value={data.cta_he}
             onChange={(e) => set('cta_he', e.target.value)}
             dir="rtl"
             placeholder="הכירו אותנו"
-            className={inputCls}
           />
         </div>
         <div dir="ltr">
           <label className={labelCls}>Link text {badgeEn}</label>
-          <input
+          <Input
             type="text"
             value={data.cta_en}
             onChange={(e) => set('cta_en', e.target.value)}
             dir="ltr"
             placeholder="Meet Us"
-            className={inputCls}
           />
         </div>
       </div>
@@ -491,24 +478,22 @@ function HomeContactTab({ data, onChange, onSave, saving, success, error }: Home
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>כותרת {badgeHe}</label>
-          <input
+          <Input
             type="text"
             value={data.heading_he}
             onChange={(e) => set('heading_he', e.target.value)}
             dir="rtl"
             placeholder="לא מצאתם בדיוק מה שחיפשתם?"
-            className={inputCls}
           />
         </div>
         <div dir="ltr">
           <label className={labelCls}>Heading {badgeEn}</label>
-          <input
+          <Input
             type="text"
             value={data.heading_en}
             onChange={(e) => set('heading_en', e.target.value)}
             dir="ltr"
             placeholder="Can't find exactly what you're looking for?"
-            className={inputCls}
           />
         </div>
       </div>
@@ -516,24 +501,24 @@ function HomeContactTab({ data, onChange, onSave, saving, success, error }: Home
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>טקסט גוף {badgeHe}</label>
-          <textarea
+          <Textarea
             rows={3}
             value={data.body_he}
             onChange={(e) => set('body_he', e.target.value)}
             dir="rtl"
             placeholder="אוהבים את הסגנון אבל לא מצאתם את הפריט המדויק?..."
-            className={`${textareaCls} min-h-[90px]`}
+            className="resize-none min-h-[90px]"
           />
         </div>
         <div dir="ltr">
           <label className={labelCls}>Body text {badgeEn}</label>
-          <textarea
+          <Textarea
             rows={3}
             value={data.body_en}
             onChange={(e) => set('body_en', e.target.value)}
             dir="ltr"
             placeholder="Love the style but can't find the perfect piece?..."
-            className={`${textareaCls} min-h-[90px]`}
+            className="resize-none min-h-[90px]"
           />
         </div>
       </div>
@@ -541,24 +526,22 @@ function HomeContactTab({ data, onChange, onSave, saving, success, error }: Home
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>טקסט כפתור וואטסאפ {badgeHe}</label>
-          <input
+          <Input
             type="text"
             value={data.whatsapp_he}
             onChange={(e) => set('whatsapp_he', e.target.value)}
             dir="rtl"
             placeholder="שוחחו איתנו בוואטסאפ"
-            className={inputCls}
           />
         </div>
         <div dir="ltr">
           <label className={labelCls}>WhatsApp button text {badgeEn}</label>
-          <input
+          <Input
             type="text"
             value={data.whatsapp_en}
             onChange={(e) => set('whatsapp_en', e.target.value)}
             dir="ltr"
             placeholder="Chat with us on WhatsApp"
-            className={inputCls}
           />
         </div>
       </div>
@@ -566,24 +549,22 @@ function HomeContactTab({ data, onChange, onSave, saving, success, error }: Home
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>טקסט קישור מייל {badgeHe}</label>
-          <input
+          <Input
             type="text"
             value={data.email_he}
             onChange={(e) => set('email_he', e.target.value)}
             dir="rtl"
             placeholder="שלחו לנו מייל"
-            className={inputCls}
           />
         </div>
         <div dir="ltr">
           <label className={labelCls}>Email link text {badgeEn}</label>
-          <input
+          <Input
             type="text"
             value={data.email_en}
             onChange={(e) => set('email_en', e.target.value)}
             dir="ltr"
             placeholder="Send us an email"
-            className={inputCls}
           />
         </div>
       </div>
@@ -617,24 +598,22 @@ function AboutTab({ data, onChange, onSave, saving, success, error, token }: Abo
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>כותרת {badgeHe}</label>
-          <input
+          <Input
             type="text"
             value={data.title_he}
             onChange={(e) => set('title_he', e.target.value)}
             dir="rtl"
             placeholder="אודות לומה"
-            className={inputCls}
           />
         </div>
         <div dir="ltr">
           <label className={labelCls}>Title {badgeEn}</label>
-          <input
+          <Input
             type="text"
             value={data.title_en}
             onChange={(e) => set('title_en', e.target.value)}
             dir="ltr"
             placeholder="About Luma"
-            className={inputCls}
           />
         </div>
       </div>
@@ -642,24 +621,24 @@ function AboutTab({ data, onChange, onSave, saving, success, error, token }: Abo
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>גוף טקסט {badgeHe}</label>
-          <textarea
+          <Textarea
             rows={8}
             value={data.body_he}
             onChange={(e) => set('body_he', e.target.value)}
             dir="rtl"
             placeholder="תוכן עמוד אודות בעברית..."
-            className={`${textareaCls} min-h-[120px]`}
+            className="resize-none min-h-[120px]"
           />
         </div>
         <div dir="ltr">
           <label className={labelCls}>Body text {badgeEn}</label>
-          <textarea
+          <Textarea
             rows={8}
             value={data.body_en}
             onChange={(e) => set('body_en', e.target.value)}
             dir="ltr"
             placeholder="About page content in English..."
-            className={`${textareaCls} min-h-[120px]`}
+            className="resize-none min-h-[120px]"
           />
         </div>
       </div>
@@ -768,24 +747,22 @@ function FaqTab({ data, onChange, onSave, saving, success, error }: FaqTabProps)
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>שאלה {badgeHe}</label>
-              <input
+              <Input
                 type="text"
                 value={item.q_he}
                 onChange={(e) => updateItem(idx, 'q_he', e.target.value)}
                 dir="rtl"
                 placeholder="השאלה בעברית"
-                className={inputCls}
               />
             </div>
             <div dir="ltr">
               <label className={labelCls}>Question {badgeEn}</label>
-              <input
+              <Input
                 type="text"
                 value={item.q_en}
                 onChange={(e) => updateItem(idx, 'q_en', e.target.value)}
                 dir="ltr"
                 placeholder="Question in English"
-                className={inputCls}
               />
             </div>
           </div>
@@ -793,24 +770,24 @@ function FaqTab({ data, onChange, onSave, saving, success, error }: FaqTabProps)
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>תשובה {badgeHe}</label>
-              <textarea
+              <Textarea
                 rows={3}
                 value={item.a_he}
                 onChange={(e) => updateItem(idx, 'a_he', e.target.value)}
                 dir="rtl"
                 placeholder="התשובה בעברית"
-                className={`${textareaCls} min-h-[80px]`}
+                className="resize-none min-h-[80px]"
               />
             </div>
             <div dir="ltr">
               <label className={labelCls}>Answer {badgeEn}</label>
-              <textarea
+              <Textarea
                 rows={3}
                 value={item.a_en}
                 onChange={(e) => updateItem(idx, 'a_en', e.target.value)}
                 dir="ltr"
                 placeholder="Answer in English"
-                className={`${textareaCls} min-h-[80px]`}
+                className="resize-none min-h-[80px]"
               />
             </div>
           </div>
@@ -857,24 +834,22 @@ function FooterTab({ data, onChange, onSave, saving, success, error }: FooterTab
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>טקסט תחת הלוגו {badgeHe}</label>
-          <input
+          <Input
             type="text"
             value={data.tagline_he}
             onChange={(e) => set('tagline_he', e.target.value)}
             dir="rtl"
             placeholder="ריהוט בעיצוב כפרי, עשוי ביד"
-            className={inputCls}
           />
         </div>
         <div dir="ltr">
           <label className={labelCls}>Tagline {badgeEn}</label>
-          <input
+          <Input
             type="text"
             value={data.tagline_en}
             onChange={(e) => set('tagline_en', e.target.value)}
             dir="ltr"
             placeholder="Custom furniture, handmade"
-            className={inputCls}
           />
         </div>
       </div>

@@ -17,12 +17,14 @@ import {
   X as XIcon,
 } from 'lucide-react'
 import { api } from '@/lib/api'
+import { FieldRow } from '@/components/ui/FormField'
 import { uploadImage } from '@/lib/uploadImage'
 import { useAdminStore } from '@/stores/adminStore'
 import type { ProductDTO, ColorOptionDTO, CategoryDTO } from '@/shared/types'
 import { Select } from '@/components/ui/Select'
 import { ColorInput } from '@/components/ui/ColorInput'
 import { IsraelFlag, USAFlag } from '@/components/ui/LangFlags'
+import { Input, Textarea } from '@/components/ui/Input'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -598,7 +600,7 @@ export function ProductFormPage({ mode, productId }: Props) {
       {tab === 'basic' && (
         <div className="space-y-6 max-w-2xl">
           <FieldRow label="Slug (URL)" error={errors.slug} required>
-            <input
+            <Input
               type="text"
               value={form.slug}
               onChange={(e) =>
@@ -606,7 +608,7 @@ export function ProductFormPage({ mode, productId }: Props) {
               }
               placeholder="sofa-oak-natural"
               dir="ltr"
-              className={inputCls(!!errors.slug)}
+              hasError={!!!!errors.slug}
             />
             <p className="text-xs text-text-muted mt-1">אותיות קטנות, מספרים ומקפים בלבד</p>
           </FieldRow>
@@ -622,12 +624,12 @@ export function ProductFormPage({ mode, productId }: Props) {
               error={errors.name_he}
               required
             >
-              <input
+              <Input
                 type="text"
                 value={form.name_he}
                 onChange={(e) => set('name_he', e.target.value)}
                 dir="rtl"
-                className={inputCls(!!errors.name_he)}
+                hasError={!!!!errors.name_he}
               />
             </FieldRow>
             <FieldRow
@@ -641,12 +643,12 @@ export function ProductFormPage({ mode, productId }: Props) {
               required
               labelDir="ltr"
             >
-              <input
+              <Input
                 type="text"
                 value={form.name_en}
                 onChange={(e) => set('name_en', e.target.value)}
                 dir="ltr"
-                className={inputCls(!!errors.name_en)}
+                hasError={!!!!errors.name_en}
               />
             </FieldRow>
           </div>
@@ -662,12 +664,13 @@ export function ProductFormPage({ mode, productId }: Props) {
               error={errors.description_he}
               required
             >
-              <textarea
+              <Textarea
                 value={form.description_he}
                 onChange={(e) => set('description_he', e.target.value)}
                 rows={4}
                 dir="rtl"
-                className={inputCls(!!errors.description_he, true) + ' resize-y'}
+                hasError={!!!!errors.description_he}
+                className="resize-y"
               />
             </FieldRow>
             <FieldRow
@@ -681,12 +684,13 @@ export function ProductFormPage({ mode, productId }: Props) {
               required
               labelDir="ltr"
             >
-              <textarea
+              <Textarea
                 value={form.description_en}
                 onChange={(e) => set('description_en', e.target.value)}
                 dir="ltr"
                 rows={4}
-                className={inputCls(!!errors.description_en, true) + ' resize-y'}
+                hasError={!!!!errors.description_en}
+                className="resize-y"
               />
             </FieldRow>
           </div>
@@ -712,23 +716,22 @@ export function ProductFormPage({ mode, productId }: Props) {
               </div>
             </FieldRow>
             <FieldRow label="מחיר בסיס (₪)" error={errors.basePrice} required>
-              <input
+              <Input
                 type="number"
                 min="0"
                 step="0.01"
                 value={form.basePrice}
                 onChange={(e) => set('basePrice', e.target.value)}
-                className={inputCls(!!errors.basePrice)}
+                hasError={!!!!errors.basePrice}
                 dir="ltr"
               />
             </FieldRow>
             <FieldRow label="סדר מיון">
-              <input
+              <Input
                 type="number"
                 min="0"
                 value={form.sortOrder}
                 onChange={(e) => set('sortOrder', e.target.value)}
-                className={inputCls(false)}
                 dir="ltr"
               />
             </FieldRow>
@@ -747,11 +750,10 @@ export function ProductFormPage({ mode, productId }: Props) {
                   }
                   required
                 >
-                  <input
+                  <Input
                     type="text"
                     value={newCategory.name_he}
                     onChange={(e) => setNewCategory((n) => ({ ...n, name_he: e.target.value }))}
-                    className={inputCls(false)}
                   />
                 </FieldRow>
                 <FieldRow
@@ -764,12 +766,11 @@ export function ProductFormPage({ mode, productId }: Props) {
                   required
                   labelDir="ltr"
                 >
-                  <input
+                  <Input
                     type="text"
                     value={newCategory.name_en}
                     dir="ltr"
                     onChange={(e) => setNewCategory((n) => ({ ...n, name_en: e.target.value }))}
-                    className={inputCls(false)}
                   />
                 </FieldRow>
               </div>
@@ -843,27 +844,28 @@ export function ProductFormPage({ mode, productId }: Props) {
                   {form.variants.map((v, i) => (
                     <tr key={v._key} className="border-b border-border last:border-0">
                       <td className="px-3 py-2">
-                        <input
+                        <Input
                           type="text"
                           value={v.name_he}
                           onChange={(e) => setVariant(v._key, 'name_he', e.target.value)}
                           placeholder="קטן"
-                          className={`${inputCls(!!errors[`variant_${i}_name_he`])} text-xs`}
+                          hasError={!!!!errors[`variant_${i}_name_he`]}
+                          className="text-xs"
                         />
                       </td>
                       <td className="px-3 py-2">
-                        <input
+                        <Input
                           type="text"
                           value={v.name_en}
                           dir="ltr"
                           onChange={(e) => setVariant(v._key, 'name_en', e.target.value)}
                           placeholder="Small"
-                          className={`${inputCls(false)} text-xs`}
+                          className="text-xs"
                         />
                       </td>
                       {(['width', 'height', 'depth', 'diameter'] as const).map((dim) => (
                         <td key={dim} className="px-3 py-2">
-                          <input
+                          <Input
                             type="number"
                             min="0"
                             step="0.1"
@@ -871,12 +873,12 @@ export function ProductFormPage({ mode, productId }: Props) {
                             onChange={(e) => setVariant(v._key, dim, e.target.value)}
                             placeholder="ס״מ"
                             dir="ltr"
-                            className={`${inputCls(false)} text-xs w-20`}
+                            className="text-xs"
                           />
                         </td>
                       ))}
                       <td className="px-3 py-2">
-                        <input
+                        <Input
                           type="number"
                           min="0"
                           step="0.01"
@@ -884,17 +886,19 @@ export function ProductFormPage({ mode, productId }: Props) {
                           dir="ltr"
                           onChange={(e) => setVariant(v._key, 'price', e.target.value)}
                           placeholder="0"
-                          className={`${inputCls(!!errors[`variant_${i}_price`])} text-xs w-24`}
+                          hasError={!!!!errors[`variant_${i}_price`]}
+                          className="text-xs"
                         />
                       </td>
                       <td className="px-3 py-2">
-                        <input
+                        <Input
                           type="text"
                           value={v.sku}
                           dir="ltr"
                           onChange={(e) => setVariant(v._key, 'sku', e.target.value)}
                           placeholder="SKU-001"
-                          className={`${inputCls(!!errors[`variant_${i}_sku`])} text-xs w-28`}
+                          hasError={!!!!errors[`variant_${i}_sku`]}
+                          className="text-xs"
                         />
                       </td>
                       <td className="px-3 py-2 text-center">
@@ -957,14 +961,13 @@ export function ProductFormPage({ mode, productId }: Props) {
                   ] as const
                 ).map(([field, label]) => (
                   <FieldRow key={field} label={`${label} (₪/ס״מ)`}>
-                    <input
+                    <Input
                       type="number"
                       min="0"
                       step="0.0001"
                       value={form.pricingRule[field]}
                       onChange={(e) => setPricingRule(field, e.target.value)}
                       dir="ltr"
-                      className={inputCls(false)}
                     />
                   </FieldRow>
                 ))}
@@ -1054,11 +1057,10 @@ export function ProductFormPage({ mode, productId }: Props) {
                   }
                   required
                 >
-                  <input
+                  <Input
                     type="text"
                     value={newColor.name_he}
                     onChange={(e) => setNewColor((n) => ({ ...n, name_he: e.target.value }))}
-                    className={inputCls(false)}
                   />
                 </FieldRow>
                 <FieldRow
@@ -1071,12 +1073,11 @@ export function ProductFormPage({ mode, productId }: Props) {
                   required
                   labelDir="ltr"
                 >
-                  <input
+                  <Input
                     type="text"
                     value={newColor.name_en}
                     dir="ltr"
                     onChange={(e) => setNewColor((n) => ({ ...n, name_en: e.target.value }))}
-                    className={inputCls(false)}
                   />
                 </FieldRow>
               </div>
@@ -1192,25 +1193,25 @@ export function ProductFormPage({ mode, productId }: Props) {
                       <label className="text-xs text-text-muted mb-1 block">
                         טקסט חלופי (עברית)
                       </label>
-                      <input
+                      <Input
                         type="text"
                         value={img.altText_he}
                         onChange={(e) => setImageField(img._key, 'altText_he', e.target.value)}
                         placeholder={form.name_he}
-                        className={`${inputCls(false)} text-xs`}
+                        className="text-xs"
                       />
                     </div>
                     <div>
                       <label className="text-xs text-text-muted mb-1 block">
                         Alt text (English)
                       </label>
-                      <input
+                      <Input
                         type="text"
                         value={img.altText_en}
                         dir="ltr"
                         onChange={(e) => setImageField(img._key, 'altText_en', e.target.value)}
                         placeholder={form.name_en}
-                        className={`${inputCls(false)} text-xs`}
+                        className="text-xs"
                       />
                     </div>
                   </div>
@@ -1260,48 +1261,6 @@ export function ProductFormPage({ mode, productId }: Props) {
 }
 
 // ── Small helpers ──────────────────────────────────────────────────────────────
-
-function inputCls(hasError: boolean, textarea = false) {
-  return [
-    'w-full px-3 text-sm bg-bg border rounded-lg text-text-main',
-    textarea ? 'py-2' : 'h-10',
-    'placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary',
-    hasError ? 'border-red-400 focus:ring-red-400' : 'border-border focus:border-primary',
-  ].join(' ')
-}
-
-function FieldRow({
-  label,
-  error,
-  required,
-  children,
-  labelDir,
-}: {
-  label: React.ReactNode
-  error?: string
-  required?: boolean
-  labelDir?: 'ltr' | 'rtl'
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      <label dir={labelDir} className="block text-xs font-medium text-text-main mb-1.5">
-        {label}
-        {required && (
-          <span className="text-red-500 ms-0.5" aria-hidden="true">
-            *
-          </span>
-        )}
-      </label>
-      {children}
-      {error && (
-        <p className="text-xs text-red-600 mt-1" role="alert">
-          {error}
-        </p>
-      )}
-    </div>
-  )
-}
 
 function useRangeOrderError(minValue: string, maxValue: string) {
   return minValue !== '' && maxValue !== '' && Number(minValue) > Number(maxValue)

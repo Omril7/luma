@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Loader2, Send } from 'lucide-react'
 import { useUiStore } from '@/stores/uiStore'
 import { api } from '@/lib/api'
+import { Input } from '@/components/ui/Input'
 
 interface NewsletterSignupFormProps {
   className?: string
@@ -55,9 +56,6 @@ export function NewsletterSignupForm({
     }
   }
 
-  const defaultInputCls =
-    'min-h-[44px] w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-sm text-text-main placeholder:text-text-muted/70 transition-colors focus:outline-none focus:ring-2 focus:ring-primary'
-
   return (
     <form onSubmit={handleSubmit} className={className} noValidate>
       <p className={labelClassName ?? 'mb-3 text-sm text-text-muted'}>{t('heading')}</p>
@@ -65,19 +63,21 @@ export function NewsletterSignupForm({
         <label htmlFor="newsletter-name" className="sr-only">
           {t('namePlaceholder')}
         </label>
-        <input
+        <Input
+          variant="storefront"
           id="newsletter-name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={t('namePlaceholder')}
           autoComplete="name"
-          className={inputClassName ?? defaultInputCls}
+          className={inputClassName}
         />
         <label htmlFor="newsletter-email" className="sr-only">
           {t('emailPlaceholder')}
         </label>
-        <input
+        <Input
+          variant="storefront"
           id="newsletter-email"
           type="email"
           dir="ltr"
@@ -86,7 +86,7 @@ export function NewsletterSignupForm({
           placeholder={t('emailPlaceholder')}
           autoComplete="email"
           required
-          className={inputClassName ?? defaultInputCls}
+          className={inputClassName}
         />
         <button
           type="submit"

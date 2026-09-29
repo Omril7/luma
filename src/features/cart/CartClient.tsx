@@ -9,6 +9,7 @@ import { Link } from '@/i18n/navigation'
 import { useCartStore } from '@/stores/cartStore'
 import { useUiStore } from '@/stores/uiStore'
 import { api } from '@/lib/api'
+import { Input } from '@/components/ui/Input'
 
 interface CartClientProps {
   locale: string
@@ -292,7 +293,8 @@ export function CartClient({ locale }: CartClientProps) {
                 /* Coupon input */
                 <div className="flex flex-col gap-2">
                   <div className="flex gap-2">
-                    <input
+                    <Input
+                      variant="storefront"
                       type="text"
                       value={couponInput}
                       onChange={(e) => {
@@ -304,7 +306,7 @@ export function CartClient({ locale }: CartClientProps) {
                       }}
                       placeholder={t('couponPlaceholder')}
                       style={{ textTransform: 'uppercase' }}
-                      className="min-h-[44px] flex-1 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline focus:outline-2 focus:outline-[var(--color-primary)]"
+                      className="flex-1 rounded-[var(--radius)] bg-bg px-3 py-2"
                       aria-describedby={couponError ? 'coupon-error' : undefined}
                     />
                     <button

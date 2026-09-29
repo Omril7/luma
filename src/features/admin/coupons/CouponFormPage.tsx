@@ -4,6 +4,11 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, Check } from 'lucide-react'
 import { api } from '@/lib/api'
+import { DatePicker } from '@/components/ui/DatePicker'
+import { ButtonGroup } from '@/components/ui/ButtonGroup'
+import { CheckboxRow } from '@/components/ui/CheckboxRow'
+import { FieldRow } from '@/components/ui/FormField'
+import { Input } from '@/components/ui/Input'
 import { useAdminStore } from '@/stores/adminStore'
 import type { CouponDTO } from '@/shared/types'
 
@@ -51,77 +56,6 @@ function couponToForm(c: CouponDTO): FormState {
     autoApply: c.autoApply ?? false,
     isActive: c.isActive ?? true,
   }
-}
-
-// ── Helpers ────────────────────────────────────────────────────────────────────
-
-function inputCls(hasError: boolean) {
-  return [
-    'w-full h-10 px-3 text-sm bg-bg border rounded-lg text-text-main',
-    'placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary',
-    hasError ? 'border-red-400 focus:ring-red-400' : 'border-border focus:border-primary',
-  ].join(' ')
-}
-
-function FieldRow({
-  label,
-  error,
-  required,
-  helper,
-  children,
-}: {
-  label: string
-  error?: string
-  required?: boolean
-  helper?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      <label className="block text-xs font-medium text-text-main mb-1.5">
-        {label}
-        {required && (
-          <span className="text-red-500 ms-0.5" aria-hidden="true">
-            *
-          </span>
-        )}
-      </label>
-      {children}
-      {helper && !error && <p className="text-xs text-text-muted mt-1">{helper}</p>}
-      {error && (
-        <p className="text-xs text-red-600 mt-1" role="alert">
-          {error}
-        </p>
-      )}
-    </div>
-  )
-}
-
-function CheckboxRow({
-  label,
-  description,
-  checked,
-  onChange,
-}: {
-  label: string
-  description?: string
-  checked: boolean
-  onChange: (v: boolean) => void
-}) {
-  return (
-    <label className="flex items-start gap-3 cursor-pointer group">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="w-4 h-4 mt-0.5 rounded border-border text-primary focus:ring-primary shrink-0 cursor-pointer accent-primary"
-      />
-      <span className="text-sm text-text-main leading-snug">
-        {label}
-        {description && <span className="block text-xs text-text-muted mt-0.5">{description}</span>}
-      </span>
-    </label>
-  )
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -304,7 +238,7 @@ export function CouponFormPage({ couponId }: Props) {
             required
             helper="אותיות גדולות באנגלית, ספרות, מקפים וקווים תחתונים בלבד"
           >
-            <input
+            <Input
               type="text"
               value={form.code}
               onChange={(e) =>
@@ -312,42 +246,28 @@ export function CouponFormPage({ couponId }: Props) {
               }
               placeholder="SUMMER20"
               dir="ltr"
-              className={`${inputCls(!!errors.code)} font-mono uppercase tracking-wider`}
+              hasError={!!errors.code}
+              className="font-mono uppercase tracking-wider"
               maxLength={64}
             />
           </FieldRow>
 
           <FieldRow label="סוג הנחה" required>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="discountType"
-                  value="PERCENTAGE"
-                  checked={form.discountType === 'PERCENTAGE'}
-                  onChange={() => set('discountType', 'PERCENTAGE')}
-                  className="w-4 h-4 accent-primary cursor-pointer"
-                />
-                <span className="text-sm text-text-main">אחוז (%)</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="discountType"
-                  value="FIXED_AMOUNT"
-                  checked={form.discountType === 'FIXED_AMOUNT'}
-                  onChange={() => set('discountType', 'FIXED_AMOUNT')}
-                  className="w-4 h-4 accent-primary cursor-pointer"
-                />
-                <span className="text-sm text-text-main">סכום קבוע (₪)</span>
-              </label>
-            </div>
+            <ButtonGroup
+              aria-label="סוג הנחה"
+              value={form.discountType}
+              onChange={(v) => set('discountType', v)}
+              options={[
+                { value: 'PERCENTAGE', label: 'אחוז (%)' },
+                { value: 'FIXED_AMOUNT', label: 'סכום קבוע (₪)' },
+              ]}
+            />
           </FieldRow>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FieldRow label={`ערך ההנחה (${discountSuffix})`} error={errors.discountValue} required>
               <div className="relative">
-                <input
+                <Input
                   type="number"
                   min="0"
                   max={form.discountType === 'PERCENTAGE' ? 100 : undefined}
@@ -356,7 +276,8 @@ export function CouponFormPage({ couponId }: Props) {
                   onChange={(e) => set('discountValue', e.target.value)}
                   placeholder={form.discountType === 'PERCENTAGE' ? '15' : '50'}
                   dir="rtl"
-                  className={`${inputCls(!!errors.discountValue)} ps-8`}
+                  hasError={!!errors.discountValue}
+                  className="ps-8"
                 />
                 <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
                   {discountSuffix}
@@ -370,7 +291,7 @@ export function CouponFormPage({ couponId }: Props) {
               helper="השאר ריק ללא מינימום"
             >
               <div className="relative">
-                <input
+                <Input
                   type="number"
                   min="0"
                   step="0.01"
@@ -378,7 +299,8 @@ export function CouponFormPage({ couponId }: Props) {
                   onChange={(e) => set('minOrderAmount', e.target.value)}
                   placeholder="200"
                   dir="rtl"
-                  className={`${inputCls(!!errors.minOrderAmount)} ps-8`}
+                  hasError={!!errors.minOrderAmount}
+                  className="ps-8"
                 />
                 <span className="absolute top-1/2 -translate-y-1/2 start-3 text-sm text-text-muted pointer-events-none">
                   ₪
@@ -397,7 +319,7 @@ export function CouponFormPage({ couponId }: Props) {
             error={errors.maxUses}
             helper="השאר ריק לשימושים ללא הגבלה"
           >
-            <input
+            <Input
               type="number"
               min="1"
               step="1"
@@ -405,28 +327,26 @@ export function CouponFormPage({ couponId }: Props) {
               onChange={(e) => set('maxUses', e.target.value)}
               placeholder="100"
               dir="ltr"
-              className={inputCls(!!errors.maxUses)}
+              hasError={!!errors.maxUses}
             />
           </FieldRow>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FieldRow label="תוקף מתאריך">
-              <input
-                type="date"
+              <DatePicker
                 value={form.validFrom}
-                onChange={(e) => set('validFrom', e.target.value)}
-                dir="ltr"
-                className={inputCls(false)}
+                onChange={(v) => set('validFrom', v)}
+                maxDate={form.validUntil || undefined}
+                aria-label="תוקף מתאריך"
               />
             </FieldRow>
 
             <FieldRow label="תוקף עד תאריך">
-              <input
-                type="date"
+              <DatePicker
                 value={form.validUntil}
-                onChange={(e) => set('validUntil', e.target.value)}
-                dir="ltr"
-                className={inputCls(false)}
+                onChange={(v) => set('validUntil', v)}
+                minDate={form.validFrom || undefined}
+                aria-label="תוקף עד תאריך"
               />
             </FieldRow>
           </div>

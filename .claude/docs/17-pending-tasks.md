@@ -16,6 +16,8 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done.
   branch**, separate from everything else, so it can be tested in isolation before merging. Do it
   **last** — several Phase C items (installments count, refunds, accept/deny) are actually part
   of the same admin-orders epic already designed in `09-payments.md`; see the note in Phase C.
+  **The provider itself isn't decided yet** — the client is researching alternatives to Morning;
+  see the caveat at the top of Phase F before starting any of this work.
 
 ---
 
@@ -44,18 +46,66 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done.
       mutation) should re-derive `discount` from `couponCode` + the new subtotal (same pricing path
       used when the coupon is first applied), or clear the coupon entirely if `minOrderAmount` is no
       longer met.
-- [ ] **Delivery: capture floor + apartment number** and feed them into the delivery
-      calculation/quote. `Order.shippingAddress` is a `Json` blob today (no migration needed — just
-      extend the shape) and there's no floor/apartment field or UI for it yet. Add the fields to the
-      checkout address form + Zod schema (`src/shared/schemas/`), store them in the JSON blob, and
-      pass them through to whatever delivery-cost logic exists/lands (see `10-devops.md` /
-      OpenRouteService setup in `.claude/TODO.md` — floor access is the kind of thing that affects a
-      real furniture delivery quote, e.g. no-elevator walk-up surcharge).
+- [~] **Delivery: capture floor + apartment number** and feed them into the delivery
+  calculation/quote. `Order.shippingAddress` is a `Json` blob today (no migration needed — just
+  extend the shape) and there's no floor/apartment field or UI for it yet. Add the fields to the
+  checkout address form + Zod schema (`src/shared/schemas/`), store them in the JSON blob, and
+  pass them through to whatever delivery-cost logic exists/lands (see `10-devops.md` /
+  OpenRouteService setup in `.claude/TODO.md` — floor access is the kind of thing that affects a
+  real furniture delivery quote, e.g. no-elevator walk-up surcharge).
+  **Status:** capture is done — the checkout address is now split into city / street (both
+  autocomplete pickers), house number (required), entrance, floor, apartment and postal code;
+  `shippingAddress` in `src/shared/schemas/index.ts` carries `houseNumber`, `entrance`, `floor`,
+  `apartment`, `postalCode`, `lat`, `lng`, and they are stored in the order JSON. **Still open:**
+  using floor/apartment in the fee (walk-up surcharge) — the fee is still distance-only; fold
+  that into the oversized-items surcharge task below.
 - [ ] **Delivery: surcharge for oversized items.** No shipping-cost logic exists in
       `src/shared/pricing.ts` yet — this is greenfield. Define what "too large" means (dimension
       threshold per product/variant, or a `Product`/`ProductVariant` flag) and add a surcharge rule
       alongside the floor/apartment logic above, in the same shared pricing module so client preview
       and server validation never diverge (golden rule #2).
+- [x] **Research a replacement for OpenRouteService (delivery distance).** Flagged by the user
+      (2026-09-29) as possibly not the best fit — route calculation is slow. Current flow
+      (`src/server/services/deliveryDistanceService.ts`, called live from
+      `POST /api/delivery/estimate` during checkout) makes **two sequential external HTTP calls**
+      per estimate — `geocode/search` then `v2/directions/driving-car` — with no caching, on the
+      **free tier** (`.claude/docs/10-devops.md`: 2,000 req/day), which is the likely source of the
+      slowness the user is seeing, not just the provider itself. Before swapping providers, worth
+      separately checking whether caching geocoded studio→customer-area distances (or geocoding
+      once and caching by normalized address) would fix it without a migration at all. If a
+      provider swap is still warranted, candidates to evaluate: **Google Maps Distance Matrix**
+      (accurate, paid, generous free tier), **Mapbox Directions**, **HERE Routing**, or a
+      self-hosted **OSRM** instance (fastest/no rate limit, but is infra to run and maintain — cuts
+      against this project's "no Docker, Vercel-only" stance in `CLAUDE.md`). Whatever is chosen,
+      keep it behind the same `calculateDeliveryFee`/`geocodeIsraeliAddress`/`getRoadDistanceKm`
+      function shape so callers (`orderService.ts`, the estimate route) don't need to change.
+      **If the decision ends up being to stay with OpenRouteService**, the `OPENROUTESERVICE_API_KEY`
+      currently in use is under Omri's own account (per `.claude/TODO.md`) — switch it to an API
+      key from Eden's (the client's) own OpenRouteService account before shipping, so usage/billing
+      is tied to the business, not the developer.
+      **Done (2026-09-29):** no full provider swap was needed. The estimate no longer makes two
+      sequential calls — the customer picks a suggestion (coordinates come with it) and
+      `DELIVERY_DISTANCE_CONFIG` in `deliveryDistanceService.ts` picks the distance mode:
+      `"straight-line"` (default; haversine × 1.3, no API call) or `"routing"` (one ORS directions
+      call, cached by rounded coordinates, falls back to straight-line on failure/quota).
+      Address search/autocomplete and "use my location" now use **Photon** (photon.komoot.io,
+      OSM, no key) because ORS geocoding handled Hebrew addresses poorly. The delivery fee is
+      rounded up to the next ₪10. The API key is read from `ORS_API_KEY` (falls back to the old
+      `OPENROUTESERVICE_API_KEY`). **Still open** — see the follow-up items right below.
+- [ ] **Delivery: move the ORS key to the client's account, and decide on Photon hosting.** ORS is
+      still used for the studio-address geocode (admin settings) and for `"routing"` mode, so the
+      key under Omri's account should move to Eden's before launch (see above). Photon's public
+      server is fair-use with no uptime guarantee — fine at showcase traffic; if checkout volume
+      grows, self-host Photon or use a paid hosted geocoder.
+- [ ] **Before launch: change `Permissions-Policy` to `geolocation=(self)`.** `next.config.ts`
+      sets `Permissions-Policy: camera=(), microphone=(), geolocation=()` site-wide, which blocks the
+      browser geolocation API for every page. The checkout's **"Use my location"** button
+      (`src/features/checkout/CheckoutClient.tsx` → `handleUseMyLocation`) calls
+      `navigator.geolocation.getCurrentPosition`, so with `geolocation=()` the browser refuses it
+      ("Permissions policy violation") and the button shows the generic location error. It is left
+      at `geolocation=()` on purpose while `FEATURES.shop` is `false` (checkout is unreachable, so
+      nothing needs it) — flip it to `geolocation=(self)` when the shop relaunches. Keep `camera`
+      and `microphone` as `()`.
 
 ## Phase C — Checkout & admin order controls
 
@@ -131,11 +181,21 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done.
 
 ## Phase F — Payment integration (separate branch, build last)
 
-Fully designed already in **`09-payments.md`** — Morning (Green Invoice) hosted checkout,
-webhook, `/admin/orders`, refunds, resend-document. Do not re-derive the design; that doc is the
-spec. When starting this phase:
+> **Provider not yet decided.** `09-payments.md` is written up in full around **Morning**
+> (carried over from the sibling project `lights-and-vessels`), but the client has **not
+> committed to Morning** — he is currently researching which payment service best fits his
+> business. **Do not start this phase until the client confirms a provider.** Most of
+> `09-payments.md`'s design (the `PaymentProvider` interface shape, refund-as-credit-note
+> concept, `/admin/orders` UI, webhook idempotency rules) is provider-agnostic groundwork and
+> should transfer to whichever provider is chosen; only the client/webhook implementation
+> specifics (env vars, payload shape, sandbox details) are Morning-specific and would need
+> redoing for a different processor.
 
-1. Create a dedicated branch (e.g. `feature/payments-morning`) off `main` so it can be tested
+Once a provider is confirmed, follow the design in **`09-payments.md`** — hosted checkout,
+webhook, `/admin/orders`, refunds, resend-document — adjusting the provider-specific parts as
+needed. Do not re-derive the design from scratch. When starting this phase:
+
+1. Create a dedicated branch (e.g. `feature/payments-<provider>`) off `main` so it can be tested
    end-to-end (sandbox card, webhook round-trip via a tunnel or Vercel preview URL — see
    `09-payments.md` → "Rollout plan") before merging.
 2. Follow the doc's own phased rollout (Phase A plumbing/stub → Phase B sandbox → Phase C go

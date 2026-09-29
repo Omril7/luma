@@ -39,6 +39,11 @@ export type PriceRequestInput = z.infer<typeof priceRequestSchema>
 
 // ── Shipping address ──────────────────────────────────────────────────────────
 
+export const coordinatesSchema = z.object({
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+})
+
 export const shippingAddressSchema = z.object({
   street: z.string().min(3).max(200),
   city: z.string().min(2).max(100),
@@ -46,6 +51,13 @@ export const shippingAddressSchema = z.object({
   postalCode: z.string().max(20).optional(),
   country: z.string().min(2).max(100).default('Israel'),
   notes: z.string().max(500).optional(),
+  houseNumber: z.string().max(10).optional(),
+  entrance: z.string().max(10).optional(),
+  floor: z.string().max(10).optional(),
+  apartment: z.string().max(10).optional(),
+  // Picked from address autocomplete / geolocation; used to compute the delivery fee.
+  lat: coordinatesSchema.shape.lat.optional(),
+  lng: coordinatesSchema.shape.lng.optional(),
 })
 
 export type ShippingAddressInput = z.infer<typeof shippingAddressSchema>

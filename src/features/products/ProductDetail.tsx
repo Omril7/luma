@@ -17,6 +17,7 @@ import { PriceOfferModal } from './PriceOfferModal'
 import { ReviewsSection } from '@/features/reviews/ReviewsSection'
 import { FaqClient } from '@/features/faq/FaqClient'
 import type { ProductDTO, ProductVariantDTO, PublicReviewDTO } from '@/shared/types'
+import { Input } from '@/components/ui/Input'
 
 interface FaqItem {
   q_he: string
@@ -471,7 +472,8 @@ export function ProductDetail({
                               >
                                 {t('width')}
                               </label>
-                              <input
+                              <Input
+                                variant="storefront"
                                 id="dim-width"
                                 type="number"
                                 inputMode="decimal"
@@ -480,7 +482,7 @@ export function ProductDetail({
                                 value={customWidth}
                                 onChange={(e) => setCustomWidth(e.target.value)}
                                 placeholder="—"
-                                className="min-h-[44px] rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-main focus:outline focus:outline-2 focus:outline-primary w-full"
+                                className="px-3 py-2"
                               />
                               {product.customPricingRule?.minWidth != null && (
                                 <span className="text-xs text-text-muted">
@@ -502,7 +504,8 @@ export function ProductDetail({
                               >
                                 {t('height')}
                               </label>
-                              <input
+                              <Input
+                                variant="storefront"
                                 id="dim-height"
                                 type="number"
                                 inputMode="decimal"
@@ -511,7 +514,7 @@ export function ProductDetail({
                                 value={customHeight}
                                 onChange={(e) => setCustomHeight(e.target.value)}
                                 placeholder="—"
-                                className="min-h-[44px] rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-main focus:outline focus:outline-2 focus:outline-primary w-full"
+                                className="px-3 py-2"
                               />
                               {product.customPricingRule?.minHeight != null && (
                                 <span className="text-xs text-text-muted">
@@ -533,7 +536,8 @@ export function ProductDetail({
                               >
                                 {t('depth')}
                               </label>
-                              <input
+                              <Input
+                                variant="storefront"
                                 id="dim-depth"
                                 type="number"
                                 inputMode="decimal"
@@ -542,7 +546,7 @@ export function ProductDetail({
                                 value={customDepth}
                                 onChange={(e) => setCustomDepth(e.target.value)}
                                 placeholder="—"
-                                className="min-h-[44px] rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-main focus:outline focus:outline-2 focus:outline-primary w-full"
+                                className="px-3 py-2"
                               />
                               {product.customPricingRule?.minDepth != null && (
                                 <span className="text-xs text-text-muted">

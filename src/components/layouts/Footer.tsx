@@ -139,11 +139,11 @@ export function Footer({ instagramUrl, facebookUrl, tagline }: FooterProps) {
             <FooterContactForm
               className="mt-3 text-start"
               labelClassName={`mb-3 text-sm ${mutedCls}`}
-              inputClassName={`min-h-[44px] w-full rounded-lg border px-3.5 py-2.5 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${
+              inputClassName={
                 themeOverride
-                  ? 'border-border bg-surface text-text-main placeholder:text-text-muted/70'
+                  ? undefined
                   : 'border-white/20 bg-white/10 text-white placeholder:text-white/50'
-              }`}
+              }
             />
           </div>
         </div>

@@ -19,6 +19,7 @@ import { useAdminStore } from '@/stores/adminStore'
 import { ImageUpload } from '@/components/ui/ImageUpload'
 import { InstagramIcon } from '@/components/icons/InstagramIcon'
 import { InstagramEmbedBlockquote } from '@/components/ui/InstagramEmbedBlockquote'
+import { Input } from '@/components/ui/Input'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -39,9 +40,6 @@ const IMPORT_ERROR_MESSAGES: Record<string, string> = {
 }
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
-
-const inputCls =
-  'w-full h-10 px-3 text-sm bg-bg border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
 
 const labelCls = 'block text-xs font-medium text-text-muted mb-1'
 
@@ -373,13 +371,12 @@ function AddPostModal({
           </div>
           <div>
             <label className={labelCls}>קישור לפוסט</label>
-            <input
+            <Input
               type="url"
               value={importUrl}
               onChange={(e) => setImportUrl(e.target.value)}
               dir="ltr"
               placeholder="https://www.instagram.com/p/..."
-              className={inputCls}
             />
           </div>
           <div className="flex items-center justify-between pt-1">
@@ -422,13 +419,12 @@ function AddPostModal({
 
           <div>
             <label className={labelCls}>קישור לפוסט באינסטגרם (אופציונלי)</label>
-            <input
+            <Input
               type="url"
               value={newLinkUrl}
               onChange={(e) => setNewLinkUrl(e.target.value)}
               dir="ltr"
               placeholder="https://instagram.com/p/..."
-              className={inputCls}
             />
           </div>
 
@@ -632,13 +628,12 @@ function PostRow({
           )}
           <div>
             <label className={labelCls}>קישור מותאם אישית (אופציונלי)</label>
-            <input
+            <Input
               type="url"
               value={linkUrlDraft}
               onChange={(e) => setLinkUrlDraft(e.target.value)}
               dir="ltr"
               placeholder="https://instagram.com/p/..."
-              className={inputCls}
             />
             <p className="text-[11px] text-text-muted mt-1">
               {imported

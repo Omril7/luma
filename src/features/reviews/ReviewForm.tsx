@@ -8,6 +8,7 @@ import { useUiStore } from '@/stores/uiStore'
 import { api } from '@/lib/api'
 import { StarRating } from '@/components/ui/StarRating'
 import { PublicImageUpload } from '@/components/ui/PublicImageUpload'
+import { Input, Textarea } from '@/components/ui/Input'
 
 interface ReviewFormProps {
   /** A product id ties the review to that product; null / omitted = global business review. */
@@ -75,9 +76,6 @@ export function ReviewForm({ productId = null, locale, heading }: ReviewFormProp
     }
   }
 
-  const inputCls =
-    'w-full min-h-[44px] rounded-lg border bg-surface px-3.5 py-2.5 text-text-main placeholder:text-text-muted/70 transition-colors focus:outline-none focus:ring-2 focus:ring-primary'
-
   if (submitted) {
     return (
       <motion.div
@@ -129,7 +127,8 @@ export function ReviewForm({ productId = null, locale, heading }: ReviewFormProp
         <label htmlFor="review-name" className="mb-1.5 block text-sm font-medium text-text-main">
           {t('formName')}
         </label>
-        <input
+        <Input
+          variant="storefront"
           ref={nameRef}
           id="review-name"
           type="text"
@@ -141,7 +140,8 @@ export function ReviewForm({ productId = null, locale, heading }: ReviewFormProp
           }}
           aria-invalid={!!errors.customerName}
           aria-describedby={errors.customerName ? 'review-name-error' : undefined}
-          className={`${inputCls} ${errors.customerName ? 'border-red-400' : 'border-border'}`}
+          hasError={!!errors.customerName}
+          className="text-base"
         />
         {errors.customerName && (
           <p id="review-name-error" role="alert" className="mt-1 text-sm text-red-600">
@@ -154,12 +154,13 @@ export function ReviewForm({ productId = null, locale, heading }: ReviewFormProp
         <label htmlFor="review-comment" className="mb-1.5 block text-sm font-medium text-text-main">
           {t('formComment')}
         </label>
-        <textarea
+        <Textarea
+          variant="storefront"
           id="review-comment"
           rows={4}
           value={form.comment}
           onChange={(e) => setForm((f) => ({ ...f, comment: e.target.value }))}
-          className={`${inputCls} resize-none border-border`}
+          className="resize-none text-base"
         />
       </div>
 
